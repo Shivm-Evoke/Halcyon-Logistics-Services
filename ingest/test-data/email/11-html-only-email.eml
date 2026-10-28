@@ -1,8 +1,0 @@
-From: orders@client263.example
-To: orders@halcyon.example
-Subject: PO TP-E11
-Date: Tue, 27 Oct 2026 07:15:00 +0000
-MIME-Version: 1.0
-Content-Type: text/html; charset=utf-8
-
-<html><body><p>Account: C263</p><p>PO: TP-E11</p><table><tr><td>SKU: HX-118</td></tr><tr><td>Qty: 9</td></tr></table><div>Ship to: Tom Becker</div><div>Address: 81 Lake Shore Dr</div><div>City: Chicago</div><div>State: IL</div><div>ZIP: 60611</div></body></html>

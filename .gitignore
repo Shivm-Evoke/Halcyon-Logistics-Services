@@ -2,8 +2,13 @@ node_modules/
 server/node_modules/
 web/node_modules/
 
-# Test API credentials (generated secrets, test use only)
-ingest/test-data/credentials.json
+# Generated ingest fixtures (regenerate with: npm run ingest:testdata / npm run demo:week)
+ingest/test-data/
+ingest/live-week/
+
+# Runtime inbox drop-folder (populated by the running app)
+inbox/processed/
+inbox/failed/
 
 # Playwright test artifacts
 test-results/
@@ -19,3 +24,5 @@ playwright/.cache/
 # OS / editor
 .DS_Store
 *.log
+.vscode/
+.idea/
