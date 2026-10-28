@@ -1,0 +1,19 @@
+{
+  "client_id": "C261",
+  "orders": [
+    {
+      "client_order_ref": "LW-C261-2369",
+      "sku": "HX-77",
+      "quantity": 79,
+      "service": "standard",
+      "received_at": "2026-10-29T13:48",
+      "ship_to": {
+        "name": "Maria Chen",
+        "street": "9750 Union Street Unit 12",
+        "city": "Detroit",
+        "state": "MI",
+        "zip": "48226"
+      }
+    }
+  ]
+}

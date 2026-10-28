@@ -1,0 +1,19 @@
+{
+  "client_id": "C099",
+  "orders": [
+    {
+      "client_order_ref": "LW-C099-2523",
+      "sku": "HX-77",
+      "quantity": 75,
+      "service": "same day",
+      "received_at": "2026-10-30T10:25",
+      "ship_to": {
+        "name": "Wei Ortiz",
+        "street": "101 Riverside Boulevard Suite 300",
+        "city": "",
+        "state": "OR",
+        "zip": "97204"
+      }
+    }
+  ]
+}

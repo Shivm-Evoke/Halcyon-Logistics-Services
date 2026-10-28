@@ -1,0 +1,19 @@
+{
+  "client_id": "C217",
+  "orders": [
+    {
+      "client_order_ref": "LW-C217-1664",
+      "sku": "HX-5150",
+      "quantity": 110,
+      "service": "standard",
+      "received_at": "2026-10-27T11:14",
+      "ship_to": {
+        "name": "Priya Novak",
+        "street": "1992 Lake Shore Drive",
+        "city": "Hartford",
+        "state": "CT",
+        "zip": "06103"
+      }
+    }
+  ]
+}

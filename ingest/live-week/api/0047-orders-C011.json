@@ -1,0 +1,19 @@
+{
+  "client_id": "C011",
+  "orders": [
+    {
+      "client_order_ref": "LW-C011-1202",
+      "sku": "HX-3002",
+      "quantity": 46,
+      "service": "same day",
+      "received_at": "2026-10-26T07:57",
+      "ship_to": {
+        "name": "Dana Ruiz",
+        "street": "5118 Logistics Way",
+        "city": "Indianapolis",
+        "state": "IN",
+        "zip": "46204"
+      }
+    }
+  ]
+}

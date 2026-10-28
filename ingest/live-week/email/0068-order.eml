@@ -1,0 +1,27 @@
+From: orders@client190.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Mon, 26 Oct 2026 04:24:00 +0000
+Message-ID: <298277733@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C190
+PO: LW-C190-1330
+Product: HX-2202   Qty: 24
+Service: same day
+Attn: Chloe Álvarez
+Address: 6449 Union Street Suite 300
+City: New York
+State: NY
+ZIP: 10001
+---
+Purchase order: LW-C190-1331
+Product: HX-4410   Quantity: 54
+Delivery: regular
+Attn: Priya Dubois
+Address: 8388 Harbor Street Unit 12
+City: 
+State: AL
+ZIP: 35203-9749

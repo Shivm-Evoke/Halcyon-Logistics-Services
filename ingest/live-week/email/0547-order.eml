@@ -1,0 +1,22 @@
+From: ops@client061.example
+To: orders@halcyon.example
+Subject: Order LW-C061-2891
+Date: Sun, 1 Nov 2026 15:06:00 +0000
+Message-ID: <812340828@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C061
+PO: LW-C061-2891
+SKU: HX-2202   Quantity: 45
+Delivery: standard
+Attn: Priya Mensah
+Address: 7717 Warehouse Row Unit 12
+City: Louisville
+State: KY
+ZIP: 40202
+
+--
+Purchasing team
+Tel 555-0100

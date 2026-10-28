@@ -1,0 +1,12 @@
+From: buyer@client263.example
+To: orders@halcyon.example
+Subject: PO TP-E03
+Date: Tue, 27 Oct 2026 07:15:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Client: C263
+PO TP-E03
+Item HX-118 x 15, standard delivery
+Deliver to: Tom Becker, 81 Lake Shore Dr, Chicago, IL 94105

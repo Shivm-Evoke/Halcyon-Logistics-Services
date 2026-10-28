@@ -1,0 +1,21 @@
+From: purchasing@client248.example
+To: orders@halcyon.example
+Subject: New order LW-C248-1630
+Date: Tue, 27 Oct 2026 13:37:00 +0000
+Message-ID: <221160341@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C248
+Purchase order: LW-C248-1630
+Item: HX-77   Quantity: 109
+Shipping: next day
+Deliver to: Tom Rossi
+Address: 6717 Union Street
+City: Detroit
+State: MI
+ZIP: 
+
+Thanks,
+Ops desk

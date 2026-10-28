@@ -1,0 +1,285 @@
+{
+  "client_id": "C075",
+  "orders": [
+    {
+      "client_order_ref": "LW-C075-2682",
+      "sku": "HX-905",
+      "quantity": 67,
+      "service": "next day",
+      "received_at": "2026-10-30T08:47",
+      "ship_to": {
+        "name": "Wei Ortiz",
+        "street": "1926 Harbor Street",
+        "city": "Miami",
+        "state": "FL",
+        "zip": "33131"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2683",
+      "sku": "HX-5150",
+      "quantity": 57,
+      "service": "standard",
+      "received_at": "2026-10-30T06:28",
+      "ship_to": {
+        "name": "Omar Rossi",
+        "street": "5631 Maple Avenue",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2684",
+      "sku": "HX-6630",
+      "quantity": 80,
+      "service": "standard",
+      "received_at": "2026-10-30T16:38",
+      "ship_to": {
+        "name": "Diego Natarajan",
+        "street": "8420 Logistics Way Floor 2",
+        "city": "Boston",
+        "state": "MA",
+        "zip": "02108"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2685",
+      "sku": "HX-118",
+      "quantity": 68,
+      "service": "same day",
+      "received_at": "2026-10-30T14:20",
+      "ship_to": {
+        "name": "Ana Novak",
+        "street": "433 Elm Street Suite 300",
+        "city": "St. Louis",
+        "state": "MO",
+        "zip": "63101"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2686",
+      "sku": "HX-1270",
+      "quantity": 109,
+      "service": "next day",
+      "received_at": "2026-10-30T16:06",
+      "ship_to": {
+        "name": "Dana Dubois",
+        "street": "367 Park Avenue Suite 300",
+        "city": "Louisville",
+        "state": "KY",
+        "zip": "40202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2687",
+      "sku": "HX-77",
+      "quantity": 18,
+      "service": "next day",
+      "received_at": "2026-10-30T04:19",
+      "ship_to": {
+        "name": "Noah Haddad",
+        "street": "5441 Riverside Boulevard Suite 300",
+        "city": "Charlotte",
+        "state": "NC",
+        "zip": "28202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2688",
+      "sku": "HX-905",
+      "quantity": 108,
+      "service": "next day",
+      "received_at": "2026-10-30T10:32",
+      "ship_to": {
+        "name": "Tom Álvarez",
+        "street": "950 Warehouse Row Floor 2",
+        "city": "Portland",
+        "state": "OR",
+        "zip": "97204"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2689",
+      "sku": "HX-6630",
+      "quantity": 18,
+      "service": "next day",
+      "received_at": "2026-10-30T06:04",
+      "ship_to": {
+        "name": "Aisha Schmidt",
+        "street": "7951 Warehouse Row Floor 2",
+        "city": "Boise",
+        "state": "ID",
+        "zip": "83702"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2690",
+      "sku": "HX-1270",
+      "quantity": 7,
+      "service": "next day",
+      "received_at": "2026-10-30T06:39",
+      "ship_to": {
+        "name": "Maria Mensah",
+        "street": "1528 Oak Avenue Dock 7",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2691",
+      "sku": "HX-118",
+      "quantity": 11,
+      "service": "standard",
+      "received_at": "2026-10-30T10:34",
+      "ship_to": {
+        "name": "Zoë Ruiz",
+        "street": "7958 Union Street Unit 12",
+        "city": "Des Moines",
+        "state": "IA",
+        "zip": "50309"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2692",
+      "sku": "HX-3002",
+      "quantity": 15,
+      "service": "standard",
+      "received_at": "2026-10-30T06:58",
+      "ship_to": {
+        "name": "Maria O'Brien",
+        "street": "4721 Park Avenue",
+        "city": "Miami",
+        "state": "FL",
+        "zip": "33131"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2693",
+      "sku": "HX-5150",
+      "quantity": 64,
+      "service": "standard",
+      "received_at": "2026-10-30T17:18",
+      "ship_to": {
+        "name": "Maria Rossi",
+        "street": "7995 Cedar Lane",
+        "city": "Kansas City",
+        "state": "MO",
+        "zip": "64105"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2694",
+      "sku": "HX-4410",
+      "quantity": 37,
+      "service": "standard",
+      "received_at": "2026-10-30T04:36",
+      "ship_to": {
+        "name": "Omar Schmidt",
+        "street": "5189 Logistics Way Unit 12",
+        "city": "Minneapolis",
+        "state": "MN",
+        "zip": "55401"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2695",
+      "sku": "HX-118",
+      "quantity": 80,
+      "service": "same day",
+      "received_at": "2026-10-30T06:01",
+      "ship_to": {
+        "name": "Ana Walsh",
+        "street": "2348 Lake Shore Drive Unit 12",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2696",
+      "sku": "HX-6630",
+      "quantity": 113,
+      "service": "same day",
+      "received_at": "2026-10-30T01:49",
+      "ship_to": {
+        "name": "Omar Farouk",
+        "street": "8607 Maple Avenue Floor 2",
+        "city": "Salt Lake City",
+        "state": "UT",
+        "zip": "84101"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2697",
+      "sku": "HX-905",
+      "quantity": 105,
+      "service": "next day",
+      "received_at": "2026-10-30T08:40",
+      "ship_to": {
+        "name": "Wei Walsh",
+        "street": "2960 Lake Shore Drive",
+        "city": "Boise",
+        "state": "ID",
+        "zip": "83702"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2698",
+      "sku": "HX-5150",
+      "quantity": 14,
+      "service": "next day",
+      "received_at": "2026-10-30T06:45",
+      "ship_to": {
+        "name": "Liam Chen",
+        "street": "5597 Logistics Way Dock 7",
+        "city": "Miami",
+        "state": "FL",
+        "zip": "33131"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2699",
+      "sku": "HX-2202",
+      "quantity": 105,
+      "service": "next day",
+      "received_at": "2026-10-30T10:08",
+      "ship_to": {
+        "name": "Ana Mensah",
+        "street": "4785 Peachtree Road",
+        "city": "Columbus",
+        "state": "OH",
+        "zip": "43215"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2700",
+      "sku": "HX-118",
+      "quantity": "tbc",
+      "service": "standard",
+      "received_at": "2026-10-30T09:26",
+      "ship_to": {
+        "name": "Aisha Becker",
+        "street": "9180 Oak Avenue Apt 4B",
+        "city": "Albuquerque",
+        "state": "NM",
+        "zip": "87102"
+      }
+    },
+    {
+      "client_order_ref": "LW-C075-2701",
+      "sku": "HX-2201",
+      "quantity": 55,
+      "service": "next day",
+      "received_at": "2026-10-30T03:59",
+      "ship_to": {
+        "name": "Dana Natarajan",
+        "street": "6195 Union Street Suite 300",
+        "city": "Phoenix",
+        "state": "AZ",
+        "zip": "85004"
+      }
+    }
+  ]
+}

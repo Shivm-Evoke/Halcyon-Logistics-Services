@@ -1,0 +1,19 @@
+{
+  "client_id": "C196",
+  "orders": [
+    {
+      "client_order_ref": "LW-C196-2127",
+      "sku": "HX-6630",
+      "quantity": 87,
+      "service": "same day",
+      "received_at": "2026-10-29T08:09",
+      "ship_to": {
+        "name": "Kenji Tanaka",
+        "street": "901 Riverside Boulevard",
+        "city": "Baltimore",
+        "state": "MD",
+        "zip": "21202"
+      }
+    }
+  ]
+}

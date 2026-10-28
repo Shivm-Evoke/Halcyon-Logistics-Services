@@ -1,0 +1,19 @@
+{
+  "client_id": "C118",
+  "orders": [
+    {
+      "client_order_ref": "LW-C118-1379",
+      "sku": "HX-77",
+      "quantity": 53,
+      "service": "standard",
+      "received_at": "2026-10-26T07:33",
+      "ship_to": {
+        "name": "Maria Álvarez",
+        "street": "6968 Lake Shore Drive Dock 7",
+        "city": "Detroit",
+        "state": "MI",
+        "zip": "48226"
+      }
+    }
+  ]
+}

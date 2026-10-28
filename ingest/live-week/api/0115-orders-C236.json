@@ -1,0 +1,19 @@
+{
+  "client_id": "C236",
+  "orders": [
+    {
+      "client_order_ref": "LW-C236-1448",
+      "sku": "HX-5150",
+      "quantity": 73,
+      "service": "standard",
+      "received_at": "2026-10-27T01:01",
+      "ship_to": {
+        "name": "Omar Schmidt",
+        "street": "8527 Cedar Lane Unit 12",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53202"
+      }
+    }
+  ]
+}

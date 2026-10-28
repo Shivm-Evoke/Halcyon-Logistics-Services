@@ -1,0 +1,18 @@
+From: orders@client076.example
+To: orders@halcyon.example
+Subject: New order LW-C076-1274
+Date: Mon, 26 Oct 2026 09:31:00 +0000
+Message-ID: <697424260@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C076
+PO Number: LW-C076-1274
+SKU: HX-905   Qty: 65
+Delivery: express
+Ship to: Grace O'Brien
+Address: 8003 Cedar Lane Unit 12
+City: Boston
+State: MA
+ZIP: 02108

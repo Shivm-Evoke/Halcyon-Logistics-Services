@@ -1,0 +1,9 @@
+From: orders@client094.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Thu, 29 Oct 2026 14:18:00 +0000
+Message-ID: <889008523@mail.example>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><body><p>Hi team,</p><div>Account: C094</div><div>PO Number: LW-C094-2274</div><div>Item: HX-118   Quantity: 10</div><div>Shipping: standard</div><div>Ship to: Grace Natarajan</div><div>Address: 4902 Logistics Way</div><div>City: Des Moines</div><div>State: IA</div><div>ZIP: 50309</div><div>---</div><div>PO Number: LW-C094-2275</div><div>SKU: HX-2201   Quantity: 109</div><div>Delivery: next day</div><div>Attn: Priya Walsh</div><div>Address: 6696 Park Avenue</div><div>City: Manchester</div><div>State: NH</div><div>ZIP: 03101</div></body></html>

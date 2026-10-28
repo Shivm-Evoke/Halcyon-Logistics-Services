@@ -1,0 +1,19 @@
+{
+  "client_id": "C063",
+  "orders": [
+    {
+      "client_order_ref": "LW-C063-2332",
+      "sku": "HX-77",
+      "quantity": 60,
+      "service": "standard",
+      "received_at": "2026-10-29T16:39",
+      "ship_to": {
+        "name": "Liam Schmidt",
+        "street": "1756 Lake Shore Drive Suite 300",
+        "city": "Boise",
+        "state": "ID",
+        "zip": "83702"
+      }
+    }
+  ]
+}

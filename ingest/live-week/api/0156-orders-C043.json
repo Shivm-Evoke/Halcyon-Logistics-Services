@@ -1,0 +1,19 @@
+{
+  "client_id": "C043",
+  "orders": [
+    {
+      "client_order_ref": "LW-C043-1546",
+      "sku": "HX-2202",
+      "quantity": 62,
+      "service": "same day",
+      "received_at": "2026-10-27T00:19",
+      "ship_to": {
+        "name": "Kenji Dubois",
+        "street": "2644 Lake Shore Drive",
+        "city": "Omaha",
+        "state": "NE",
+        "zip": "68102"
+      }
+    }
+  ]
+}

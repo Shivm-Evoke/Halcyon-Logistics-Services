@@ -1,0 +1,19 @@
+{
+  "client_id": "C173",
+  "orders": [
+    {
+      "client_order_ref": "LW-C173-1871",
+      "sku": "HX-4410",
+      "quantity": 88,
+      "service": "next day",
+      "received_at": "2026-10-28T12:20",
+      "ship_to": {
+        "name": "Omar Becker",
+        "street": "7525 Park Avenue Unit 12",
+        "city": "Miami",
+        "state": "FL",
+        "zip": "33131"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+From: ops@client001.example
+To: orders@halcyon.example
+Subject: PO LW-C001-2707
+Date: Fri, 30 Oct 2026 07:10:00 +0000
+Message-ID: <482823939@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C001
+PO Number: LW-C001-2707
+SKU: HX-6630   Qty: 48
+Delivery: next day
+Attn: Chloe Walsh
+Address: 7485 Main Street Unit 12
+City: 
+State: MN
+ZIP: 55401
+
+Regards
+
+Sent from my phone

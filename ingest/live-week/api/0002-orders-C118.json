@@ -1,0 +1,19 @@
+{
+  "client_id": "C118",
+  "orders": [
+    {
+      "client_order_ref": "LW-C118-1021",
+      "sku": "HX-118",
+      "quantity": 6,
+      "service": "same day",
+      "received_at": "2026-10-26T06:25",
+      "ship_to": {
+        "name": "Fatima Patel",
+        "street": "8480 Maple Avenue Unit 12",
+        "city": "Hartford",
+        "state": "CT",
+        "zip": "06103"
+      }
+    }
+  ]
+}

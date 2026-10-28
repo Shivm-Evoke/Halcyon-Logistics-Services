@@ -1,0 +1,18 @@
+From: orders@client094.example
+To: orders@halcyon.example
+Subject: Order LW-C094-2702
+Date: Fri, 30 Oct 2026 10:02:00 +0000
+Message-ID: <424499242@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Account: C094
+Purchase order: LW-C094-2702
+SKU: HX-3002   Quantity: 115
+Delivery: next day
+Attn: Sam Tanaka
+Address: 904 Cedar Lane Unit 12
+City: New Orleans
+State: LA
+ZIP: 70112

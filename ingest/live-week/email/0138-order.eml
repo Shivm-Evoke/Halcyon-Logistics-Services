@@ -1,0 +1,27 @@
+From: supply@client049.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Tue, 27 Oct 2026 11:56:00 +0000
+Message-ID: <498817758@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C049
+Purchase order: LW-C049-1489
+Item: HX-905   Quantity: 7
+Shipping: overnight
+Attn: Fatima Walsh
+Address: 9324 Park Avenue Suite 300
+City: Detroit
+State: MI
+ZIP: 48226
+===
+PO: LW-C049-1490
+Item: HX-5150   Qty: 59
+Service: standard
+Attn: Zoë Álvarez
+Address: 1352 Warehouse Row Dock 7
+City: Detroit
+State: MI
+ZIP: 48226-6891

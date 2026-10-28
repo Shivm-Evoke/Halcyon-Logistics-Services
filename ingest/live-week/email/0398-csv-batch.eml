@@ -1,0 +1,31 @@
+From: buyer@client158.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-30
+Date: Fri, 30 Oct 2026 07:08:00 +0000
+Message-ID: <664865046@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+
+Regards
+
+Sent from my phone
+--lw
+Content-Type: text/csv; name="orders-2026-10-30.csv"
+Content-Disposition: attachment; filename="orders-2026-10-30.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number,SKU,Quantity,Service,Ship To Name,Address,City,State,Zip
+LW-C158-2448,HX-1270,57,same day,Omar Natarajan,3420 Industrial Parkway Unit 12,St. Louis,MO,63101
+LW-C158-2449,HX-3002,82,standard,Wei Natarajan,1625 Cedar Lane Suite 300,Hartford,CT,06103
+LW-C158-2450,HX-6630,81,next day,Hannah Farouk,3568 Logistics Way Suite 300,Charlotte,NC,28202
+LW-C158-2451,HX-6630,89,next day,Sam Ruiz,Riverside Boulevard,Newark,NJ,7102
+LW-C158-2452,HX-3002,76,standard,Chloe Haddad,8133 Market Street Unit 12,Boise,ID,83702
+LW-C158-2453,HX-6630,96,next day,Ravi Novak,4332 Market Street,Louisville,KY,40202
+LW-C158-2454,HX-2202,38 units,standard,Ana Patel,5806 Logistics Way Apt 4B,Louisville,KY,40202-6586
+LW-C158-2455,HX-1270,109,standard,Priya Lee,9343 Warehouse Row,Omaha,NE,68102
+--lw--

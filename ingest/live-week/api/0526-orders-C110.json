@@ -1,0 +1,19 @@
+{
+  "client_id": "C110",
+  "orders": [
+    {
+      "client_order_ref": "LW-C110-2842",
+      "sku": "HX-4410",
+      "quantity": 98,
+      "service": "next day",
+      "received_at": "2026-11-01T17:05",
+      "ship_to": {
+        "name": "Priya Álvarez",
+        "street": "9162 Logistics Way",
+        "city": "Manchester",
+        "state": "NH",
+        "zip": "03101"
+      }
+    }
+  ]
+}

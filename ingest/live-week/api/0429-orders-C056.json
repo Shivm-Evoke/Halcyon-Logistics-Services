@@ -1,0 +1,19 @@
+{
+  "client_id": "C056",
+  "orders": [
+    {
+      "client_order_ref": "LW-C056-2547",
+      "sku": "HX-2201",
+      "quantity": 40,
+      "service": "same day",
+      "received_at": "2026-10-30T00:20",
+      "ship_to": {
+        "name": "Chloe Farouk",
+        "street": "1775 Lake Shore Drive Apt 4B",
+        "city": "Charleston",
+        "state": "SC",
+        "zip": "29401"
+      }
+    }
+  ]
+}

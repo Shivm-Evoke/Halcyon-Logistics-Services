@@ -1,0 +1,35 @@
+From: supply@client190.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-29
+Date: Thu, 29 Oct 2026 11:12:00 +0000
+Message-ID: <236732010@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+
+Regards
+
+Sent from my phone
+--lw
+Content-Type: text/csv; name="orders-2026-10-29.csv"
+Content-Disposition: attachment; filename="orders-2026-10-29.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number,SKU,Quantity,Service,Ship To Name,Address,City,State,Zip
+LW-C190-2109,HX-905,3,standard,Grace Dubois,8625 Lake Shore Drive Dock 7,Albuquerque,NM,87102-6898
+LW-C190-2110,HX-118,61,ground,Maria Tanaka,4218 Elm Street Suite 300,Richmond,VA,23219
+LW-C190-2111,HX118,68,standard,Zoë Becker,4778 Elm Street Unit 12,Charlotte,NC,28202
+LW-C190-2112,HX-905,44,overnight,Priya Novak,7597 Main Street Unit 12,Denver,CO,80202
+LW-C190-2113,HX-2201,3,standard,Dana Haddad,6793 Logistics Way,Chicago,IL,60611
+LW-C190-2114,HX-905,85,standard,Ravi Álvarez,Peachtree Road Unit 12,Los Angeles,CA,90012
+LW-C190-2115,HX-4410,20,same day,Liam Patel,612 Oak Avenue,Miami,FL,33131
+LW-C190-2116,HX-905,37,same day,Hannah Walsh,7931 Park Avenue,Richmond,VIRGINIA,23219
+LW-C190-2117,HX-905,15,next day,Diego Patel,8112 Industrial Parkway Suite 300,Newark,NJ,07102
+LW-C190-2118,HX-118,5,standard,Aisha Ortiz,6348 Oak Avenue Apt 4B,Des Moines,IA,50309
+LW-C190-2119,HX-5150,116,standard,Omar Dubois,406 Union Street Dock 7,Miami,FL,33131
+LW-C190-2120,HX-6630,119,ground,Kenji Walsh,6690 Harbor Street,St. Louis,MO,63101
+--lw--

@@ -1,0 +1,31 @@
+From: supply@client044.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Fri, 30 Oct 2026 11:31:00 +0000
+Message-ID: <544849094@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Account: C044
+PO Number: LW-C044-2552
+Item: HX-4410   Quantity: 118
+Service: standard
+Ship to: Hannah Dubois
+Address: 7399 Main Street Unit 12
+City: Las Vegas
+State: NV
+ZIP: 89101
+===
+PO: LW-C044-2553
+Item: HX-2201   Qty: 9
+Shipping: standard
+Ship to: Priya Rossi
+Address: 3932 Harbor Street Floor 2
+City: Des Moines
+State: IA
+ZIP: 50309
+
+Regards
+
+Sent from my phone

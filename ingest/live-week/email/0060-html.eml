@@ -1,0 +1,9 @@
+From: orders@client190.example
+To: orders@halcyon.example
+Subject: Order LW-C190-1307
+Date: Mon, 26 Oct 2026 05:16:00 +0000
+Message-ID: <320313735@mail.example>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><body><p>Good morning,</p><div>Account: C190</div><div>PO: LW-C190-1307</div><div>SKU: HX-77   Qty: 86</div><div>Delivery: express</div><div>Ship to: Aisha Tanaka</div><div>Address: 525 Commerce Drive Floor 2</div><div>City: </div><div>State: SC</div><div>ZIP: 29401</div></body></html>

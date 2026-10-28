@@ -1,0 +1,19 @@
+{
+  "client_id": "C225",
+  "orders": [
+    {
+      "client_order_ref": "LW-C225-2645",
+      "sku": "HX-6630",
+      "quantity": 39,
+      "service": "next day",
+      "received_at": "2026-10-30T00:51",
+      "ship_to": {
+        "name": "Noah Dubois",
+        "street": "123 Oak Avenue",
+        "city": "Des Moines",
+        "state": "IA",
+        "zip": "50309"
+      }
+    }
+  ]
+}

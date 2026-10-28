@@ -1,0 +1,19 @@
+{
+  "client_id": "C096",
+  "orders": [
+    {
+      "client_order_ref": "LW-C096-1449",
+      "sku": "HX-5150",
+      "quantity": 61,
+      "service": "standard",
+      "received_at": "2026-10-27T16:47",
+      "ship_to": {
+        "name": "Diego Schmidt",
+        "street": "389 Main Street Unit 12",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001"
+      }
+    }
+  ]
+}

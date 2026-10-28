@@ -1,0 +1,36 @@
+From: buyer@client124.example
+To: orders@halcyon.example
+Subject: 3 orders
+Date: Thu, 29 Oct 2026 07:21:00 +0000
+Message-ID: <264568767@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C662
+PO: LW-C124-2307
+Item: HX-5150   Quantity: 68
+Delivery: next day
+Ship to: Chloe Schmidt
+Address: 916 Lake Shore Drive Unit 12
+City: Boise
+State: ID
+ZIP: 83702
+---
+PO Number: LW-C124-2308
+Item: HX-2202   Qty: 107
+Service: priority
+Attn: Maria Tanaka
+Address: 2191 Harbor Street Apt 4B
+City: Minneapolis
+State: MN
+ZIP: 55401
+---
+Purchase order: LW-C124-2309
+Item: HX-1270   Qty: 32
+Service: standard
+Attn: Liam Becker
+Address: 9761 Union Street Floor 2
+City: Nashville
+State: TN
+ZIP: 37203

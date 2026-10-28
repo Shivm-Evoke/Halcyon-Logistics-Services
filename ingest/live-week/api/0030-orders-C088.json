@@ -1,0 +1,19 @@
+{
+  "client_id": "C088",
+  "orders": [
+    {
+      "client_order_ref": "LW-C088-1150",
+      "sku": "HX-1270",
+      "quantity": 16,
+      "service": "same day",
+      "received_at": "2026-10-26T01:31",
+      "ship_to": {
+        "name": "Priya Natarajan",
+        "street": "3801 Commerce Drive Apt 4B",
+        "city": "Portland",
+        "state": "OR",
+        "zip": "97204"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+From: ops@client158.example
+To: orders@halcyon.example
+Subject: Order LW-C158-1102
+Date: Mon, 26 Oct 2026 13:38:00 +0000
+Message-ID: <764194114@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C158
+Purchase order: LW-C158-1102
+Qty: 5
+Service: next day
+Deliver to: Chloe Mensah
+Address: 483 Elm Street
+City: Las Vegas
+State: NV
+ZIP: 89101

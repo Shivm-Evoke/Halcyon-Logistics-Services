@@ -1,0 +1,22 @@
+From: purchasing@client234.example
+To: orders@halcyon.example
+Subject: Order LW-C234-2518
+Date: Fri, 30 Oct 2026 14:02:00 +0000
+Message-ID: <883311655@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C234
+PO: LW-C234-2518
+Product: HX-2202   Qty: 86
+Service: standard
+Ship to: José Dubois
+Address: Main Street
+City: Charlotte
+State: NC
+ZIP: 28202
+
+--
+Purchasing team
+Tel 555-0100

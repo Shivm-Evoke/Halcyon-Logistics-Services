@@ -1,0 +1,19 @@
+{
+  "client_id": "C055",
+  "orders": [
+    {
+      "client_order_ref": "LW-C055-2479",
+      "sku": "HX-905",
+      "quantity": 118,
+      "service": "standard",
+      "received_at": "2026-10-30T03:17",
+      "ship_to": {
+        "name": "Noah Herrera",
+        "street": "5711 Lake Shore Drive",
+        "city": "Nashville",
+        "state": "TN",
+        "zip": "37203"
+      }
+    }
+  ]
+}

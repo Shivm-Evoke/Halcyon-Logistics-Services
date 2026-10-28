@@ -1,0 +1,343 @@
+{
+  "run": "1JJ7",
+  "ran_at": "2026-10-28T10:28:35.443Z",
+  "week": "Mon 26 Oct – Sun 1 Nov 2026",
+  "seconds": 7.625,
+  "messages": 552,
+  "orders": 1999,
+  "http_errors": 0,
+  "status_accuracy": 1,
+  "defect_detection": {
+    "injected": 790,
+    "caught": 790
+  },
+  "clean_orders": {
+    "total": 1346,
+    "wrongly_stopped": 0,
+    "examples": []
+  },
+  "idempotent_retries": {
+    "tried": 13,
+    "replayed": 13
+  },
+  "by_channel": [
+    {
+      "channel": "Email",
+      "orders": 635,
+      "accepted": 275,
+      "corrected": 198,
+      "held": 138,
+      "rejected": 17,
+      "duplicate": 7,
+      "with_defects": 365
+    },
+    {
+      "channel": "API",
+      "orders": 819,
+      "accepted": 651,
+      "corrected": 119,
+      "held": 36,
+      "rejected": 0,
+      "duplicate": 13,
+      "with_defects": 170
+    },
+    {
+      "channel": "EDI",
+      "orders": 480,
+      "accepted": 384,
+      "corrected": 64,
+      "held": 25,
+      "rejected": 4,
+      "duplicate": 3,
+      "with_defects": 96
+    },
+    {
+      "channel": "File",
+      "orders": 65,
+      "accepted": 43,
+      "corrected": 17,
+      "held": 5,
+      "rejected": 0,
+      "duplicate": 0,
+      "with_defects": 22
+    }
+  ],
+  "confusion": [
+    {
+      "expected": "accepted",
+      "accepted": 1353,
+      "corrected": 0,
+      "held": 0,
+      "rejected": 0,
+      "duplicate": 0
+    },
+    {
+      "expected": "corrected",
+      "accepted": 0,
+      "corrected": 398,
+      "held": 0,
+      "rejected": 0,
+      "duplicate": 0
+    },
+    {
+      "expected": "held",
+      "accepted": 0,
+      "corrected": 0,
+      "held": 204,
+      "rejected": 0,
+      "duplicate": 0
+    },
+    {
+      "expected": "rejected",
+      "accepted": 0,
+      "corrected": 0,
+      "held": 0,
+      "rejected": 21,
+      "duplicate": 0
+    },
+    {
+      "expected": "duplicate",
+      "accepted": 0,
+      "corrected": 0,
+      "held": 0,
+      "rejected": 0,
+      "duplicate": 23
+    }
+  ],
+  "defects": [
+    {
+      "code": "same_day_after_cutoff",
+      "label": "Same-day requested after 8am",
+      "outcome": "corrected",
+      "kind": "auto-fix",
+      "injected": 223,
+      "caught": 223,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "service_synonym",
+      "label": "Service in the client’s own words",
+      "outcome": "corrected",
+      "kind": "auto-fix",
+      "injected": 109,
+      "caught": 109,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "missing_house_number",
+      "label": "Street without house number",
+      "outcome": "held",
+      "kind": "hold",
+      "injected": 63,
+      "caught": 63,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "sku_format",
+      "label": "SKU spacing / case (\"hx 2201\")",
+      "outcome": "corrected",
+      "kind": "auto-fix",
+      "injected": 53,
+      "caught": 53,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "qty_with_units",
+      "label": "Quantity with units (\"12 units\")",
+      "outcome": "corrected",
+      "kind": "auto-fix",
+      "injected": 51,
+      "caught": 51,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "state_full_name",
+      "label": "State written in full",
+      "outcome": "corrected",
+      "kind": "auto-fix",
+      "injected": 46,
+      "caught": 46,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "missing_city",
+      "label": "City missing",
+      "outcome": "held",
+      "kind": "hold",
+      "injected": 39,
+      "caught": 39,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "zip_plus4",
+      "label": "ZIP+4 instead of 5 digits",
+      "outcome": "corrected",
+      "kind": "auto-fix",
+      "injected": 37,
+      "caught": 37,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "missing_zip",
+      "label": "ZIP missing",
+      "outcome": "held",
+      "kind": "hold",
+      "injected": 32,
+      "caught": 32,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "zip_state_mismatch",
+      "label": "ZIP belongs to another state",
+      "outcome": "held",
+      "kind": "hold",
+      "injected": 30,
+      "caught": 30,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "duplicate_resend",
+      "label": "Same PO sent again",
+      "outcome": "duplicate",
+      "kind": "reject",
+      "injected": 23,
+      "caught": 23,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "invalid_quantity",
+      "label": "Quantity zero, negative or in words",
+      "outcome": "held",
+      "kind": "hold",
+      "injected": 18,
+      "caught": 18,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "missing_sku",
+      "label": "SKU missing",
+      "outcome": "held",
+      "kind": "hold",
+      "injected": 12,
+      "caught": 12,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "no_order_in_email",
+      "label": "Email with no order in it",
+      "outcome": "rejected",
+      "kind": "reject",
+      "injected": 10,
+      "caught": 10,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "invalid_sku",
+      "label": "SKU unreadable (\"TBD\", \"??\")",
+      "outcome": "held",
+      "kind": "hold",
+      "injected": 9,
+      "caught": 9,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "zip_lost_zero",
+      "label": "ZIP lost its leading zero (spreadsheet)",
+      "outcome": "corrected",
+      "kind": "auto-fix",
+      "injected": 8,
+      "caught": 8,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "unusual_quantity",
+      "label": "Unusually large quantity",
+      "outcome": "accepted",
+      "kind": "flag",
+      "injected": 7,
+      "caught": 7,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "unknown_client",
+      "label": "Account number that does not exist",
+      "outcome": "rejected",
+      "kind": "reject",
+      "injected": 4,
+      "caught": 4,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "edi_bad_segment_count",
+      "label": "EDI transaction corrupted",
+      "outcome": "rejected",
+      "kind": "reject",
+      "injected": 4,
+      "caught": 4,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "unusual_time",
+      "label": "Order at an hour the client never orders",
+      "outcome": "accepted",
+      "kind": "flag",
+      "injected": 4,
+      "caught": 4,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "state_typo",
+      "label": "State misspelled (\"Conneticut\")",
+      "outcome": "held",
+      "kind": "hold",
+      "injected": 3,
+      "caught": 3,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "unknown_sender",
+      "label": "Email from an unknown sender",
+      "outcome": "rejected",
+      "kind": "reject",
+      "injected": 3,
+      "caught": 3,
+      "rate": 1,
+      "misses": []
+    },
+    {
+      "code": "client_mismatch",
+      "label": "Body names a different client than the sender",
+      "outcome": "accepted",
+      "kind": "flag",
+      "injected": 2,
+      "caught": 2,
+      "rate": 1,
+      "misses": []
+    }
+  ],
+  "avg_risk": {
+    "clean": 0.09760995542347649,
+    "with_defects": 0.2661592775041055
+  }
+}

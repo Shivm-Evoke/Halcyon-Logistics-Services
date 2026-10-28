@@ -1,0 +1,19 @@
+{
+  "client_id": "C065",
+  "orders": [
+    {
+      "client_order_ref": "LW-C065-1484",
+      "sku": "HX-905",
+      "quantity": 45,
+      "service": "next day",
+      "received_at": "2026-10-27T18:20",
+      "ship_to": {
+        "name": "Ana Becker",
+        "street": "4058 Elm Street",
+        "city": "Nashville",
+        "state": "TN",
+        "zip": "37203"
+      }
+    }
+  ]
+}

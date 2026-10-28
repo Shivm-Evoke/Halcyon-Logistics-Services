@@ -1,0 +1,48 @@
+From: purchasing@client248.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-29
+Date: Thu, 29 Oct 2026 13:30:00 +0000
+Message-ID: <372241883@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+
+Regards
+
+Sent from my phone
+--lw
+Content-Type: text/csv; name="orders-2026-10-29.csv"
+Content-Disposition: attachment; filename="orders-2026-10-29.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number,SKU,Quantity,Service,Ship To Name,Address,City,State,Zip
+LW-C248-2193,HX4410,96,standard,Dana Farouk,5292 Riverside Boulevard Unit 12,,MA,02108
+LW-C248-2194,HX-77,102,standard,Grace Lee,1064 Warehouse Row Unit 12,Kansas City,MO,64105
+LW-C248-2195,HX-1270,2,standard,Aisha Ortiz,1498 Logistics Way Unit 12,St. Louis,MO,63101
+LW-C248-2196,HX-1270,74,next day,Maria Ortiz,8259 Elm Street,Atlanta,GA,30309
+LW-C248-2197,HX-6630,44,same day,Priya Patel,5811 Maple Avenue Apt 4B,Phoenix,AZ,85004-1453
+LW-C248-2198,HX-905,43,express,Omar Becker,4153 Park Avenue Floor 2,New Orleans,LA,
+LW-C248-2199,HX-3002,forty,economy,Wei Kim,1596 Cedar Lane,Phoenix,AZ,85004
+LW-C248-2200,HX-2201,76 units,standard,Maria Álvarez,Market Street,Milwaukee,WI,53202
+LW-C248-2201,HX-2202,72,next day,José Ruiz,5091 Harbor Street,Louisville,KY,40202
+LW-C248-2202,HX-3002,51,standard,José Ruiz,2545 Elm Street Apt 4B,Des Moines,IA,50309
+LW-C248-2203,hx-6630,117,standard,Kenji Tanaka,3058 Lake Shore Drive,Manchester,NH,03101
+LW-C248-2204,HX-2201,7,next day,José Walsh,3020 Elm Street Suite 300,Burlington,VT,05401
+LW-C248-2205,HX-1270,105 ea,standard,Hannah Dubois,5031 Warehouse Row Apt 4B,Burlington,VT,05401
+LW-C248-2206,HX-5150,94,same day,Chloe Álvarez,8203 Market Street,Omaha,NE,68102
+LW-C248-2207,HX-77,30,next day,Fatima Natarajan,6525 Park Avenue Floor 2,Chicago,IL,60611
+LW-C248-2208,HX-1270,56,standard,Priya Lee,6498 Warehouse Row,Boise,ID,83702
+LW-C248-2209,HX-5150,73,overnight,Wei O'Brien,3014 Riverside Boulevard,Birmingham,AL,35203
+LW-C248-2210,HX-1270,47,same day,Kenji Novak,7935 Main Street Unit 12,Detroit,Michigan,48226
+LW-C248-2211,HX-6630,78,standard,Aisha Dubois,1855 Industrial Parkway Suite 300,Charleston,SC,29401
+LW-C248-2212,HX-6630,46,next day,Noah Kim,6419 Union Street,Philadelphia,PA,19103
+LW-C248-2213,HX-2202,96,next day,Ana Patel,665 Maple Avenue,Hartford,CT,06103
+LW-C248-2214,HX-6630,78,standard,Tom Lee,Market Street,Manchester,NH,03101
+LW-C248-2215,HX-5150,13,economy,Ravi Chen,3797 Union Street,Detroit,MI,48226
+LW-C248-2216,,71,standard,Wei Ruiz,4823 Industrial Parkway Dock 7,Boston,MA,02108
+LW-C248-2217,HX-1270,12,economy,Grace Ortiz,8053 Maple Avenue,Denver,CO,80202
+--lw--

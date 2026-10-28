@@ -1,0 +1,19 @@
+{
+  "client_id": "C219",
+  "orders": [
+    {
+      "client_order_ref": "LW-C219-1337",
+      "sku": "HX-1270",
+      "quantity": 66,
+      "service": "standard",
+      "received_at": "2026-10-26T06:51",
+      "ship_to": {
+        "name": "Priya Ruiz",
+        "street": "8666 Harbor Street",
+        "city": "Richmond",
+        "state": "VA",
+        "zip": "23219"
+      }
+    }
+  ]
+}

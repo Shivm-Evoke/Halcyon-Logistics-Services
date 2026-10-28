@@ -1,0 +1,19 @@
+{
+  "client_id": "C013",
+  "orders": [
+    {
+      "client_order_ref": "LW-C013-1460",
+      "sku": "HX-1270",
+      "quantity": 65,
+      "service": "next day",
+      "received_at": "2026-10-27T01:33",
+      "ship_to": {
+        "name": "Zoë Rossi",
+        "street": "8953 Lake Shore Drive",
+        "city": "Chicago",
+        "state": "IL",
+        "zip": "60611"
+      }
+    }
+  ]
+}

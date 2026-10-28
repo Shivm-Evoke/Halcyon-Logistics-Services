@@ -1,0 +1,18 @@
+From: supply@client250.example
+To: orders@halcyon.example
+Subject: PO LW-C250-2041
+Date: Wed, 28 Oct 2026 08:30:00 +0000
+Message-ID: <221902308@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C250
+PO: LW-C250-2041
+Product: HX-905   Qty: 48
+Shipping: next day
+Deliver to: Kenji Lee
+Address: 2689 Market Street Dock 7
+City: Chicago
+State: IL
+ZIP: 60611

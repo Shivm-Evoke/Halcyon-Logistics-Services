@@ -1,0 +1,19 @@
+{
+  "client_id": "C188",
+  "orders": [
+    {
+      "client_order_ref": "LW-C188-1557",
+      "sku": "HX-118",
+      "quantity": 46,
+      "service": "same day",
+      "received_at": "2026-10-27T05:08",
+      "ship_to": {
+        "name": "Chloe Schmidt",
+        "street": "5049 Oak Avenue Unit 12",
+        "city": "Richmond",
+        "state": "VA",
+        "zip": "23219"
+      }
+    }
+  ]
+}

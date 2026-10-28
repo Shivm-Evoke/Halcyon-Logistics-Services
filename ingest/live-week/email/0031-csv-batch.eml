@@ -1,0 +1,41 @@
+From: purchasing@client055.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-26
+Date: Mon, 26 Oct 2026 09:23:00 +0000
+Message-ID: <272997222@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+--lw
+Content-Type: text/csv; name="orders-2026-10-26.csv"
+Content-Disposition: attachment; filename="orders-2026-10-26.csv"
+Content-Transfer-Encoding: 7bit
+
+﻿PO Number;SKU;Quantity;Service;Ship To Name;Address;City;State;Zip
+LW-C055-1151;HX-2202;41;standard;Ravi O'Brien;4607 Riverside Boulevard Floor 2;Nashville;TN;37203
+LW-C055-1152;HX-2201;80 ea;standard;Grace Herrera;9492 Cedar Lane Apt 4B;Nashville;TN;37203
+LW-C055-1153;HX-77;86;standard;Priya Patel;6098 Logistics Way Unit 12;St. Louis;MO;63101
+LW-C055-1154;HX-2202;61;standard;Sam Tanaka;7483 Main Street Apt 4B;Providence;RI;02903
+LW-C055-1155;HX2201;34;standard;Ravi Walsh;7816 Commerce Drive;Indianapolis;IN;46204
+LW-C055-1156;HX-5150;3;next day;José Ortiz;5335 Oak Avenue;Denver;CO;80202
+LW-C055-1157;HX-2201;-2;next day;Ravi Dubois;2051 Commerce Drive Dock 7;Minneapolis;MN;55401
+LW-C055-1158;HX-2202;110;priority;Maria Dubois;2292 Harbor Street Dock 7;Chicago;IL;60611
+LW-C055-1159;HX-4410;59;next day;Aisha Mensah;8171 Industrial Parkway Apt 4B;Omaha;NE;68102
+LW-C055-1160;HX118;61;ground;Sam Patel;4749 Oak Avenue Suite 300;Burlington;VT;05401
+LW-C055-1161;HX-4410;62;standard;Fatima Haddad;8612 Maple Avenue;Baltimore;MD;21202
+LW-C055-1162;HX-905;15;economy;Noah Chen;1964 Industrial Parkway Suite 300;Baltimore;MD;97204
+LW-C055-1163;HX-118;81;standard;Omar Walsh;4316 Riverside Boulevard;Nashville;TN;37203
+LW-C055-1164;HX-5150;99;overnight;Zoë Rossi;5773 Lake Shore Drive;Salt Lake City;UT;84101
+LW-C055-1165;HX-4410;62;next day;Omar Mensah;3275 Main Street Floor 2;Portland;OR;97204
+LW-C055-1166;HX-77;56;next day;Sam O'Brien;3017 Peachtree Road Suite 300;Milwaukee;WI;
+LW-C055-1167;HX-118;0;standard;Diego Schmidt;1870 Peachtree Road;Las Vegas;NV;89101
+LW-C055-1168;HX-118;105;standard;Tom Natarajan;6598 Main Street;Boston;MA;02108
+LW-C055-1169;HX-77;71;next day;Maria Dubois;3793 Harbor Street;Nashville;TENNESSEE;37203
+LW-C055-1170;;33 pcs;standard;Grace Ruiz;801 Riverside Boulevard Dock 7;Milwaukee;WI;53202-2919
+LW-C055-1171;HX-3002;107;standard;Dana Natarajan;274 Logistics Way Dock 7;Miami;FL;33131
+LW-C055-1172;HX-3002;116;standard;Aisha Mensah;3398 Warehouse Row;San Francisco;CALIFORNIA;94105
+--lw--

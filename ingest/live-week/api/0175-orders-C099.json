@@ -1,0 +1,19 @@
+{
+  "client_id": "C099",
+  "orders": [
+    {
+      "client_order_ref": "LW-C099-1632",
+      "sku": "HX-1270",
+      "quantity": 79,
+      "service": "standard",
+      "received_at": "2026-10-27T06:47",
+      "ship_to": {
+        "name": "Kenji Chen",
+        "street": "946 Warehouse Row Suite 300",
+        "city": "Dallas",
+        "state": "TX",
+        "zip": "75201"
+      }
+    }
+  ]
+}

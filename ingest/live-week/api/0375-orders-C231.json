@@ -1,0 +1,19 @@
+{
+  "client_id": "C231",
+  "orders": [
+    {
+      "client_order_ref": "LW-C231-2386",
+      "sku": "hx 3002",
+      "quantity": 79,
+      "service": "next day",
+      "received_at": "2026-10-29T19:37",
+      "ship_to": {
+        "name": "Sam Walsh",
+        "street": "9427 Riverside Boulevard",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53202"
+      }
+    }
+  ]
+}

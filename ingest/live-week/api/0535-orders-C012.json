@@ -1,0 +1,75 @@
+{
+  "client_id": "C012",
+  "orders": [
+    {
+      "client_order_ref": "LW-C012-2861",
+      "sku": "HX-5150",
+      "quantity": 64,
+      "service": "standard",
+      "received_at": "2026-11-01T00:49",
+      "ship_to": {
+        "name": "Grace Lee",
+        "street": "1268 Union Street",
+        "city": "Indianapolis",
+        "state": "IN",
+        "zip": "46204"
+      }
+    },
+    {
+      "client_order_ref": "LW-C012-2862",
+      "sku": "HX-118",
+      "quantity": 42,
+      "service": "standard",
+      "received_at": "2026-11-01T12:12",
+      "ship_to": {
+        "name": "Aisha Ortiz",
+        "street": "8501 Logistics Way",
+        "city": "Chicago",
+        "state": "IL",
+        "zip": "60611"
+      }
+    },
+    {
+      "client_order_ref": "LW-C012-2863",
+      "sku": "HX-5150",
+      "quantity": 29,
+      "service": "same day",
+      "received_at": "2026-11-01T04:55",
+      "ship_to": {
+        "name": "Fatima Haddad",
+        "street": "1290 Oak Avenue Apt 4B",
+        "city": "Omaha",
+        "state": "NE",
+        "zip": "68102"
+      }
+    },
+    {
+      "client_order_ref": "LW-C012-2864",
+      "sku": "HX-5150",
+      "quantity": 78,
+      "service": "standard",
+      "received_at": "2026-11-01T09:42",
+      "ship_to": {
+        "name": "Liam Mensah",
+        "street": "6591 Peachtree Road",
+        "city": "St. Louis",
+        "state": "MO",
+        "zip": "63101"
+      }
+    },
+    {
+      "client_order_ref": "LW-C012-2865",
+      "sku": "HX-77",
+      "quantity": 67,
+      "service": "standard",
+      "received_at": "2026-11-01T08:37",
+      "ship_to": {
+        "name": "José Herrera",
+        "street": "7923 Oak Avenue",
+        "city": "New Orleans",
+        "state": "LA",
+        "zip": "70112"
+      }
+    }
+  ]
+}

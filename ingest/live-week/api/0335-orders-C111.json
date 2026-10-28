@@ -1,0 +1,19 @@
+{
+  "client_id": "C111",
+  "orders": [
+    {
+      "client_order_ref": "LW-C111-2281",
+      "sku": "HX-1270",
+      "quantity": 79,
+      "service": "standard",
+      "received_at": "2026-10-29T16:48",
+      "ship_to": {
+        "name": "Aisha Ortiz",
+        "street": "5534 Lake Shore Drive",
+        "city": "Des Moines",
+        "state": "IA",
+        "zip": "50309"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+From: purchasing@client136.example
+To: orders@halcyon.example
+Subject: PO LW-C136-2293
+Date: Thu, 29 Oct 2026 14:21:00 +0000
+Message-ID: <250870830@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C136
+Purchase order: LW-C136-2293
+SKU: HX-118   Qty: 32
+Delivery: same day
+Ship to: Ravi Ortiz
+Address: 4400 Park Avenue Floor 2
+City: Des Moines
+State: IA
+ZIP: 50309

@@ -1,0 +1,22 @@
+From: orders@client059.example
+To: orders@halcyon.example
+Subject: Order LW-C059-2048
+Date: Wed, 28 Oct 2026 07:20:00 +0000
+Message-ID: <192509738@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C059
+PO: LW-C059-2048
+SKU: HX-1270   Qty: 115 units
+Delivery: standard
+Ship to: Aisha Schmidt
+Address: 9580 Warehouse Row
+City: Milwaukee
+State: WI
+ZIP: 53202
+
+--
+Purchasing team
+Tel 555-0100

@@ -1,0 +1,22 @@
+From: supply@client190.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C190-1026
+Date: Mon, 26 Oct 2026 16:37:00 +0000
+Message-ID: <118728101@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C190
+PO Number: LW-C190-1026
+Product: HX-77   Quantity: 12
+Shipping: standard
+Deliver to: Priya Álvarez
+Address: 8702 Warehouse Row Dock 7
+City: Miami
+State: FL
+ZIP: 33131
+
+--
+Purchasing team
+Tel 555-0100

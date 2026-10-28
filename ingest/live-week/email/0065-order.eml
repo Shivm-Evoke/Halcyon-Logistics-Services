@@ -1,0 +1,39 @@
+From: ops@client190.example
+To: orders@halcyon.example
+Subject: 3 orders
+Date: Mon, 26 Oct 2026 06:16:00 +0000
+Message-ID: <189380007@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C190
+PO: LW-C190-1318
+Item: HX-6630   Quantity: 94
+Shipping: same day
+Deliver to: Ana Walsh
+Address: 1861 Park Avenue Apt 4B
+City: Boise
+State: ID
+ZIP: 83702
+===
+PO Number: LW-C190-1319
+SKU: HX-2201   Qty: 76
+Delivery: standard
+Attn: Omar Chen
+Address: 1711 Warehouse Row Dock 7
+City: Portland
+State: ME
+ZIP: 04101
+===
+Purchase order: LW-C190-1320
+Item: HX-1270   Qty: 53
+Shipping: ground
+Ship to: Omar Patel
+Address: 5499 Park Avenue Unit 12
+City: Columbus
+State: OH
+ZIP: 43215
+
+Thanks,
+Ops desk

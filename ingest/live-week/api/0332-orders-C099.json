@@ -1,0 +1,19 @@
+{
+  "client_id": "C099",
+  "orders": [
+    {
+      "client_order_ref": "LW-C099-2278",
+      "sku": "HX-118",
+      "quantity": 111,
+      "service": "same day",
+      "received_at": "2026-10-29T06:17",
+      "ship_to": {
+        "name": "Kenji Haddad",
+        "street": "759 Park Avenue",
+        "city": "Manchester",
+        "state": "NH",
+        "zip": "03101"
+      }
+    }
+  ]
+}

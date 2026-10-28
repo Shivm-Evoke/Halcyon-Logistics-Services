@@ -1,0 +1,22 @@
+From: purchasing@client190.example
+To: orders@halcyon.example
+Subject: Order LW-C190-2218
+Date: Thu, 29 Oct 2026 12:12:00 +0000
+Message-ID: <263848471@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C190
+PO: LW-C190-2218
+Item: HX-1270   Qty: 5
+Shipping: standard
+Ship to: Priya Tanaka
+Address: 1552 Main Street Unit 12
+City: San Francisco
+State: California
+ZIP: 94105
+
+--
+Purchasing team
+Tel 555-0100

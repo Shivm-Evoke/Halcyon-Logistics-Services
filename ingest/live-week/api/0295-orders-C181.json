@@ -1,0 +1,19 @@
+{
+  "client_id": "C181",
+  "orders": [
+    {
+      "client_order_ref": "LW-C181-2106",
+      "sku": "HX-2201",
+      "quantity": 62,
+      "service": "standard",
+      "received_at": "2026-10-29T11:17",
+      "ship_to": {
+        "name": "Chloe Herrera",
+        "street": "4754 Elm Street Suite 300",
+        "city": "St. Louis",
+        "state": "MO",
+        "zip": "63101"
+      }
+    }
+  ]
+}

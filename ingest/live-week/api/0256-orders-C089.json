@@ -1,0 +1,19 @@
+{
+  "client_id": "C089",
+  "orders": [
+    {
+      "client_order_ref": "LW-C089-1992",
+      "sku": "HX-1270",
+      "quantity": 57,
+      "service": "standard",
+      "received_at": "2026-10-28T16:30",
+      "ship_to": {
+        "name": "Chloe Herrera",
+        "street": "2850 Industrial Parkway",
+        "city": "Birmingham",
+        "state": "AL",
+        "zip": "35203"
+      }
+    }
+  ]
+}

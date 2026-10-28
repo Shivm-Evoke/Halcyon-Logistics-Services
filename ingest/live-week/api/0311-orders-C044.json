@@ -1,0 +1,19 @@
+{
+  "client_id": "C044",
+  "orders": [
+    {
+      "client_order_ref": "LW-C044-2172",
+      "sku": "HX-1270",
+      "quantity": 76,
+      "service": "standard",
+      "received_at": "2026-10-29T13:38",
+      "ship_to": {
+        "name": "Ana Lee",
+        "street": "3538 Peachtree Road Dock 7",
+        "city": "Charleston",
+        "state": "SC",
+        "zip": "29401"
+      }
+    }
+  ]
+}

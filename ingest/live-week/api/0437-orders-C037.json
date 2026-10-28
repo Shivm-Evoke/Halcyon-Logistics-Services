@@ -1,0 +1,19 @@
+{
+  "client_id": "C037",
+  "orders": [
+    {
+      "client_order_ref": "LW-C037-2562",
+      "sku": "HX-1270",
+      "quantity": 120,
+      "service": "standard",
+      "received_at": "2026-10-30T01:20",
+      "ship_to": {
+        "name": "Liam Ruiz",
+        "street": "1498 Elm Street",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53202"
+      }
+    }
+  ]
+}

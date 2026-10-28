@@ -1,0 +1,33 @@
+From: ops@client055.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-26
+Date: Mon, 26 Oct 2026 00:07:00 +0000
+Message-ID: <708002580@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+
+--
+Purchasing team
+Tel 555-0100
+--lw
+Content-Type: text/csv; name="orders-2026-10-26.csv"
+Content-Disposition: attachment; filename="orders-2026-10-26.csv"
+Content-Transfer-Encoding: 7bit
+
+﻿PO Number,SKU,Quantity,Service,Ship To Name,Address,City,State,Zip
+LW-C055-1108,HX-3002,100,standard,Ravi Lee,2790 Union Street Apt 4B,Newark,NJ,07102
+LW-C055-1109,HX-6630,86,standard,Dana Dubois,6278 Union Street,Detroit,MI,
+LW-C055-1110,HX-2201,86,regular,Kenji Haddad,5370 Industrial Parkway,Phoenix,AZ,85004
+LW-C055-1111,hx 4410,100,same day,Chloe O'Brien,2146 Market Street Dock 7,,SC,29401
+LW-C055-1112,hx 3002,67,standard,Chloe Novak,8532 Industrial Parkway,,MI,48226
+LW-C055-1113,HX-4410,120,overnight,Ana Lee,5490 Warehouse Row,San Francisco,CA,94105
+LW-C055-1114,HX-77,64,next day,Zoë Ortiz,9569 Maple Avenue,Columbus,OH,43215
+LW-C055-1115,HX-118,110,priority,José Natarajan,2942 Park Avenue Unit 12,Milwaukee,Wisconsin,53202
+LW-C055-1116,HX-77,12,next day,Ana Becker,6576 Maple Avenue Suite 300,Omaha,NE,68102
+LW-C055-1117,HX-6630,84,standard,Ana Ruiz,Oak Avenue,St. Louis,MISSOURI,63101
+--lw--

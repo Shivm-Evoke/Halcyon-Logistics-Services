@@ -1,0 +1,22 @@
+From: buyer@client045.example
+To: orders@halcyon.example
+Subject: Order LW-C045-2713
+Date: Fri, 30 Oct 2026 16:58:00 +0000
+Message-ID: <739250173@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C045
+Purchase order: LW-C045-2713
+SKU: HX-4410   Quantity: 118
+Delivery: next day
+Ship to: Ana Ortiz
+Address: 992 Market Street
+City: Chicago
+State: Illinois
+ZIP: 60611
+
+--
+Purchasing team
+Tel 555-0100

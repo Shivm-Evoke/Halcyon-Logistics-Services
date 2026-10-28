@@ -1,0 +1,22 @@
+From: supply@client190.example
+To: orders@halcyon.example
+Subject: Order LW-C190-2388
+Date: Thu, 29 Oct 2026 07:18:00 +0000
+Message-ID: <763093896@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C190
+PO Number: LW-C190-2388
+Product: HX-2201   Quantity: 4
+Delivery: standard
+Ship to: Priya Ruiz
+Address: 176 Warehouse Row
+City: Philadelphia
+State: PA
+ZIP: 19103
+
+--
+Purchasing team
+Tel 555-0100

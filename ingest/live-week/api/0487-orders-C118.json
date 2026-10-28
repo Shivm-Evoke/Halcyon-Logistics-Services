@@ -1,0 +1,19 @@
+{
+  "client_id": "C118",
+  "orders": [
+    {
+      "client_order_ref": "LW-C118-2717",
+      "sku": "HX-3002",
+      "quantity": 107,
+      "service": "same day",
+      "received_at": "2026-10-30T04:11",
+      "ship_to": {
+        "name": "Zoë Becker",
+        "street": "9110 Main Street Unit 12",
+        "city": "Chicago",
+        "state": "IL",
+        "zip": "60611"
+      }
+    }
+  ]
+}

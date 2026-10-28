@@ -1,0 +1,21 @@
+node_modules/
+server/node_modules/
+web/node_modules/
+
+# Test API credentials (generated secrets, test use only)
+ingest/test-data/credentials.json
+
+# Playwright test artifacts
+test-results/
+e2e-report/
+playwright-report/
+playwright/.cache/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# OS / editor
+.DS_Store
+*.log

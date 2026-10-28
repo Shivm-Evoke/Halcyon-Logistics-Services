@@ -1,0 +1,28 @@
+# Render Blueprint: New -> Blueprint -> pick this repository -> Apply.
+# Creates the database and the web service; the first start loads the dataset (a few minutes).
+services:
+  - type: web
+    name: halcyon-logistics
+    runtime: docker
+    plan: starter
+    region: oregon
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: halcyon-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SITE_PASSWORD   # asked for in the dashboard when the Blueprint is applied
+        sync: false
+      # Optional: add a Secret File named credentials.json (your ingest/test-data/credentials.json)
+      # and set API_CREDENTIALS_FILE=/etc/secrets/credentials.json to keep the same client API secrets.
+
+databases:
+  - name: halcyon-db
+    databaseName: halcyon
+    plan: basic-256mb
+    region: oregon
+    postgresMajorVersion: "17"

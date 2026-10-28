@@ -1,0 +1,75 @@
+{
+  "client_id": "C182",
+  "orders": [
+    {
+      "client_order_ref": "LW-C182-1769",
+      "sku": "HX-1270",
+      "quantity": 104,
+      "service": "next day",
+      "received_at": "2026-10-28T10:10",
+      "ship_to": {
+        "name": "Noah Álvarez",
+        "street": "6933 Commerce Drive Unit 12",
+        "city": "Phoenix",
+        "state": "AZ",
+        "zip": "85004"
+      }
+    },
+    {
+      "client_order_ref": "LW-C182-1770",
+      "sku": "HX-77",
+      "quantity": 116,
+      "service": "standard",
+      "received_at": "2026-10-28T05:08",
+      "ship_to": {
+        "name": "Grace Dubois",
+        "street": "3046 Main Street Unit 12",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C182-1771",
+      "sku": "HX-1270",
+      "quantity": 35,
+      "service": "next day",
+      "received_at": "2026-10-28T02:28",
+      "ship_to": {
+        "name": "Noah Lee",
+        "street": "7132 Peachtree Road",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C182-1772",
+      "sku": "HX-4410",
+      "quantity": 9,
+      "service": "standard",
+      "received_at": "2026-10-28T12:15",
+      "ship_to": {
+        "name": "Zoë Álvarez",
+        "street": "8817 Commerce Drive Apt 4B",
+        "city": "Burlington",
+        "state": "VT",
+        "zip": "05401"
+      }
+    },
+    {
+      "client_order_ref": "LW-C182-1773",
+      "sku": "HX-2202",
+      "quantity": 90,
+      "service": "next day",
+      "received_at": "2026-10-28T02:43",
+      "ship_to": {
+        "name": "Kenji Schmidt",
+        "street": "1488 Harbor Street Apt 4B",
+        "city": "Nashville",
+        "state": "TN",
+        "zip": "37203"
+      }
+    }
+  ]
+}

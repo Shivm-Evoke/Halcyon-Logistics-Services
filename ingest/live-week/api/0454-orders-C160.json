@@ -1,0 +1,19 @@
+{
+  "client_id": "C160",
+  "orders": [
+    {
+      "client_order_ref": "LW-C160-2604",
+      "sku": "HX-4410",
+      "quantity": 110,
+      "service": "next day",
+      "received_at": "2026-10-30T03:40",
+      "ship_to": {
+        "name": "Noah Walsh",
+        "street": "7752 Oak Avenue Floor 2",
+        "city": "Des Moines",
+        "state": "IA",
+        "zip": "50309"
+      }
+    }
+  ]
+}

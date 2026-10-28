@@ -1,0 +1,19 @@
+{
+  "client_id": "C188",
+  "orders": [
+    {
+      "client_order_ref": "LW-C188-2306",
+      "sku": "HX-1270",
+      "quantity": 57,
+      "service": "next day",
+      "received_at": "2026-10-29T18:12",
+      "ship_to": {
+        "name": "Diego Lee",
+        "street": "9378 Oak Avenue Unit 12",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001"
+      }
+    }
+  ]
+}

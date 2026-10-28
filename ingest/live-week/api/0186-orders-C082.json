@@ -1,0 +1,19 @@
+{
+  "client_id": "C082",
+  "orders": [
+    {
+      "client_order_ref": "LW-C082-1686",
+      "sku": "HX-3002",
+      "quantity": 72,
+      "service": "next day",
+      "received_at": "2026-10-27T00:56",
+      "ship_to": {
+        "name": "Hannah Tanaka",
+        "street": "150 Market Street Unit 12",
+        "city": "Detroit",
+        "state": "MI",
+        "zip": "48226"
+      }
+    }
+  ]
+}

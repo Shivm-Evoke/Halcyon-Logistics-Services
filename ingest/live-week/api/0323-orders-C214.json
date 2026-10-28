@@ -1,0 +1,19 @@
+{
+  "client_id": "C214",
+  "orders": [
+    {
+      "client_order_ref": "LW-C214-2255",
+      "sku": "HX-905",
+      "quantity": 63,
+      "service": "standard",
+      "received_at": "2026-10-29T11:06",
+      "ship_to": {
+        "name": "José Álvarez",
+        "street": "8660 Cedar Lane Dock 7",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zip": "90012"
+      }
+    }
+  ]
+}

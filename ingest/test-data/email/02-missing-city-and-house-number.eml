@@ -1,0 +1,13 @@
+From: orders@client055.example
+To: orders@halcyon.example
+Subject: Order TP-E02
+Date: Tue, 27 Oct 2026 07:15:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Customer C055, PO TP-E02 — please ship SKU HX-2201, qty 40, next day.
+Ship to: Dana Ortiz
+Address: Harbor Street
+State: CT
+ZIP: 06103

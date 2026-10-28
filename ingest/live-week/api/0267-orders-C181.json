@@ -1,0 +1,19 @@
+{
+  "client_id": "C181",
+  "orders": [
+    {
+      "client_order_ref": "LW-C181-2038",
+      "sku": "HX-905",
+      "quantity": 88,
+      "service": "same day",
+      "received_at": "2026-10-28T11:55",
+      "ship_to": {
+        "name": "Hannah Walsh",
+        "street": "4803 Maple Avenue Dock 7",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001"
+      }
+    }
+  ]
+}

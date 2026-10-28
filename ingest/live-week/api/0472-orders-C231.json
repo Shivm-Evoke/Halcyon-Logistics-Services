@@ -1,0 +1,19 @@
+{
+  "client_id": "C231",
+  "orders": [
+    {
+      "client_order_ref": "LW-C231-2661",
+      "sku": "HX-905",
+      "quantity": 21,
+      "service": "standard",
+      "received_at": "2026-10-30T18:36",
+      "ship_to": {
+        "name": "Ana Rossi",
+        "street": "5840 Cedar Lane Apt 4B",
+        "city": "Newark",
+        "state": "New Jersey",
+        "zip": "07102"
+      }
+    }
+  ]
+}

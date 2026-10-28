@@ -1,0 +1,19 @@
+{
+  "client_id": "C183",
+  "orders": [
+    {
+      "client_order_ref": "LW-C183-2506",
+      "sku": "HX-2201",
+      "quantity": "92 units",
+      "service": "standard",
+      "received_at": "2026-10-30T02:21",
+      "ship_to": {
+        "name": "Grace Rossi",
+        "street": "7896 Commerce Drive",
+        "city": "Minneapolis",
+        "state": "MN",
+        "zip": "55401"
+      }
+    }
+  ]
+}

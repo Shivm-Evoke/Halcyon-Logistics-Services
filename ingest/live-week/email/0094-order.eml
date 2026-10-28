@@ -1,0 +1,40 @@
+From: orders@client209.example
+To: orders@halcyon.example
+Subject: 3 orders
+Date: Tue, 27 Oct 2026 09:48:00 +0000
+Message-ID: <134460169@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C209
+PO: LW-C209-1397
+Qty: 105
+Service: standard
+Attn: Tom Kim
+Address: 4766 Elm Street Floor 2
+City: Chicago
+State: IL
+ZIP: 60611
+===
+PO Number: LW-C209-1398
+Product: HX-2202   Quantity: 34
+Shipping: standard
+Ship to: Grace Herrera
+Address: 5859 Lake Shore Drive
+City: Baltimore
+State: MD
+ZIP: 21202
+===
+PO: LW-C209-1399
+Item: hx 905   Qty: 73 units
+Shipping: express
+Ship to: Ana Ortiz
+Address: 5309 Commerce Drive Unit 12
+City: Albuquerque
+State: NM
+ZIP: 87102
+
+Regards
+
+Sent from my phone

@@ -1,0 +1,45 @@
+From: buyer@client157.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-26
+Date: Mon, 26 Oct 2026 07:10:00 +0000
+Message-ID: <606752626@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+
+Thanks,
+Ops desk
+--lw
+Content-Type: text/csv; name="orders-2026-10-26.csv"
+Content-Disposition: attachment; filename="orders-2026-10-26.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number;SKU;Quantity;Service;Ship To Name;Address;City;State;Zip
+LW-C157-1352;HX-6630;33;express;Ravi Kim;2270 Maple Avenue Apt 4B;Indianapolis;INDIANA;
+LW-C157-1353;HX-4410;0;same day;José Mensah;Commerce Drive;Kansas City;MO;64105
+LW-C157-1354;HX-905;120;standard;Liam Tanaka;8414 Logistics Way;St. Louis;MO;63101
+LW-C157-1355;HX-4410;95;standard;Fatima Novak;4662 Harbor Street Apt 4B;Columbus;OH;
+LW-C157-1356;HX-905;91;same day;Hannah Kim;8495 Market Street;Baltimore;MD;21202
+LW-C157-1357;HX-77;4;next day;Tom Ortiz;4031 Industrial Parkway;Des Moines;IA;50309
+LW-C157-1358;HX-118;99;same day;Ana Lee;4323 Maple Avenue;Denver;CO;80202-4122
+LW-C157-1359;HX-905;110 pcs;same day;Chloe Kim;8991 Oak Avenue Floor 2;Albuquerque;NEW MEXICO;87102
+LW-C157-1360;HX-4410;113;express;Grace Walsh;3963 Park Avenue;Indianapolis;IN;46204
+LW-C157-1361;HX-4410;22;standard;Zoë Mensah;3894 Commerce Drive;Chicago;IL;60611
+LW-C157-1362;HX-3002;117;standard;Zoë Lee;7535 Maple Avenue Dock 7;Chicago;IL;60611
+LW-C157-1363;HX-905;115;next day;Kenji Walsh;5914 Elm Street Apt 4B;Hartford;CT;06103
+LW-C157-1364;HX-5150;15 pcs;next day;José Haddad;8766 Logistics Way;Providence;RI;02903
+LW-C157-1365;HX-6630;71;next day;Ravi Haddad;2010 Lake Shore Drive Dock 7;Phoenix;AZ;85004
+LW-C157-1366;HX-2202;36;next day;Hannah Chen;7519 Main Street;Newark;NJ;07102
+LW-C157-1367;HX-905;53;next day;Fatima Tanaka;534 Market Street;Albuquerque;NM;87102
+LW-C157-1368;HX-2202;21;same day;Aisha Natarajan;8233 Union Street;Portland;ME;04101
+LW-C157-1369;HX-1270;96;standard;Tom Herrera;5471 Elm Street;St. Louis;MO;63101
+LW-C157-1370;HX-1270;7;same day;Fatima Natarajan;7140 Warehouse Row Dock 7;New Orleans;LA;70112
+LW-C157-1371;HX-6630;79;standard;Liam Kim;7488 Main Street Unit 12;Charlotte;NC;28202
+LW-C157-1372;HX-3002;75;standard;Omar Ruiz;5550 Main Street Apt 4B;Minneapolis;MN;55401
+LW-C157-1373;HX-3002;8;standard;Wei Becker;8181 Main Street Floor 2;Hartford;CT;
+LW-C157-1374;HX-118;79;next day;Grace Chen;Cedar Lane Floor 2;New Orleans;LA;70112
+--lw--

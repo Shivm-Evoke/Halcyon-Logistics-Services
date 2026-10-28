@@ -1,0 +1,19 @@
+{
+  "client_id": "C214",
+  "orders": [
+    {
+      "client_order_ref": "LW-C214-1027",
+      "sku": "HX-5150",
+      "quantity": 39,
+      "service": "standard",
+      "received_at": "2026-10-26T08:21",
+      "ship_to": {
+        "name": "José Farouk",
+        "street": "4913 Park Avenue Floor 2",
+        "city": "St. Louis",
+        "state": "MO",
+        "zip": "63101"
+      }
+    }
+  ]
+}

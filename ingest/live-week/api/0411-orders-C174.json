@@ -1,0 +1,19 @@
+{
+  "client_id": "C174",
+  "orders": [
+    {
+      "client_order_ref": "LW-C174-2494",
+      "sku": "HX-118",
+      "quantity": 84,
+      "service": "same day",
+      "received_at": "2026-10-30T00:35",
+      "ship_to": {
+        "name": "Zoë Kim",
+        "street": "6144 Union Street Dock 7",
+        "city": "Manchester",
+        "state": "NH",
+        "zip": "03101"
+      }
+    }
+  ]
+}

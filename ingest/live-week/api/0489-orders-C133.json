@@ -1,0 +1,19 @@
+{
+  "client_id": "C133",
+  "orders": [
+    {
+      "client_order_ref": "LW-C133-2719",
+      "sku": "HX-118",
+      "quantity": 68,
+      "service": "standard",
+      "received_at": "2026-10-30T09:28",
+      "ship_to": {
+        "name": "Grace Lee",
+        "street": "Cedar Lane",
+        "city": "Phoenix",
+        "state": "AZ",
+        "zip": "85004"
+      }
+    }
+  ]
+}

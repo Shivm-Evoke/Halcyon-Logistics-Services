@@ -1,0 +1,19 @@
+{
+  "client_id": "C069",
+  "orders": [
+    {
+      "client_order_ref": "LW-C069-2603",
+      "sku": "HX-4410",
+      "quantity": 91,
+      "service": "standard",
+      "received_at": "2026-10-30T17:18",
+      "ship_to": {
+        "name": "Grace Rossi",
+        "street": "9686 Peachtree Road",
+        "city": "San Francisco",
+        "state": "CA",
+        "zip": "94105"
+      }
+    }
+  ]
+}

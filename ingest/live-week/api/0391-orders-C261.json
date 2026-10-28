@@ -1,0 +1,19 @@
+{
+  "client_id": "C261",
+  "orders": [
+    {
+      "client_order_ref": "LW-C261-2431",
+      "sku": "HX-77",
+      "quantity": 41,
+      "service": "standard",
+      "received_at": "2026-10-30T17:04",
+      "ship_to": {
+        "name": "Kenji Patel",
+        "street": "8037 Lake Shore Drive Suite 300",
+        "city": "Omaha",
+        "state": "NE",
+        "zip": "68102"
+      }
+    }
+  ]
+}

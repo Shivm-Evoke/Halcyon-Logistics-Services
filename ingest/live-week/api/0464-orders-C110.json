@@ -1,0 +1,19 @@
+{
+  "client_id": "C110",
+  "orders": [
+    {
+      "client_order_ref": "LW-C110-2644",
+      "sku": "HX-5150",
+      "quantity": 88,
+      "service": "next day",
+      "received_at": "2026-10-30T02:13",
+      "ship_to": {
+        "name": "Tom Farouk",
+        "street": "7838 Logistics Way",
+        "city": "Birmingham",
+        "state": "AL",
+        "zip": "35203"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "client_id": "C168",
+  "orders": [
+    {
+      "client_order_ref": "LW-C168-1598",
+      "sku": "HX-5150",
+      "quantity": 51,
+      "service": "next day",
+      "received_at": "2026-10-27T18:25",
+      "ship_to": {
+        "name": "Dana Schmidt",
+        "street": "3759 Riverside Boulevard",
+        "city": "Kansas City",
+        "state": "MO",
+        "zip": "64105"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+From: ops@client140.example
+To: orders@halcyon.example
+Subject: New order LW-C140-1994
+Date: Wed, 28 Oct 2026 14:59:00 +0000
+Message-ID: <504621225@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C140
+PO Number: LW-C140-1994
+Item: HX-1270   Quantity: 41
+Delivery: standard
+Attn: Chloe Chen
+Address: 7583 Main Street Suite 300
+City: Miami
+State: FL
+ZIP: 33131
+
+--
+Purchasing team
+Tel 555-0100

@@ -1,0 +1,19 @@
+{
+  "client_id": "C053",
+  "orders": [
+    {
+      "client_order_ref": "LW-C053-1184",
+      "sku": "HX-2201",
+      "quantity": 9,
+      "service": "next day",
+      "received_at": "2026-10-26T06:44",
+      "ship_to": {
+        "name": "Noah Natarajan",
+        "street": "5949 Riverside Boulevard Dock 7",
+        "city": "Charlotte",
+        "state": "NC",
+        "zip": "28202"
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+From: buyer@client263.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C263-2845
+Date: Sun, 1 Nov 2026 11:57:00 +0000
+Message-ID: <653015361@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C263
+PO: LW-C263-2845
+Item: HX-905   Qty: 81
+Shipping: standard
+Deliver to: Kenji Patel
+Address: 5627 Lake Shore Drive Unit 12
+City: Milwaukee
+State: WI
+ZIP: 53202
+
+Thanks,
+Ops desk

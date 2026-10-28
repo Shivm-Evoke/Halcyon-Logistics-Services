@@ -1,0 +1,21 @@
+From: orders@client190.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C190-1990
+Date: Wed, 28 Oct 2026 09:18:00 +0000
+Message-ID: <599616536@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C190
+PO Number: LW-C190-1990
+Product: HX-2201   Qty: 2
+Service: next day
+Ship to: Ana Patel
+Address: 326 Main Street Suite 300
+City: Nashville
+State: TN
+ZIP: 37203
+
+Thanks,
+Ops desk

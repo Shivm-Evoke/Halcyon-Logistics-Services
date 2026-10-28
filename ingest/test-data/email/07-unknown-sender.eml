@@ -1,0 +1,15 @@
+From: someone@randomco.example
+To: orders@halcyon.example
+Subject: Order
+Date: Tue, 27 Oct 2026 07:15:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+PO: TP-E07
+SKU: HX-1 Qty: 2
+Ship to: Dana Ortiz
+Address: 418 Harbor Street
+City: Hartford
+State: CT
+ZIP: 06103

@@ -1,0 +1,19 @@
+{
+  "client_id": "C110",
+  "orders": [
+    {
+      "client_order_ref": "LW-C110-2126",
+      "sku": "HX-2202",
+      "quantity": 87,
+      "service": "standard",
+      "received_at": "2026-10-29T01:30",
+      "ship_to": {
+        "name": "Tom Ortiz",
+        "street": "9320 Park Avenue Suite 300",
+        "city": "Dallas",
+        "state": "TX",
+        "zip": "75201"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+From: orders@client058.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C058-1124
+Date: Mon, 26 Oct 2026 16:06:00 +0000
+Message-ID: <684473861@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C058
+PO: LW-C058-1124
+Product: HX-1270   Quantity: 39
+Service: next day
+Attn: Chloe Farouk
+Address: 6033 Logistics Way Apt 4B
+City: Milwaukee
+State: WI
+ZIP: 53202-6876
+
+--
+Purchasing team
+Tel 555-0100

@@ -1,0 +1,39 @@
+From: buyer@client273.example
+To: orders@halcyon.example
+Subject: 3 orders
+Date: Fri, 30 Oct 2026 12:34:00 +0000
+Message-ID: <403402809@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C273
+Purchase order: LW-C273-2599
+Product: HX-3002   Quantity: 93
+Service: standard
+Deliver to: Chloe O'Brien
+Address: 6916 Park Avenue Unit 12
+City: San Francisco
+State: CA
+ZIP: 94105
+---
+PO Number: LW-C273-2600
+Product: HX-1270   Qty: 92 pcs
+Delivery: standard
+Deliver to: Sam Mensah
+Address: 3150 Industrial Parkway Suite 300
+City: Des Moines
+State: IA
+ZIP: 50309
+---
+Purchase order: LW-C273-2601
+SKU: TBD   Quantity: 108 ea
+Service: standard
+Ship to: Diego Dubois
+Address: 3545 Riverside Boulevard
+City: Richmond
+State: VA
+ZIP: 23219
+
+Thanks,
+Ops desk

@@ -1,0 +1,38 @@
+From: ops@client190.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-26
+Date: Mon, 26 Oct 2026 16:36:00 +0000
+Message-ID: <617911984@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+
+Regards
+
+Sent from my phone
+--lw
+Content-Type: text/csv; name="orders-2026-10-26.csv"
+Content-Disposition: attachment; filename="orders-2026-10-26.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number;SKU;Quantity;Service;Ship To Name;Address;City;State;Zip
+LW-C190-1079;HX-1270;112;standard;Zoë Lee;6300 Cedar Lane Floor 2;Burlington;VT;05401
+LW-C190-1080;HX-905;43;standard;Priya Álvarez;4943 Market Street Apt 4B;Boston;MA;02108
+LW-C190-1081;HX-905;86;standard;Noah Mensah;4249 Industrial Parkway Apt 4B;Minneapolis;MN;55401
+LW-C190-1082;HX-2201;21;same day;Ravi Rossi;8050 Logistics Way Dock 7;Portland;OR;97204
+LW-C190-1083;HX-5150;95;standard;Wei Patel;6266 Oak Avenue;Kansas City;MO;64105
+LW-C190-1084;HX-2201;115;next day;José Schmidt;9344 Lake Shore Drive;San Francisco;CA;94105
+LW-C190-1085;HX-905;114;economy;Kenji Natarajan;329 Main Street;Salt Lake City;UT;84101-7468
+LW-C190-1086;HX-4410;40;standard;José Natarajan;6613 Peachtree Road;St. Louis;MO;63101
+LW-C190-1087;HX-1270;48 pieces;standard;Wei Herrera;2149 Maple Avenue Suite 300;Los Angeles;CA;90012
+LW-C190-1088;HX-4410;45;standard;Diego Walsh;4161 Elm Street;Dallas;TX;75201
+LW-C190-1089;HX-905;77 units;standard;Dana Ortiz;6306 Maple Avenue;Newark;NJ;68102
+LW-C190-1090;HX-2201;79 ea;standard;Omar Walsh;Cedar Lane;Portland;OR;97204
+LW-C190-1091;HX-4410;2;standard;Maria Mensah;437 Commerce Drive;Louisville;KENTUCKY;40202
+LW-C190-1092;HX-6630;87;overnight;Fatima Mensah;4535 Harbor Street;Portland;ME;04101
+LW-C190-1093;HX-2201;60;standard;Liam Schmidt;5777 Elm Street;Detroit;MI;48226
+--lw--

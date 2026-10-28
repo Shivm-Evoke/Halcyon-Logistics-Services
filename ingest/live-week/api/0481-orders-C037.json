@@ -1,0 +1,19 @@
+{
+  "client_id": "C037",
+  "orders": [
+    {
+      "client_order_ref": "LW-C037-2709",
+      "sku": "HX-5150",
+      "quantity": 22,
+      "service": "standard",
+      "received_at": "2026-10-30T03:12",
+      "ship_to": {
+        "name": "Sam Lee",
+        "street": "4494 Commerce Drive",
+        "city": "Des Moines",
+        "state": "IA",
+        "zip": "50309"
+      }
+    }
+  ]
+}

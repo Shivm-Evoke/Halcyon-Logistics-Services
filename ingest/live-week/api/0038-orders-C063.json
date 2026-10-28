@@ -1,0 +1,19 @@
+{
+  "client_id": "C063",
+  "orders": [
+    {
+      "client_order_ref": "LW-C063-1179",
+      "sku": "HX-2202",
+      "quantity": 73,
+      "service": "same day",
+      "received_at": "2026-10-26T13:19",
+      "ship_to": {
+        "name": "Omar Schmidt",
+        "street": "5330 Harbor Street",
+        "city": "Columbus",
+        "state": "OH",
+        "zip": "43215"
+      }
+    }
+  ]
+}

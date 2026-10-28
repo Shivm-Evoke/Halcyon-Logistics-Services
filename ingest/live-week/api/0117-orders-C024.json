@@ -1,0 +1,75 @@
+{
+  "client_id": "C024",
+  "orders": [
+    {
+      "client_order_ref": "LW-C024-1450",
+      "sku": "HX-2202",
+      "quantity": 14,
+      "service": "standard",
+      "received_at": "2026-10-27T13:27",
+      "ship_to": {
+        "name": "Fatima Herrera",
+        "street": "1781 Maple Avenue",
+        "city": "Des Moines",
+        "state": "IA",
+        "zip": "50309"
+      }
+    },
+    {
+      "client_order_ref": "LW-C024-1451",
+      "sku": "HX-4410",
+      "quantity": 90,
+      "service": "standard",
+      "received_at": "2026-10-27T12:37",
+      "ship_to": {
+        "name": "Dana Ortiz",
+        "street": "4291 Lake Shore Drive Apt 4B",
+        "city": "Birmingham",
+        "state": "AL",
+        "zip": "35203"
+      }
+    },
+    {
+      "client_order_ref": "LW-C024-1452",
+      "sku": "HX-1270",
+      "quantity": 11,
+      "service": "same day",
+      "received_at": "2026-10-27T02:23",
+      "ship_to": {
+        "name": "Noah Haddad",
+        "street": "8008 Park Avenue",
+        "city": "Burlington",
+        "state": "VT",
+        "zip": "05401"
+      }
+    },
+    {
+      "client_order_ref": "LW-C024-1453",
+      "sku": "HX-77",
+      "quantity": 27,
+      "service": "standard",
+      "received_at": "2026-10-27T04:19",
+      "ship_to": {
+        "name": "Diego Walsh",
+        "street": "7021 Park Avenue",
+        "city": "Baltimore",
+        "state": "MD",
+        "zip": "21202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C024-1454",
+      "sku": "HX-905",
+      "quantity": 74,
+      "service": "standard",
+      "received_at": "2026-10-27T00:03",
+      "ship_to": {
+        "name": "Fatima Tanaka",
+        "street": "4138 Peachtree Road Unit 12",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53202"
+      }
+    }
+  ]
+}

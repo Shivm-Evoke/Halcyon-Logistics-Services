@@ -1,0 +1,28 @@
+From: supply@client263.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-26
+Date: Mon, 26 Oct 2026 13:20:00 +0000
+Message-ID: <848993442@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+--lw
+Content-Type: text/csv; name="orders-2026-10-26.csv"
+Content-Disposition: attachment; filename="orders-2026-10-26.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number;SKU;Quantity;Service;Ship To Name;Address;City;State;Zip
+LW-C263-1388;HX-6630;90;next day;Maria Schmidt;2113 Peachtree Road;New York;NY;10001
+LW-C263-1389;HX-2202;20;next day;Noah Lee;4386 Lake Shore Drive Floor 2;Des Moines;IA;50309
+LW-C263-1390;HX-118;79;same day;Priya Walsh;1273 Lake Shore Drive;;NY;10001
+LW-C263-1391;HX-77;103;standard;Ana Ruiz;3204 Warehouse Row;Detroit;MI;
+LW-C263-1392;HX-1270;69;standard;Fatima Ruiz;7607 Oak Avenue;Nashville;TN;37203
+LW-C263-1393;HX-5150;23;next day;Ravi Kim;Union Street;Charlotte;NC;28202
+LW-C263-1394;HX-2202;42;next day;Tom Haddad;4215 Market Street;Richmond;VA;23219
+LW-C263-1395;HX-118;66;economy;Zoë Rossi;2038 Main Street Dock 7;Hartford;CT;06103-3077
+LW-C263-1396;HX-2202;33;same day;Wei Kim;5276 Harbor Street Suite 300;Milwaukee;WI;53202
+--lw--

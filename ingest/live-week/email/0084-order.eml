@@ -1,0 +1,22 @@
+From: purchasing@client277.example
+To: orders@halcyon.example
+Subject: New order LW-C277-1385
+Date: Mon, 26 Oct 2026 06:33:00 +0000
+Message-ID: <776136194@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Account: C277
+PO Number: LW-C277-1385
+Item: HX-1270   Quantity: 43
+Delivery: next day
+Attn: Aisha Novak
+Address: Park Avenue Apt 4B
+City: Dallas
+State: TX
+ZIP: 75201
+
+Regards
+
+Sent from my phone

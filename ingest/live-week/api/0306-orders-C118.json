@@ -1,0 +1,19 @@
+{
+  "client_id": "C118",
+  "orders": [
+    {
+      "client_order_ref": "LW-C118-2155",
+      "sku": "HX-1270",
+      "quantity": 87,
+      "service": "standard",
+      "received_at": "2026-10-29T01:22",
+      "ship_to": {
+        "name": "Chloe Herrera",
+        "street": "2861 Lake Shore Drive Unit 12",
+        "city": "Omaha",
+        "state": "NE",
+        "zip": "68102"
+      }
+    }
+  ]
+}

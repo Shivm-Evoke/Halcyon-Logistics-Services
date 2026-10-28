@@ -1,0 +1,75 @@
+{
+  "client_id": "C261",
+  "orders": [
+    {
+      "client_order_ref": "LW-C261-2884",
+      "sku": "HX-77",
+      "quantity": 24,
+      "service": "standard",
+      "received_at": "2026-11-01T00:18",
+      "ship_to": {
+        "name": "Sam Dubois",
+        "street": "8738 Industrial Parkway Floor 2",
+        "city": "Minneapolis",
+        "state": "MN",
+        "zip": "55401"
+      }
+    },
+    {
+      "client_order_ref": "LW-C261-2885",
+      "sku": "HX-905",
+      "quantity": 104,
+      "service": "standard",
+      "received_at": "2026-11-01T18:11",
+      "ship_to": {
+        "name": "Ana Becker",
+        "street": "1668 Market Street Floor 2",
+        "city": "Charleston",
+        "state": "SC",
+        "zip": "02903"
+      }
+    },
+    {
+      "client_order_ref": "LW-C261-2886",
+      "sku": "HX-6630",
+      "quantity": 12,
+      "service": "next day",
+      "received_at": "2026-11-01T04:38",
+      "ship_to": {
+        "name": "Wei Tanaka",
+        "street": "9586 Market Street",
+        "city": "Newark",
+        "state": "NJ",
+        "zip": "07102"
+      }
+    },
+    {
+      "client_order_ref": "LW-C261-2887",
+      "sku": "HX-118",
+      "quantity": 25,
+      "service": "standard",
+      "received_at": "2026-11-01T04:42",
+      "ship_to": {
+        "name": "Priya Natarajan",
+        "street": "3321 Main Street",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C261-2888",
+      "sku": "HX-5150",
+      "quantity": 69,
+      "service": "standard",
+      "received_at": "2026-11-01T05:23",
+      "ship_to": {
+        "name": "Zoë Novak",
+        "street": "9484 Lake Shore Drive Floor 2",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53202"
+      }
+    }
+  ]
+}

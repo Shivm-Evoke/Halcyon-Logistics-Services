@@ -1,0 +1,75 @@
+{
+  "client_id": "C194",
+  "orders": [
+    {
+      "client_order_ref": "LW-C194-2395",
+      "sku": "HX-5150",
+      "quantity": 53,
+      "service": "next day",
+      "received_at": "2026-10-30T02:30",
+      "ship_to": {
+        "name": "Fatima Walsh",
+        "street": "2556 Peachtree Road Unit 12",
+        "city": "New Orleans",
+        "state": "LA",
+        "zip": "70112"
+      }
+    },
+    {
+      "client_order_ref": "LW-C194-2396",
+      "sku": "HX-118",
+      "quantity": 94,
+      "service": "standard",
+      "received_at": "2026-10-30T14:16",
+      "ship_to": {
+        "name": "Tom Natarajan",
+        "street": "3600 Peachtree Road",
+        "city": "Charlotte",
+        "state": "NC",
+        "zip": "28202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C194-2397",
+      "sku": "HX-2202",
+      "quantity": 32,
+      "service": "standard",
+      "received_at": "2026-10-30T13:34",
+      "ship_to": {
+        "name": "Wei Herrera",
+        "street": "6765 Elm Street Floor 2",
+        "city": "Birmingham",
+        "state": "AL",
+        "zip": "35203"
+      }
+    },
+    {
+      "client_order_ref": "LW-C194-2398",
+      "sku": "HX-2202",
+      "quantity": 23,
+      "service": "standard",
+      "received_at": "2026-10-30T05:17",
+      "ship_to": {
+        "name": "Chloe Walsh",
+        "street": "2999 Commerce Drive Apt 4B",
+        "city": "San Francisco",
+        "state": "CA",
+        "zip": "94105"
+      }
+    },
+    {
+      "client_order_ref": "LW-C194-2399",
+      "sku": "HX-77",
+      "quantity": 55,
+      "service": "same day",
+      "received_at": "2026-10-30T06:47",
+      "ship_to": {
+        "name": "Aisha Becker",
+        "street": "3973 Industrial Parkway",
+        "city": "Nashville",
+        "state": "TN",
+        "zip": "37203"
+      }
+    }
+  ]
+}

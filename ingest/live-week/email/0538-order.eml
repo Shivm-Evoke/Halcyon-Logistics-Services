@@ -1,0 +1,21 @@
+From: supply@client158.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C158-2872
+Date: Sun, 1 Nov 2026 13:55:00 +0000
+Message-ID: <535129109@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C158
+Purchase order: LW-C158-2872
+Product: HX-6630   Qty: 70
+Delivery: standard
+Attn: Dana Haddad
+Address: 1830 Main Street Unit 12
+City: Hartford
+State: CT
+ZIP: 06103
+
+Thanks,
+Ops desk

@@ -1,0 +1,19 @@
+{
+  "client_id": "C231",
+  "orders": [
+    {
+      "client_order_ref": "LW-C231-2790",
+      "sku": "HX-6630",
+      "quantity": 111,
+      "service": "next day",
+      "received_at": "2026-10-31T14:27",
+      "ship_to": {
+        "name": "Hannah Ruiz",
+        "street": "4803 Warehouse Row Dock 7",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001"
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+From: orders@client198.example
+To: orders@halcyon.example
+Subject: 3 orders
+Date: Tue, 27 Oct 2026 16:58:00 +0000
+Message-ID: <737621869@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C198
+Purchase order: LW-C198-1473
+Item: HX-5150   Qty: 46
+Delivery: standard
+Attn: Chloe Tanaka
+Address: 7992 Peachtree Road Suite 300
+City: Phoenix
+State: AZ
+ZIP: 60611
+===
+PO Number: LW-C198-1474
+SKU: HX-5150   Qty: 68
+Shipping: same day
+Attn: José O'Brien
+Address: 7089 Maple Avenue Suite 300
+City: Charleston
+State: SC
+ZIP: 29401
+===
+PO Number: LW-C198-1475
+Item: HX-4410   Quantity: -2
+Shipping: next day
+Attn: Maria Haddad
+Address: 9170 Cedar Lane Suite 300
+City: Baltimore
+State: MD
+ZIP: 21202
+
+Thanks,
+Ops desk

@@ -1,0 +1,41 @@
+From: orders@client230.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-27
+Date: Tue, 27 Oct 2026 11:55:00 +0000
+Message-ID: <891939554@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+--lw
+Content-Type: text/csv; name="orders-2026-10-27.csv"
+Content-Disposition: attachment; filename="orders-2026-10-27.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number,SKU,Quantity,Service,Ship To Name,Address,City,State,Zip
+LW-C230-1723,,68,standard,Fatima Becker,4759 Main Street,Manchester,NH,03101
+LW-C230-1724,HX-118,59,standard,Wei Ruiz,3441 Lake Shore Drive,Omaha,NE,68102
+LW-C230-1725,HX-1270,59,next day,Hannah Becker,8303 Riverside Boulevard,Indianapolis,Indiana,46204
+LW-C230-1726,HX-905,86,next day,Sam Chen,4378 Park Avenue,Baltimore,MD,21202
+LW-C230-1727,HX-2202,6,next day,Maria Schmidt,6067 Park Avenue Apt 4B,Baltimore,MD,21202
+LW-C230-1728,HX-2202,117 ea,regular,Wei Tanaka,6399 Riverside Boulevard Floor 2,Philadelphia,PA,19103
+LW-C230-1729,HX-2202,22,next day,Diego Rossi,1751 Elm Street,St. Louis,MO,63101
+LW-C230-1730,HX-2201,17,standard,Ravi Schmidt,7462 Maple Avenue Apt 4B,Kansas City,MO,64105
+LW-C230-1731,,13,same day,Wei Dubois,4414 Commerce Drive,Dallas,TX,75201
+LW-C230-1732,HX-6630,108,standard,Ravi Schmidt,8898 Cedar Lane Dock 7,Kansas City,MO,64105
+LW-C230-1733,HX-2202,115,next day,Liam Rossi,5430 Elm Street Suite 300,Indianapolis,IN,46204
+LW-C230-1734,TBD,13,standard,Zoë Haddad,1971 Oak Avenue Apt 4B,Philadelphia,PA,19103
+LW-C230-1735,HX-905,74 ea,next day,Liam Chen,8828 Park Avenue Suite 300,Seattle,WA,98101
+LW-C230-1736,hx 2201,84,same day,Diego Chen,2157 Riverside Boulevard,Minneapolis,MN,55401
+LW-C230-1737,HX-3002,-2,same day,Diego Lee,5021 Park Avenue,Milwaukee,WI,53202
+LW-C230-1738,HX-4410,91,standard,Noah Walsh,9299 Warehouse Row,Burlington,VT,05401
+LW-C230-1739,HX-905,65,standard,Priya Farouk,4135 Warehouse Row Dock 7,St. Louis,MO,63101
+LW-C230-1740,HX-6630,6,standard,Zoë Chen,8090 Maple Avenue Dock 7,Dallas,TX,89101
+LW-C230-1741,HX-905,70,standard,Grace Mensah,2878 Cedar Lane,New Orleans,LA,70112
+LW-C230-1742,HX-4410,60,same day,Omar Walsh,143 Union Street Unit 12,Louisville,KY,40202
+LW-C230-1743,HX-3002,28,next day,Tom Lee,1895 Peachtree Road,Portland,ME,04101
+LW-C230-1744,HX-6630,60,same day,Diego Patel,5787 Harbor Street,Miami,FL,33131
+--lw--

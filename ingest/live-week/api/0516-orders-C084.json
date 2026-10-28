@@ -1,0 +1,19 @@
+{
+  "client_id": "C084",
+  "orders": [
+    {
+      "client_order_ref": "LW-C084-2794",
+      "sku": "hx-77",
+      "quantity": 91,
+      "service": "standard",
+      "received_at": "2026-10-31T07:41",
+      "ship_to": {
+        "name": "Aisha Ortiz",
+        "street": "672 Logistics Way Dock 7",
+        "city": "Baltimore",
+        "state": "MD",
+        "zip": "21202"
+      }
+    }
+  ]
+}

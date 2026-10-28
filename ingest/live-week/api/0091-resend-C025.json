@@ -1,0 +1,19 @@
+{
+  "client_id": "C025",
+  "orders": [
+    {
+      "client_order_ref": "LW-C025-1251",
+      "sku": "HX-1270",
+      "quantity": 64,
+      "service": "standard",
+      "received_at": "2026-10-26T02:03",
+      "ship_to": {
+        "name": "Priya Rossi",
+        "street": "4358 Industrial Parkway Apt 4B",
+        "city": "Columbus",
+        "state": "OH",
+        "zip": "43215"
+      }
+    }
+  ]
+}

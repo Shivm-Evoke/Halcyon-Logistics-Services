@@ -1,0 +1,22 @@
+From: orders@client234.example
+To: orders@halcyon.example
+Subject: PO LW-C234-1413
+Date: Tue, 27 Oct 2026 15:43:00 +0000
+Message-ID: <629568031@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C234
+Purchase order: LW-C234-1413
+Item: HX-2202   Quantity: 115
+Shipping: standard
+Attn: Maria Novak
+Address: 7816 Union Street Unit 12
+City: Boise
+State: ID
+ZIP: 83702
+
+--
+Purchasing team
+Tel 555-0100

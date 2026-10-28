@@ -1,0 +1,22 @@
+From: supply@client055.example
+To: orders@halcyon.example
+Subject: PO LW-C055-1538
+Date: Tue, 27 Oct 2026 12:50:00 +0000
+Message-ID: <764922487@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Account: C055
+PO Number: LW-C055-1538
+Product: HX-118   Qty: 80
+Service: next day
+Attn: Chloe Ortiz
+Address: 8374 Industrial Parkway Apt 4B
+City: Portland
+State: ME
+ZIP: 33131
+
+Regards
+
+Sent from my phone

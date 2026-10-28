@@ -1,0 +1,18 @@
+From: ops@client190.example
+To: orders@halcyon.example
+Subject: Order LW-C190-2510
+Date: Fri, 30 Oct 2026 13:58:00 +0000
+Message-ID: <537233820@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C190
+PO Number: LW-C190-2510
+Item: see attached   Qty: 22
+Delivery: standard
+Attn: Hannah Natarajan
+Address: 4126 Elm Street Apt 4B
+City: Burlington
+State: VT
+ZIP: 05401

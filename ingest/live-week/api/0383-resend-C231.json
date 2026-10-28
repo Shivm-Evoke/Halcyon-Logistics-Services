@@ -1,0 +1,19 @@
+{
+  "client_id": "C231",
+  "orders": [
+    {
+      "client_order_ref": "LW-C231-2289",
+      "sku": "HX-3002",
+      "quantity": 59,
+      "service": "standard",
+      "received_at": "2026-10-29T07:17",
+      "ship_to": {
+        "name": "Ana Schmidt",
+        "street": "8086 Cedar Lane Dock 7",
+        "city": "Seattle",
+        "state": "WA",
+        "zip": "98101"
+      }
+    }
+  ]
+}

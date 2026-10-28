@@ -1,0 +1,19 @@
+{
+  "client_id": "C111",
+  "orders": [
+    {
+      "client_order_ref": "LW-C111-1177",
+      "sku": "HX-118",
+      "quantity": 74,
+      "service": "next day",
+      "received_at": "2026-10-26T12:47",
+      "ship_to": {
+        "name": "Ravi Becker",
+        "street": "1475 Cedar Lane Suite 300",
+        "city": "Chicago",
+        "state": "IL",
+        "zip": "60611"
+      }
+    }
+  ]
+}

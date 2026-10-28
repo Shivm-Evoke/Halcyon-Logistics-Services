@@ -1,0 +1,19 @@
+{
+  "client_id": "C174",
+  "orders": [
+    {
+      "client_order_ref": "LW-C174-2105",
+      "sku": "HX-5150",
+      "quantity": 2,
+      "service": "same day",
+      "received_at": "2026-10-29T18:26",
+      "ship_to": {
+        "name": "Grace Walsh",
+        "street": "5034 Commerce Drive Apt 4B",
+        "city": "Las Vegas",
+        "state": "NV",
+        "zip": "89101"
+      }
+    }
+  ]
+}

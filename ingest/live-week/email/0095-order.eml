@@ -1,0 +1,22 @@
+From: buyer@client128.example
+To: orders@halcyon.example
+Subject: Order LW-C128-1400
+Date: Tue, 27 Oct 2026 13:52:00 +0000
+Message-ID: <519014631@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C128
+PO Number: LW-C128-1400
+Item: HX-905   Qty: 110
+Service: same day
+Attn: Priya Farouk
+Address: 4461 Elm Street Apt 4B
+City: Miami
+State: FL
+ZIP: 33131
+
+Regards
+
+Sent from my phone

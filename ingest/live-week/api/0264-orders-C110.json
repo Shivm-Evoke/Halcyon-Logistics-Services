@@ -1,0 +1,19 @@
+{
+  "client_id": "C110",
+  "orders": [
+    {
+      "client_order_ref": "LW-C110-2031",
+      "sku": "HX-118",
+      "quantity": 66,
+      "service": "standard",
+      "received_at": "2026-10-28T09:17",
+      "ship_to": {
+        "name": "Hannah Ortiz",
+        "street": "8482 Elm Street Dock 7",
+        "city": "Philadelphia",
+        "state": "PA",
+        "zip": "19103"
+      }
+    }
+  ]
+}

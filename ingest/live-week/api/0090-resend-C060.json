@@ -1,0 +1,19 @@
+{
+  "client_id": "C060",
+  "orders": [
+    {
+      "client_order_ref": "LW-C060-1146",
+      "sku": "HX-118",
+      "quantity": 74,
+      "service": "standard",
+      "received_at": "2026-10-26T10:40",
+      "ship_to": {
+        "name": "Aisha Lee",
+        "street": "7025 Commerce Drive Dock 7",
+        "city": "New Orleans",
+        "state": "LA",
+        "zip": "70112"
+      }
+    }
+  ]
+}

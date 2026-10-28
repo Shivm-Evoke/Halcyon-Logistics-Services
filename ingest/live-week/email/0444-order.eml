@@ -1,0 +1,22 @@
+From: buyer@client190.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C190-2583
+Date: Fri, 30 Oct 2026 09:25:00 +0000
+Message-ID: <729464179@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C190
+PO Number: LW-C190-2583
+Item: HX-118   Quantity: 92
+Service: standard
+Ship to: Wei Mensah
+Address: 2176 Elm Street
+City: Kansas City
+State: MO
+ZIP: 64105
+
+--
+Purchasing team
+Tel 555-0100

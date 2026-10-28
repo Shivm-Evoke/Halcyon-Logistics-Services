@@ -1,0 +1,19 @@
+{
+  "client_id": "C069",
+  "orders": [
+    {
+      "client_order_ref": "LW-C069-2730",
+      "sku": "HX-905",
+      "quantity": 72,
+      "service": "standard",
+      "received_at": "2026-10-31T09:55",
+      "ship_to": {
+        "name": "José Herrera",
+        "street": "9404 Maple Avenue Dock 7",
+        "city": "Newark",
+        "state": "NJ",
+        "zip": ""
+      }
+    }
+  ]
+}

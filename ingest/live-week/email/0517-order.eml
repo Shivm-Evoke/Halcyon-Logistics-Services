@@ -1,0 +1,22 @@
+From: supply@client061.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C061-2795
+Date: Sat, 31 Oct 2026 16:48:00 +0000
+Message-ID: <379909519@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C061
+PO Number: LW-C061-2795
+Product: HX-4410   Quantity: 101
+Service: same day
+Ship to: Tom Herrera
+Address: 7110 Oak Avenue Unit 12
+City: Indianapolis
+State: IN
+ZIP: 46204
+
+Regards
+
+Sent from my phone

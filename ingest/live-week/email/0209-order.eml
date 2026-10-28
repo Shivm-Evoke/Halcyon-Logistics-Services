@@ -1,0 +1,31 @@
+From: orders@client150.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Wed, 28 Oct 2026 09:17:00 +0000
+Message-ID: <843151162@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C150
+PO: LW-C150-1766
+Product: HX-118   Qty: 95
+Shipping: same day
+Ship to: Sam Herrera
+Address: 2519 Park Avenue Unit 12
+City: Milwaukee
+State: Wisconsin
+ZIP: 53202
+---
+PO: LW-C150-1767
+Item: HX-118   Quantity: 88
+Service: standard
+Attn: Tom Álvarez
+Address: 8327 Warehouse Row Unit 12
+City: 
+State: TX
+ZIP: 75201
+
+Regards
+
+Sent from my phone

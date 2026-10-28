@@ -1,0 +1,19 @@
+{
+  "client_id": "C121",
+  "orders": [
+    {
+      "client_order_ref": "LW-C121-1768",
+      "sku": "HX-905",
+      "quantity": 12,
+      "service": "standard",
+      "received_at": "2026-10-28T05:10",
+      "ship_to": {
+        "name": "Tom O'Brien",
+        "street": "962 Oak Avenue",
+        "city": "San Francisco",
+        "state": "CA",
+        "zip": "94105"
+      }
+    }
+  ]
+}

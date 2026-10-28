@@ -1,0 +1,40 @@
+From: buyer@client055.example
+To: orders@halcyon.example
+Subject: 3 orders
+Date: Sun, 1 Nov 2026 07:32:00 +0000
+Message-ID: <324627993@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C055
+Purchase order: LW-C055-2873
+SKU: HX-4410   Quantity: 20
+Service: next day
+Deliver to: Ravi Ruiz
+Address: 9532 Oak Avenue Apt 4B
+City: Columbus
+State: OH
+ZIP: 43215
+---
+PO: LW-C055-2874
+Product: HX-905   Qty: 63
+Delivery: regular
+Ship to: Chloe Farouk
+Address: 9709 Commerce Drive Apt 4B
+City: Charleston
+State: SC
+ZIP: 29401
+---
+Purchase order: LW-C055-2875
+Item: HX-77   Quantity: 88
+Delivery: standard
+Attn: Hannah Walsh
+Address: 2495 Main Street
+City: Des Moines
+State: IA
+ZIP: 50309
+
+Regards
+
+Sent from my phone

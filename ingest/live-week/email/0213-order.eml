@@ -1,0 +1,22 @@
+From: ops@client116.example
+To: orders@halcyon.example
+Subject: Order LW-C116-1776
+Date: Wed, 28 Oct 2026 02:59:00 +0000
+Message-ID: <857324191@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C116
+PO Number: LW-C116-1776
+Item: HX-4410   Quantity: 49 pcs
+Shipping: standard
+Ship to: Grace Rossi
+Address: 9066 Logistics Way Apt 4B
+City: Minneapolis
+State: MN
+ZIP: 55401
+
+--
+Purchasing team
+Tel 555-0100

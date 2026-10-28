@@ -1,0 +1,22 @@
+From: purchasing@client042.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C042-2083
+Date: Thu, 29 Oct 2026 13:06:00 +0000
+Message-ID: <724666726@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C042
+PO Number: LW-C042-2083
+Item: HX-2201   Qty: 90
+Service: next day
+Attn: Tom Ortiz
+Address: 3118 Elm Street Apt 4B
+City: 
+State: NE
+ZIP: 68102
+
+--
+Purchasing team
+Tel 555-0100

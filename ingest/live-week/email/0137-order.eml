@@ -1,0 +1,22 @@
+From: supply@client190.example
+To: orders@halcyon.example
+Subject: Order LW-C190-1488
+Date: Tue, 27 Oct 2026 01:22:00 +0000
+Message-ID: <659457700@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Account: C190
+PO: LW-C190-1488
+SKU: HX-2201   Qty: 118
+Shipping: next day
+Deliver to: Omar Haddad
+Address: Cedar Lane
+City: Des Moines
+State: IA
+ZIP: 50309
+
+Regards
+
+Sent from my phone

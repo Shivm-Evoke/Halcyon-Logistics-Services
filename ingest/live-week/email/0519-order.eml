@@ -1,0 +1,22 @@
+From: buyer@client250.example
+To: orders@halcyon.example
+Subject: New order LW-C250-2818
+Date: Sat, 31 Oct 2026 08:48:00 +0000
+Message-ID: <677224592@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C250
+Purchase order: LW-C250-2818
+SKU: HX-4410   Quantity: 115
+Service: next day
+Deliver to: Grace Álvarez
+Address: 610 Cedar Lane Dock 7
+City: St. Louis
+State: MO
+ZIP: 63101-3175
+
+Regards
+
+Sent from my phone

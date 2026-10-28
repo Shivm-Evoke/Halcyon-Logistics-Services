@@ -1,0 +1,19 @@
+{
+  "client_id": "C244",
+  "orders": [
+    {
+      "client_order_ref": "LW-C244-1053",
+      "sku": "HX-118",
+      "quantity": 120,
+      "service": "standard",
+      "received_at": "2026-10-26T19:46",
+      "ship_to": {
+        "name": "Sam Ortiz",
+        "street": "487 Market Street Unit 12",
+        "city": "Atlanta",
+        "state": "GA",
+        "zip": "30309"
+      }
+    }
+  ]
+}

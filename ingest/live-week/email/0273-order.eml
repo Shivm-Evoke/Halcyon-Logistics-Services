@@ -1,0 +1,22 @@
+From: purchasing@client248.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C248-2047
+Date: Wed, 28 Oct 2026 04:15:00 +0000
+Message-ID: <200832703@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Account: C248
+PO: LW-C248-2047
+Item: HX-118   Quantity: 63
+Shipping: next day
+Attn: Ana Mensah
+Address: 7255 Elm Street
+City: Providence
+State: RI
+ZIP: 02903
+
+--
+Purchasing team
+Tel 555-0100

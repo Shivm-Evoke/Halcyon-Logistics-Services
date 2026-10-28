@@ -1,0 +1,31 @@
+From: supply@client124.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Wed, 28 Oct 2026 13:36:00 +0000
+Message-ID: <209297974@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C124
+Purchase order: LW-C124-1927
+Item: HX-2201   Quantity: 116
+Delivery: next day
+Deliver to: Ravi Ortiz
+Address: 6241 Commerce Drive Suite 300
+City: Seattle
+State: WA
+ZIP: 98101
+---
+PO Number: LW-C124-1928
+Product: HX-77   Qty: 12
+Shipping: standard
+Ship to: Fatima Ortiz
+Address: 9777 Riverside Boulevard Floor 2
+City: Salt Lake City
+State: UT
+ZIP: 84101
+
+--
+Purchasing team
+Tel 555-0100

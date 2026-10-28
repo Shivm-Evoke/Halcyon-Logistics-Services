@@ -1,0 +1,19 @@
+{
+  "client_id": "C111",
+  "orders": [
+    {
+      "client_order_ref": "LW-C111-2303",
+      "sku": "HX-1270",
+      "quantity": 66,
+      "service": "next day",
+      "received_at": "2026-10-29T19:38",
+      "ship_to": {
+        "name": "Wei Haddad",
+        "street": "652 Park Avenue Apt 4B",
+        "city": "Louisville",
+        "state": "KY",
+        "zip": "40202"
+      }
+    }
+  ]
+}

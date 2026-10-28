@@ -1,0 +1,19 @@
+{
+  "client_id": "C111",
+  "orders": [
+    {
+      "client_order_ref": "LW-C111-1542",
+      "sku": "HX-118",
+      "quantity": 47,
+      "service": "standard",
+      "received_at": "2026-10-27T08:10",
+      "ship_to": {
+        "name": "Tom Farouk",
+        "street": "7986 Union Street",
+        "city": "Birmingham",
+        "state": "AL",
+        "zip": "35203"
+      }
+    }
+  ]
+}

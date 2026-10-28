@@ -1,0 +1,43 @@
+From: orders@client045.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-27
+Date: Tue, 27 Oct 2026 12:27:00 +0000
+Message-ID: <699259717@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+
+Regards
+
+Sent from my phone
+--lw
+Content-Type: text/csv; name="orders-2026-10-27.csv"
+Content-Disposition: attachment; filename="orders-2026-10-27.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number,SKU,Quantity,Service,Ship To Name,Address,City,State,Zip
+LW-C045-1600,HX-6630,43,same day,Sam Becker,2041 Riverside Boulevard,Boise,ID,
+LW-C045-1601,HX-2202,92,next day,Liam Dubois,4684 Commerce Drive Dock 7,Portland,ME,04101
+LW-C045-1602,HX-2201,10,same day,Fatima Mensah,5251 Peachtree Road Suite 300,Des Moines,IA,50309
+LW-C045-1603,HX-3002,114,same day,José Farouk,367 Logistics Way Floor 2,Columbus,OH,23219
+LW-C045-1604,HX-5150,73,same day,Aisha Haddad,Peachtree Road Dock 7,Chicago,IL,60611
+LW-C045-1605,HX-2202,13,standard,Zoë Walsh,9445 Riverside Boulevard Apt 4B,Burlington,VT,05401
+LW-C045-1606,HX-3002,117,same day,Ravi Dubois,7194 Riverside Boulevard,,NV,89101
+LW-C045-1607,HX-77,91,same day,Ana Kim,3180 Peachtree Road,Omaha,NE,68102
+LW-C045-1608,HX-2201,16,ASAP,Fatima Walsh,6270 Logistics Way,Phoenix,AZ,
+LW-C045-1609,HX-4410,25,next day,Zoë Lee,3424 Harbor Street,Louisville,KY,40202
+LW-C045-1610,HX-2201,39,standard,Hannah Mensah,3417 Harbor Street Floor 2,New York,NY,10001
+LW-C045-1611,HX-5150,19,standard,Dana Rossi,357 Industrial Parkway Unit 12,Charleston,SC,29401
+LW-C045-1612,hx 6630,100,standard,Ravi Álvarez,5008 Maple Avenue,Boston,MA,02108
+LW-C045-1613,HX-2201,37,standard,Diego Herrera,6826 Market Street Apt 4B,Salt Lake City,UT,84101
+LW-C045-1614,HX-4410,108,next day,Liam Chen,6820 Warehouse Row Dock 7,,Illinois,60611-8890
+LW-C045-1615,HX-5150,98,standard,Maria Álvarez,3749 Market Street Dock 7,Detroit,MI,48226
+LW-C045-1616,HX-5150,68,same day,Dana Dubois,2447 Main Street,Omaha,NE,68102
+LW-C045-1617,HX-1270,15 pcs,next day,Aisha Walsh,2167 Cedar Lane,Minneapolis,MN,55401
+LW-C045-1618,HX-4410,100,standard,Wei Álvarez,4043 Elm Street Floor 2,Hartford,CT,06103
+LW-C045-1619,HX-905,22,standard,Diego Natarajan,4629 Maple Avenue Unit 12,St. Louis,MO,63101
+--lw--

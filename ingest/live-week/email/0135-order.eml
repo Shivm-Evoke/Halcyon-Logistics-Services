@@ -1,0 +1,22 @@
+From: purchasing@client209.example
+To: orders@halcyon.example
+Subject: PO LW-C209-1486
+Date: Tue, 27 Oct 2026 08:15:00 +0000
+Message-ID: <688189422@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Account: C209
+PO: LW-C209-1486
+SKU: HX-4410   Qty: 13
+Delivery: standard
+Ship to: Chloe Chen
+Address: 6005 Main Street Unit 12
+City: Newark
+State: NJ
+ZIP: 07102
+
+Regards
+
+Sent from my phone

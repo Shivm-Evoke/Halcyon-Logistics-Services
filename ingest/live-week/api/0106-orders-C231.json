@@ -1,0 +1,19 @@
+{
+  "client_id": "C231",
+  "orders": [
+    {
+      "client_order_ref": "LW-C231-1425",
+      "sku": "HX-5150",
+      "quantity": 67,
+      "service": "standard",
+      "received_at": "2026-10-27T08:42",
+      "ship_to": {
+        "name": "Ravi Patel",
+        "street": "3941 Industrial Parkway Apt 4B",
+        "city": "Birmingham",
+        "state": "AL",
+        "zip": "35203"
+      }
+    }
+  ]
+}

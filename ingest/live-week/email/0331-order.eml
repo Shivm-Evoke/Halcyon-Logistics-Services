@@ -1,0 +1,22 @@
+From: orders@client035.example
+To: orders@halcyon.example
+Subject: PO LW-C035-2277
+Date: Thu, 29 Oct 2026 12:49:00 +0000
+Message-ID: <782821859@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Please process:
+Account: C035
+PO Number: LW-C035-2277
+SKU: HX-3002   Qty: 77
+Service: next day
+Attn: Dana Farouk
+Address: 8008 Cedar Lane
+City: Boise
+State: ID
+ZIP: 83702
+
+--
+Purchasing team
+Tel 555-0100

@@ -1,0 +1,19 @@
+{
+  "client_id": "C099",
+  "orders": [
+    {
+      "client_order_ref": "LW-C099-2646",
+      "sku": "HX-2201",
+      "quantity": 87,
+      "service": "standard",
+      "received_at": "2026-10-30T15:35",
+      "ship_to": {
+        "name": "Liam Schmidt",
+        "street": "5928 Harbor Street Dock 7",
+        "city": "Chicago",
+        "state": "IL",
+        "zip": "60611"
+      }
+    }
+  ]
+}

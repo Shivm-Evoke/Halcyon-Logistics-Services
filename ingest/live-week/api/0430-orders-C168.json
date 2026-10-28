@@ -1,0 +1,19 @@
+{
+  "client_id": "C168",
+  "orders": [
+    {
+      "client_order_ref": "LW-C168-2548",
+      "sku": "HX-5150",
+      "quantity": 62,
+      "service": "standard",
+      "received_at": "2026-10-30T02:33",
+      "ship_to": {
+        "name": "Sam Haddad",
+        "street": "2524 Lake Shore Drive Floor 2",
+        "city": "New Orleans",
+        "state": "LA",
+        "zip": "70112"
+      }
+    }
+  ]
+}

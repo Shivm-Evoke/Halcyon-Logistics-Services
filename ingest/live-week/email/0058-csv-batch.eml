@@ -1,0 +1,48 @@
+From: purchasing@client259.example
+To: orders@halcyon.example
+Subject: Weekly orders 2026-10-26
+Date: Mon, 26 Oct 2026 12:25:00 +0000
+Message-ID: <598625728@mail.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="lw"
+
+--lw
+Content-Type: text/plain; charset=utf-8
+
+Hi, this week's orders are attached.
+--lw
+Content-Type: text/csv; name="orders-2026-10-26.csv"
+Content-Disposition: attachment; filename="orders-2026-10-26.csv"
+Content-Transfer-Encoding: 7bit
+
+PO Number,SKU,Quantity,Service,Ship To Name,Address,City,State,Zip
+LW-C259-1275,HX-905,73,next day,Noah Lee,8618 Warehouse Row Unit 12,Charlotte,NC,28202
+LW-C259-1276,HX-905,28,next day,Ana Novak,3516 Union Street Floor 2,Chicago,IL,60611
+LW-C259-1277,HX-4410,38,next day,Grace Natarajan,1687 Market Street Suite 300,Des Moines,IA,50309
+LW-C259-1278,HX-905,103,ground,Aisha Becker,1263 Maple Avenue,New Orleans,LA,70112
+LW-C259-1279,HX-4410,109,standard,Grace Lee,Park Avenue Floor 2,Los Angeles,CA,90012
+LW-C259-1280,HX-2202,36,standard,Diego Farouk,Elm Street,Hartford,CT,06103
+LW-C259-1281,HX-5150,99,next day,Fatima Chen,9035 Cedar Lane Apt 4B,Omaha,NE,68102
+LW-C259-1282,HX-77,63,standard,Chloe Chen,6823 Maple Avenue Floor 2,New Orleans,LA,70112
+LW-C259-1283,HX-118,51 pieces,standard,Grace O'Brien,Market Street Dock 7,Chicago,IL,60611
+LW-C259-1284,HX-1270,38,standard,Wei Chen,1187 Park Avenue Unit 12,Burlington,VT,05401
+LW-C259-1285,HX-77,87,standard,Zoë Álvarez,2380 Maple Avenue Unit 12,Baltimore,MD,21202-4028
+LW-C259-1286,HX-77,21,standard,Liam Kim,4686 Industrial Parkway,Hartford,CT,06103
+LW-C259-1287,HX-6630,39,same day,Maria Lee,6002 Lake Shore Drive Unit 12,Portland,OR,97204
+LW-C259-1288,HX-1270,55,standard,Priya Mensah,8018 Logistics Way,Charlotte,NC,28202
+LW-C259-1289,HX-4410,47,regular,Liam Natarajan,4299 Warehouse Row,New Orleans,LA,70112
+LW-C259-1290,HX-3002,83,standard,Grace Herrera,4286 Lake Shore Drive,Manchester,NH,03101
+LW-C259-1291,HX-1270,70,standard,Priya Mensah,2672 Lake Shore Drive,St. Louis,MO,63101
+LW-C259-1292,HX-2202,70,regular,Ravi Dubois,6161 Logistics Way Apt 4B,New York,NY,10001
+LW-C259-1293,HX3002,84,same day,Chloe Farouk,3864 Park Avenue Suite 300,Charlotte,NC,28202
+LW-C259-1294,HX-5150,2,standard,Dana Rossi,1507 Peachtree Road,Salt Lake City,UT,84101
+LW-C259-1295,HX-6630,68,standard,Ana Álvarez,5589 Union Street Apt 4B,Chicago,IL,23219
+LW-C259-1296,HX-6630,65,next day,Liam Novak,3171 Industrial Parkway Floor 2,Philadelphia,PA,19103
+LW-C259-1297,HX-2201,118,same day,Liam Ortiz,6181 Lake Shore Drive Dock 7,Birmingham,AL,35203
+LW-C259-1298,HX-1270,62,standard,Kenji Ruiz,3543 Elm Street Dock 7,New Orleans,LA,70112
+LW-C259-1299,hx-5150,39 ea,standard,Tom Herrera,6075 Riverside Boulevard,Salt Lake City,UT,84101
+LW-C259-1300,HX-4410,77 pcs,next day,Tom Chen,1798 Park Avenue Dock 7,Philadelphia,PA,19103
+LW-C259-1301,HX-3002,82,overnight,Kenji Kim,9187 Industrial Parkway Apt 4B,Birmingham,AL,35203
+LW-C259-1302,HX-1270,37 pieces,same day,Omar Schmidt,1272 Industrial Parkway Floor 2,New York,NY,10001
+LW-C259-1303,,73,standard,Kenji Patel,5965 Market Street Suite 300,Phoenix,AZ,85004
+--lw--

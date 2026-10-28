@@ -1,0 +1,19 @@
+{
+  "client_id": "C025",
+  "orders": [
+    {
+      "client_order_ref": "LW-C025-2149",
+      "sku": "HX-118",
+      "quantity": 13,
+      "service": "standard",
+      "received_at": "2026-10-29T01:12",
+      "ship_to": {
+        "name": "Wei Mensah",
+        "street": "5169 Oak Avenue Suite 300",
+        "city": "Seattle",
+        "state": "WA",
+        "zip": "98101"
+      }
+    }
+  ]
+}

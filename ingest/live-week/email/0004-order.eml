@@ -1,0 +1,30 @@
+From: orders@client259.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Mon, 26 Oct 2026 11:57:00 +0000
+Message-ID: <169199447@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Good morning,
+Account: C259
+PO Number: LW-C259-1023
+SKU: HX-6630   Qty: 42
+Delivery: next day
+Ship to: Ravi Rossi
+Address: 6207 Logistics Way Apt 4B
+City: Nashville
+State: TN
+ZIP: 37203
+----------
+PO: LW-C259-1024
+Item: HX-77   Quantity: 12
+Shipping: next day
+Deliver to: Ana Herrera
+Address: 709 Warehouse Row
+City: Denver
+State: CO
+ZIP: 80202
+
+Thanks,
+Ops desk

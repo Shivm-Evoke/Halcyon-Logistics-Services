@@ -1,0 +1,19 @@
+{
+  "client_id": "C236",
+  "orders": [
+    {
+      "client_order_ref": "LW-C236-2849",
+      "sku": "HX-6630",
+      "quantity": 35,
+      "service": "next day",
+      "received_at": "2026-11-01T12:45",
+      "ship_to": {
+        "name": "Tom Natarajan",
+        "street": "8150 Riverside Boulevard",
+        "city": "Philadelphia",
+        "state": "PA",
+        "zip": "19103"
+      }
+    }
+  ]
+}

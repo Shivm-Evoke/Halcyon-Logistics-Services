@@ -1,0 +1,19 @@
+{
+  "client_id": "C033",
+  "orders": [
+    {
+      "client_order_ref": "LW-C033-2522",
+      "sku": "HX-77",
+      "quantity": 30,
+      "service": "standard",
+      "received_at": "2026-10-30T06:34",
+      "ship_to": {
+        "name": "Priya Patel",
+        "street": "68 Industrial Parkway",
+        "city": "Albuquerque",
+        "state": "NM",
+        "zip": "87102"
+      }
+    }
+  ]
+}

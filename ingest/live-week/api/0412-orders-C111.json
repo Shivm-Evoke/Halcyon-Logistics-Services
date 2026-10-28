@@ -1,0 +1,19 @@
+{
+  "client_id": "C111",
+  "orders": [
+    {
+      "client_order_ref": "LW-C111-2495",
+      "sku": "HX-3002",
+      "quantity": 8,
+      "service": "standard",
+      "received_at": "2026-10-30T08:30",
+      "ship_to": {
+        "name": "Wei Rossi",
+        "street": "499 Peachtree Road Floor 2",
+        "city": "Minneapolis",
+        "state": "MN",
+        "zip": "55401"
+      }
+    }
+  ]
+}

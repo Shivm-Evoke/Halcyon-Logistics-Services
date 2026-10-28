@@ -1,0 +1,19 @@
+{
+  "client_id": "C111",
+  "orders": [
+    {
+      "client_order_ref": "LW-C111-1750",
+      "sku": "HX-118",
+      "quantity": 2,
+      "service": "standard",
+      "received_at": "2026-10-28T04:10",
+      "ship_to": {
+        "name": "Tom Natarajan",
+        "street": "1204 Lake Shore Drive Unit 12",
+        "city": "Chicago",
+        "state": "IL",
+        "zip": "60611"
+      }
+    }
+  ]
+}

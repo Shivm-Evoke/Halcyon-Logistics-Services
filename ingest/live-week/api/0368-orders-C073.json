@@ -1,0 +1,19 @@
+{
+  "client_id": "C073",
+  "orders": [
+    {
+      "client_order_ref": "LW-C073-2368",
+      "sku": "HX-905",
+      "quantity": 95,
+      "service": "next day",
+      "received_at": "2026-10-29T15:08",
+      "ship_to": {
+        "name": "Liam Ortiz",
+        "street": "4384 Market Street Unit 12",
+        "city": "Las Vegas",
+        "state": "NV",
+        "zip": "89101"
+      }
+    }
+  ]
+}

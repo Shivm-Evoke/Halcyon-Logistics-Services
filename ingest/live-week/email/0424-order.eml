@@ -1,0 +1,40 @@
+From: orders@client190.example
+To: orders@halcyon.example
+Subject: 3 orders
+Date: Fri, 30 Oct 2026 12:57:00 +0000
+Message-ID: <826281579@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+
+Account: C190
+PO: LW-C190-2519
+Item: HX-5150   Quantity: 55
+Shipping: same day
+Ship to: Chloe Tanaka
+Address: 8084 Logistics Way
+City: Des Moines
+State: IA
+ZIP: 50309
+----------
+Purchase order: LW-C190-2520
+Item: HX-1270   Qty: 36
+Service: economy
+Attn: Sam Ortiz
+Address: 5682 Riverside Boulevard
+City: Chicago
+State: IL
+ZIP: 60611
+----------
+Purchase order: LW-C190-2521
+Item: hx-4410   Quantity: 87
+Shipping: standard
+Deliver to: Dana Natarajan
+Address: Commerce Drive
+City: Kansas City
+State: MO
+ZIP: 64105
+
+--
+Purchasing team
+Tel 555-0100

@@ -1,0 +1,19 @@
+{
+  "client_id": "C065",
+  "orders": [
+    {
+      "client_order_ref": "LW-C065-2171",
+      "sku": "HX-1270",
+      "quantity": 110,
+      "service": "standard",
+      "received_at": "2026-10-29T06:21",
+      "ship_to": {
+        "name": "Chloe Ortiz",
+        "street": "6220 Warehouse Row Floor 2",
+        "city": "St. Louis",
+        "state": "MO",
+        "zip": "63101"
+      }
+    }
+  ]
+}

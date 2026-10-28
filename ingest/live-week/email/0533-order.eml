@@ -1,0 +1,30 @@
+From: purchasing@client018.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Sun, 1 Nov 2026 11:17:00 +0000
+Message-ID: <558064534@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C018
+Purchase order: LW-C018-2854
+Product: HX-905   Qty: 51
+Delivery: economy
+Attn: Hannah Tanaka
+Address: 7524 Lake Shore Drive
+City: Milwaukee
+State: WI
+ZIP: 53202
+---
+Purchase order: LW-C018-2855
+SKU: HX-2202   Qty: 13
+Service: next day
+Deliver to: Hannah Álvarez
+Address: Market Street
+City: Denver
+State: Colorado
+ZIP: 80202
+
+Thanks,
+Ops desk

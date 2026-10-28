@@ -1,0 +1,31 @@
+From: orders@client055.example
+To: orders@halcyon.example
+Subject: 2 orders
+Date: Mon, 26 Oct 2026 14:54:00 +0000
+Message-ID: <552202494@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hi team,
+Account: C055
+PO Number: LW-C055-1104
+Item: HX-77   Qty: 99
+Shipping: next day
+Attn: Fatima O'Brien
+Address: Lake Shore Drive
+City: New York
+State: NY
+ZIP: 10001
+---
+PO Number: LW-C055-1105
+Item: HX-1270   Quantity: 51
+Shipping: standard
+Deliver to: Maria Herrera
+Address: 8137 Commerce Drive Dock 7
+City: Denver
+State: CO
+ZIP: 80202
+
+Regards
+
+Sent from my phone

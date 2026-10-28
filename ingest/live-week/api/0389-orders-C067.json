@@ -1,0 +1,75 @@
+{
+  "client_id": "C067",
+  "orders": [
+    {
+      "client_order_ref": "LW-C067-2400",
+      "sku": "HX-3002",
+      "quantity": 24,
+      "service": "standard",
+      "received_at": "2026-10-30T12:09",
+      "ship_to": {
+        "name": "Noah O'Brien",
+        "street": "6712 Logistics Way",
+        "city": "Albuquerque",
+        "state": "NM",
+        "zip": "87102"
+      }
+    },
+    {
+      "client_order_ref": "LW-C067-2401",
+      "sku": "HX-1270",
+      "quantity": 32,
+      "service": "same day",
+      "received_at": "2026-10-30T02:14",
+      "ship_to": {
+        "name": "Liam Schmidt",
+        "street": "3977 Riverside Boulevard",
+        "city": "Richmond",
+        "state": "VA",
+        "zip": "23219"
+      }
+    },
+    {
+      "client_order_ref": "LW-C067-2402",
+      "sku": "HX-3002",
+      "quantity": 42,
+      "service": "standard",
+      "received_at": "2026-10-30T19:33",
+      "ship_to": {
+        "name": "Hannah O'Brien",
+        "street": "5529 Elm Street",
+        "city": "Las Vegas",
+        "state": "NV",
+        "zip": "89101"
+      }
+    },
+    {
+      "client_order_ref": "LW-C067-2403",
+      "sku": "HX-5150",
+      "quantity": 90,
+      "service": "standard",
+      "received_at": "2026-10-30T16:52",
+      "ship_to": {
+        "name": "Liam Dubois",
+        "street": "6648 Lake Shore Drive",
+        "city": "Portland",
+        "state": "OR",
+        "zip": "97204"
+      }
+    },
+    {
+      "client_order_ref": "LW-C067-2404",
+      "sku": "HX-6630",
+      "quantity": 37,
+      "service": "standard",
+      "received_at": "2026-10-30T17:06",
+      "ship_to": {
+        "name": "José Tanaka",
+        "street": "6052 Riverside Boulevard Apt 4B",
+        "city": "Salt Lake City",
+        "state": "UT",
+        "zip": "84101"
+      }
+    }
+  ]
+}

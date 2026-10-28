@@ -1,0 +1,19 @@
+{
+  "client_id": "C188",
+  "orders": [
+    {
+      "client_order_ref": "LW-C188-2280",
+      "sku": "HX-2202",
+      "quantity": 81,
+      "service": "next day",
+      "received_at": "2026-10-29T12:32",
+      "ship_to": {
+        "name": "José Ortiz",
+        "street": "1470 Union Street Unit 12",
+        "city": "Portland",
+        "state": "ME",
+        "zip": "04101"
+      }
+    }
+  ]
+}

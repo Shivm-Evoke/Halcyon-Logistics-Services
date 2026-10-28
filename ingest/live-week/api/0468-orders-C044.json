@@ -1,0 +1,19 @@
+{
+  "client_id": "C044",
+  "orders": [
+    {
+      "client_order_ref": "LW-C044-2652",
+      "sku": "HX-2201",
+      "quantity": 80,
+      "service": "standard",
+      "received_at": "2026-10-30T13:44",
+      "ship_to": {
+        "name": "Grace Dubois",
+        "street": "6935 Industrial Parkway",
+        "city": "Phoenix",
+        "state": "AZ",
+        "zip": "85004"
+      }
+    }
+  ]
+}

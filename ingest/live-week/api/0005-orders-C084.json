@@ -1,0 +1,19 @@
+{
+  "client_id": "C084",
+  "orders": [
+    {
+      "client_order_ref": "LW-C084-1025",
+      "sku": "HX-6630",
+      "quantity": 113,
+      "service": "same day",
+      "received_at": "2026-10-26T16:29",
+      "ship_to": {
+        "name": "Priya Patel",
+        "street": "9347 Commerce Drive Floor 2",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001"
+      }
+    }
+  ]
+}

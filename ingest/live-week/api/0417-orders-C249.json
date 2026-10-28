@@ -1,0 +1,75 @@
+{
+  "client_id": "C249",
+  "orders": [
+    {
+      "client_order_ref": "LW-C249-2501",
+      "sku": "HX-4410",
+      "quantity": 40,
+      "service": "next day",
+      "received_at": "2026-10-30T12:42",
+      "ship_to": {
+        "name": "Maria Herrera",
+        "street": "5982 Warehouse Row",
+        "city": "Louisville",
+        "state": "KY",
+        "zip": "40202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C249-2502",
+      "sku": "HX-2202",
+      "quantity": 8,
+      "service": "standard",
+      "received_at": "2026-10-30T09:12",
+      "ship_to": {
+        "name": "Fatima O'Brien",
+        "street": "7027 Cedar Lane",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53202"
+      }
+    },
+    {
+      "client_order_ref": "LW-C249-2503",
+      "sku": "HX-2202",
+      "quantity": 15,
+      "service": "standard",
+      "received_at": "2026-10-30T19:15",
+      "ship_to": {
+        "name": "Zoë Tanaka",
+        "street": "8353 Lake Shore Drive",
+        "city": "New Orleans",
+        "state": "LA",
+        "zip": "70112"
+      }
+    },
+    {
+      "client_order_ref": "LW-C249-2504",
+      "sku": "HX-118",
+      "quantity": 27,
+      "service": "standard",
+      "received_at": "2026-10-30T04:00",
+      "ship_to": {
+        "name": "Sam Walsh",
+        "street": "2772 Commerce Drive Apt 4B",
+        "city": "Minneapolis",
+        "state": "MN",
+        "zip": "55401"
+      }
+    },
+    {
+      "client_order_ref": "LW-C249-2505",
+      "sku": "HX-2202",
+      "quantity": 48,
+      "service": "standard",
+      "received_at": "2026-10-30T06:06",
+      "ship_to": {
+        "name": "Aisha Chen",
+        "street": "9086 Market Street Floor 2",
+        "city": "Charlotte",
+        "state": "NC",
+        "zip": "28202"
+      }
+    }
+  ]
+}

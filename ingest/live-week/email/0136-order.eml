@@ -1,0 +1,18 @@
+From: orders@client055.example
+To: orders@halcyon.example
+Subject: Purchase order LW-C055-1487
+Date: Tue, 27 Oct 2026 07:22:00 +0000
+Message-ID: <799477983@mail.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Account: C055
+PO: LW-C055-1487
+Item: HX-2201   Quantity: 95
+Service: economy
+Attn: Chloe Tanaka
+Address: 9615 Harbor Street Apt 4B
+City: Chicago
+State: IL
+ZIP: 60611

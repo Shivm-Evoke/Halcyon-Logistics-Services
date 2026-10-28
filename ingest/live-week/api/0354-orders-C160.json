@@ -1,0 +1,19 @@
+{
+  "client_id": "C160",
+  "orders": [
+    {
+      "client_order_ref": "LW-C160-2336",
+      "sku": "HX-2202",
+      "quantity": 43,
+      "service": "standard",
+      "received_at": "2026-10-29T00:07",
+      "ship_to": {
+        "name": "Diego Ortiz",
+        "street": "5320 Elm Street Apt 4B",
+        "city": "Manchester",
+        "state": "NH",
+        "zip": "03101"
+      }
+    }
+  ]
+}

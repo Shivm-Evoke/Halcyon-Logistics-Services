@@ -1,0 +1,19 @@
+{
+  "client_id": "C231",
+  "orders": [
+    {
+      "client_order_ref": "LW-C231-2483",
+      "sku": "HX-1270",
+      "quantity": 91,
+      "service": "standard",
+      "received_at": "2026-10-30T13:14",
+      "ship_to": {
+        "name": "Diego Walsh",
+        "street": "6406 Union Street Floor 2",
+        "city": "Salt Lake City",
+        "state": "UT",
+        "zip": "84101"
+      }
+    }
+  ]
+}

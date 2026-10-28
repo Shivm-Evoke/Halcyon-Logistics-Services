@@ -1,0 +1,19 @@
+{
+  "client_id": "C258",
+  "orders": [
+    {
+      "client_order_ref": "LW-C258-2071",
+      "sku": "HX-118",
+      "quantity": 83,
+      "service": "next day",
+      "received_at": "2026-10-28T07:36",
+      "ship_to": {
+        "name": "Ana Haddad",
+        "street": "490 Industrial Parkway Unit 12",
+        "city": "Seattle",
+        "state": "WA",
+        "zip": "98101"
+      }
+    }
+  ]
+}
