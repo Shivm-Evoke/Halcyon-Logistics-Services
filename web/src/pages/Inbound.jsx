@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { ResponsiveContainer } from '../components/motion.jsx';
 import DataTable from '../components/DataTable.jsx';
-import { axisX, axisY, hbarProps, ChartTip, Legend } from '../components/charts.jsx';
+import { axisX, axisY, hbarProps, ChartTip, Legend, ChartEmpty } from '../components/charts.jsx';
 import { Mail, FileCode2, KeyRound, FolderInput, Send, ExternalLink, X, Upload, Inbox as InboxIcon, MessagesSquare, Package, CheckCircle2, Wand2, PauseCircle, XCircle } from 'lucide-react';
 import { api, useApi, num, pct, dt, PAL } from '../api.js';
 
@@ -62,40 +62,46 @@ export default function Inbound() {
       <div className="grid g3 section-gap">
         <Card title="Outcome by channel" sub="Share of each channel's orders by outcome.">
           <Legend items={OUTCOMES.map((o) => ({ label: o.label, color: o.color }))} />
-          <div className="stack" style={{ marginTop: 14 }}>
-            {stats.data.by_channel.map((c) => (
-              <div key={c.channel}>
-                <div className="row between small" style={{ marginBottom: 5 }}><b>{c.channel}</b><span className="muted num-tab">{num(c.orders)} orders</span></div>
-                <div style={{ display: 'flex', gap: 2, height: 10, borderRadius: 0, overflow: 'hidden', background: 'var(--surface-3)' }}>
-                  {OUTCOMES.map((o) => c[o.key] > 0 && (
-                    <span key={o.key} title={`${o.label}: ${num(c[o.key])}`} style={{ width: `${(c[o.key] / c.orders) * 100}%`, background: o.color }} />
-                  ))}
+          {stats.data.by_channel.length === 0 ? <ChartEmpty height={140} message="No messages processed yet" /> : (
+            <div className="stack" style={{ marginTop: 14 }}>
+              {stats.data.by_channel.map((c) => (
+                <div key={c.channel}>
+                  <div className="row between small" style={{ marginBottom: 5 }}><b>{c.channel}</b><span className="muted num-tab">{num(c.orders)} orders</span></div>
+                  <div style={{ display: 'flex', gap: 2, height: 10, borderRadius: 0, overflow: 'hidden', background: 'var(--surface-3)' }}>
+                    {OUTCOMES.map((o) => c[o.key] > 0 && (
+                      <span key={o.key} title={`${o.label}: ${num(c[o.key])}`} style={{ width: `${(c[o.key] / c.orders) * 100}%`, background: o.color }} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
         <Card title="Problems found in client data" sub="Issue codes across all inbound orders.">
-          <ResponsiveContainer width="100%" height={Math.max(180, stats.data.by_issue.length * 26)}>
-            <BarChart data={stats.data.by_issue} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
-              <CartesianGrid stroke={PAL.grid} horizontal={false} />
-              <XAxis type="number" {...axisX} allowDecimals={false} />
-              <YAxis type="category" dataKey="code" {...axisY} interval={0} width={170} tick={{ fontSize: 12, fill: PAL.ink2, }} />
-              <Tooltip cursor={{ fill: PAL.cursor }} content={<ChartTip format={(v) => `${num(v)} orders`} />} />
-              <Bar dataKey="n" name="Orders" fill={PAL.series[1]} {...hbarProps} />
-            </BarChart>
-          </ResponsiveContainer>
+          {stats.data.by_issue.length === 0 ? <ChartEmpty message="No issues found yet" /> : (
+            <ResponsiveContainer width="100%" height={Math.max(180, stats.data.by_issue.length * 26)}>
+              <BarChart data={stats.data.by_issue} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
+                <CartesianGrid stroke={PAL.grid} horizontal={false} />
+                <XAxis type="number" {...axisX} allowDecimals={false} />
+                <YAxis type="category" dataKey="code" {...axisY} interval={0} width={170} tick={{ fontSize: 12, fill: PAL.ink2, }} />
+                <Tooltip cursor={{ fill: PAL.cursor }} content={<ChartTip format={(v) => `${num(v)} orders`} />} />
+                <Bar dataKey="n" name="Orders" fill={PAL.series[1]} {...hbarProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </Card>
         <Card title="Automatic fixes applied" sub="Predictable errors repaired without asking the client.">
-          <ResponsiveContainer width="100%" height={Math.max(180, stats.data.by_correction.length * 30)}>
-            <BarChart data={stats.data.by_correction} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
-              <CartesianGrid stroke={PAL.grid} horizontal={false} />
-              <XAxis type="number" {...axisX} allowDecimals={false} />
-              <YAxis type="category" dataKey="rule" {...axisY} interval={0} width={210} tick={{ fontSize: 12, fill: PAL.ink2 }} />
-              <Tooltip cursor={{ fill: PAL.cursor }} content={<ChartTip format={(v) => `${num(v)} fixes`} />} />
-              <Bar dataKey="n" name="Fixes" fill={PAL.series[0]} {...hbarProps} />
-            </BarChart>
-          </ResponsiveContainer>
+          {stats.data.by_correction.length === 0 ? <ChartEmpty message="No automatic fixes applied yet" /> : (
+            <ResponsiveContainer width="100%" height={Math.max(180, stats.data.by_correction.length * 30)}>
+              <BarChart data={stats.data.by_correction} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
+                <CartesianGrid stroke={PAL.grid} horizontal={false} />
+                <XAxis type="number" {...axisX} allowDecimals={false} />
+                <YAxis type="category" dataKey="rule" {...axisY} interval={0} width={210} tick={{ fontSize: 12, fill: PAL.ink2 }} />
+                <Tooltip cursor={{ fill: PAL.cursor }} content={<ChartTip format={(v) => `${num(v)} fixes`} />} />
+                <Bar dataKey="n" name="Fixes" fill={PAL.series[0]} {...hbarProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </Card>
       </div>
 
