@@ -1,0 +1,69 @@
+# Builds the app on every push to main, pushes the image to Azure Container Registry,
+# and the Azure Web App pulls it automatically (ACR webhook). Run it by hand with an
+# older commit SHA in "ref" to roll back.
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag or commit SHA to deploy (use an older SHA to roll back)"
+        required: false
+        default: main
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  REGISTRY: halcyonacr6433.azurecr.io
+  IMAGE: halcyon
+  APP_URL: https://halcyon-web-6433.azurewebsites.net
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Server unit tests
+        working-directory: server
+        run: |
+          npm ci
+          npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Build and push image
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          docker build -t $REGISTRY/$IMAGE:$SHA -t $REGISTRY/$IMAGE:latest .
+          docker push $REGISTRY/$IMAGE:$SHA
+          docker push $REGISTRY/$IMAGE:latest
+          echo "Deployed image tag: $SHA" >> $GITHUB_STEP_SUMMARY
+      - name: Wait for the site to come back healthy
+        run: |
+          sleep 60
+          for i in $(seq 1 30); do
+            if curl -fsS "$APP_URL/api/health"; then echo; echo "Site is healthy"; exit 0; fi
+            echo "Not ready yet ($i/30)"; sleep 20
+          done
+          echo "Site did not become healthy in time"; exit 1
