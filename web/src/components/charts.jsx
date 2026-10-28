@@ -39,6 +39,11 @@ export function ChartTip({ active, payload, label, format = (v) => v, title }) {
 
 export const tip = (format, title) => <Tooltip cursor={{ ...cursor }} content={<ChartTip format={format} title={title} />} />;
 
+/** Placeholder for a chart with no rows yet, sized to match the chart it replaces so the layout does not jump. */
+export function ChartEmpty({ height = 180, message = 'No data to show yet' }) {
+  return <div className="loading" style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>{message}</div>;
+}
+
 export function Legend({ items }) {
   return (
     <div className="legend">
