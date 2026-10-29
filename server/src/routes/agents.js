@@ -119,7 +119,7 @@ r.post('/agents/approvals/:id', async (req, res) => {
 let causes;
 r.get('/agents/causes', async (_req, res) => {
   causes ??= (async () => {
-    const [base, cutoff, carriers, friday, address, stock, routing, money] = await Promise.all([
+    const [base, cutoff, carriers, friday, address, stock, routing, money, detour] = await Promise.all([
       one(`SELECT count(*) AS orders, avg((on_time = 'Y')::int) AS on_time FROM deliveries`),
       q(`SELECT (extract(hour FROM order_received_ts) >= 8) AS after_cutoff, count(*) AS orders, avg((on_time = 'Y')::int) AS on_time
          FROM deliveries WHERE commitment_type = 'same_day' GROUP BY 1 ORDER BY 1`),
@@ -140,8 +140,18 @@ r.get('/agents/causes', async (_req, res) => {
               (SELECT count(*) FROM clients WHERE account_status = 'threatening_to_leave') AS at_risk_clients,
               (SELECT sum(annual_revenue_usd) FROM clients WHERE account_status = 'threatening_to_leave') AS at_risk_revenue,
               (SELECT sum(hours_on_delivery_complaints) FROM cs_time_study) AS complaint_hours, (SELECT sum(hours_total) FROM cs_time_study) AS cs_hours`),
+      // Route execution: how far trucks drove over plan, late against on-time, on clean orders (no address, cutoff or stock
+      // issue). actual_route_km is recorded after the trip, so this shows correlation, not cause.
+      one(`SELECT avg(actual_route_km / NULLIF(planned_route_km, 0) - 1) FILTER (WHERE is_late AND NOT (f_address OR f_cutoff OR f_stock)) AS clean_late,
+              avg(actual_route_km / NULLIF(planned_route_km, 0) - 1) FILTER (WHERE NOT is_late AND NOT (f_address OR f_cutoff OR f_stock)) AS clean_on_time,
+              count(*) FILTER (WHERE actual_route_km / NULLIF(planned_route_km, 0) > 1.2) AS over20,
+              avg((NOT is_late)::int) FILTER (WHERE actual_route_km / NULLIF(planned_route_km, 0) > 1.2) AS over20_on_time,
+              count(*) FILTER (WHERE root_cause = 'residual') AS detour_only_late,
+              count(*) FILTER (WHERE is_late AND NOT (f_address OR f_cutoff OR f_stock) AND actual_route_km / NULLIF(planned_route_km, 0) > 1.2) AS detour_late_incl_carrier,
+              count(*) FILTER (WHERE is_late) AS late, count(*) AS deliveries
+         FROM v_deliveries`),
     ]);
-    return { base, cutoff, carriers, friday, address, stock, routing, money };
+    return { base, cutoff, carriers, friday, address, stock, routing, money, detour };
   })().catch((e) => { causes = undefined; throw e; });
   res.json(await causes);
 });

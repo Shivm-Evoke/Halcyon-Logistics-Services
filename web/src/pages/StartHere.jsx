@@ -23,8 +23,8 @@ const PROCESS = [
 ];
 
 const STORY = [
-  { to: '/why-late', screen: 'Why we\'re late', title: 'The problem, and why it isn’t routing', show: 'The five causes table, then the routing chart.',
-    say: 'On-time is 71% against a 94% benchmark. Five causes explain it, all before or at the warehouse. Route length and stops make no difference.', point: '5 causes, 0 from routing' },
+  { to: '/why-late', screen: 'Why we\'re late', title: 'The problem, and how much routing explains', show: 'The causes table, then the routing chart.',
+    say: 'On-time is 71% against a 94% benchmark. Five causes before or at the warehouse explain most of it. Route planning makes no difference; trucks drifting off the planned route explain about 6–10%.', point: '5 upstream causes + route execution (~6–10%)' },
   { to: '/operations-day', screen: 'Operations day', title: 'The solution at work: our worst Friday', show: 'Start the day (Recorded if offline), jump to 08:00, then 13:00 for the second wave; approve one item.',
     say: 'Five agents run the day: they fix addresses, open a second pick wave, place stock, pick reliable carriers and rescue risky orders. Claude explains each decision; anything over a limit waits for a manager.', point: 'Recorded vs with agents' },
   { to: '/six-months', screen: 'Six months with agents', title: 'Proof on every order since April', show: 'The weekly lines, then the waterfall; change one assumption and re-run.',
@@ -52,7 +52,9 @@ const BRIEF = [
 const KNOWN = [
   ['On-time is 71.0% and flat every month', 'Known', 'deliveries.csv, all 48,340 rows'],
   ['94% of late deliveries have an upstream cause (address, cutoff, stock, carrier)', 'Known', 'Root-cause tagging on every delivery'],
-  ['Routing is not the cause', 'Known', 'Late rate flat by region, warehouse, stops; detours equal for all carriers'],
+  ['Route planning is not the cause', 'Known', 'Late rate flat by stops per route; median detour equal for all carriers'],
+  ['Detours over 20% coincide with late delivery (6–10% of late)', 'Known', 'Late clean orders drove 18% over plan vs 8% on time; measured after the trip'],
+  ['A routing product would prevent those detours', 'Assumed', 'Driver route-adherence pilot on one depot before any contract'],
   ['Email addresses are broken by hand-keying, not by the clients', 'Assumed', 'Compare 50 original emails with the WMS record (Q-005)'],
   ['Carriers D/E/F are really late, not just reporting late', 'Assumed', 'Match their delivered dates to proof-of-delivery (Q-011)'],
   ['Same-day promises are a default, not in contracts', 'Assumed', 'Check client contracts (Q-008)'],
@@ -108,7 +110,8 @@ export default function StartHere() {
           <div style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.35, }}>
             {pct(upstream, 0)} of late deliveries have a cause other than route planning, and {pct(beforeTruck, 0)} go wrong before
             the truck leaves. Five operations agents that fix those causes reach
-            {agents ? ` ${pct(agents)}` : ' ~91%'} on-time over the same six months; route planning makes no measurable difference.
+            {agents ? ` ${pct(agents)}` : ' ~91%'} on-time over the same six months. Route planning makes no measurable difference; route
+            execution explains about 6–10% of late deliveries, a driver-adherence fix, not a $680K engine.
           </div>
           <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
             <Badge tone="good">Don’t sign the routing contract as scoped</Badge><Badge tone="brand">Run the operations agents</Badge>

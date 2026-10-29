@@ -11,7 +11,7 @@ const mean = (rows, f) => rows.reduce((s, r) => s + f(r) * r.orders, 0) / rows.r
 export default function WhyLate() {
   const { data, error } = useApi('/agents/causes');
   if (!data) return <Loading error={error} />;
-  const { base, cutoff, carriers, friday, address, stock, routing, money } = data;
+  const { base, cutoff, carriers, friday, address, stock, routing, money, detour } = data;
   const good = carriers.filter((c) => ['A', 'B', 'C'].includes(c.carrier_id));
   const weak = carriers.filter((c) => ['D', 'E', 'F'].includes(c.carrier_id));
   const [before8, after8] = [cutoff.find((c) => !c.after_cutoff), cutoff.find((c) => c.after_cutoff)];
@@ -36,15 +36,20 @@ export default function WhyLate() {
     { n: 5, cause: 'Stock not at the nearest warehouse', agent: 'Stock',
       evidence: `A miss ships from ${num(missed.miles)} miles instead of ${num(stocked.miles)}; ${pct(missed.on_time, 0)} on time.`,
       hit: `${num(missed.orders)} orders` },
+    // Not an operations agent: the fix is driver route adherence, the part of the vendor's proposal the data supports.
+    { n: 6, cause: 'Trucks drifting from the planned route', fix: 'Driver route-adherence pilot',
+      evidence: `On clean orders, late deliveries drove ${pct(detour.clean_late, 0)} over the planned distance against ${pct(detour.clean_on_time, 0)} for on-time ones;
+        ${num(detour.over20)} deliveries drove more than 20% over plan and ${pct(detour.over20_on_time, 0)} of them were on time. Measured after the trip, so it shows correlation.`,
+      hit: `${num(detour.detour_only_late)}–${num(detour.detour_late_incl_carrier)} late (${pct(detour.detour_only_late / detour.late, 0)}–${pct(detour.detour_late_incl_carrier / detour.late, 0)} of late)` },
   ];
-  const overPlan = routing.reduce((s, r) => s + Number(r.actual_vs_planned), 0) / routing.length - 1;
   const routingData = routing.map((r) => ({ label: `${r.min_stops}–${r.max_stops} stops`, on_time: r.on_time, ratio: r.actual_vs_planned }));
 
   return (
     <>
       <PageHead title="Why we're late" eyebrow="The problem · 48,340 deliveries, Apr–Sep 2026">
-        Five causes, each measured on the deliveries themselves. All five happen before or at the warehouse, and each has an agent
-        that fixes it. Route planning, which the routing product would change, makes no measurable difference.
+        Six causes, each measured on the deliveries themselves. Five happen before or at the warehouse, and each has an agent that
+        fixes it. The sixth is route execution: trucks that drift far from the planned route. Route planning itself (how many stops a
+        route has) makes no measurable difference.
       </PageHead>
 
       <div className="grid g4 section-gap">
@@ -61,7 +66,7 @@ export default function WhyLate() {
             {causes.map((c) => (
               <tr key={c.n}>
                 <td className="num-tab">{c.n}</td><td style={{ whiteSpace: 'normal', minWidth: 180 }}><b>{c.cause}</b></td><td style={{ whiteSpace: 'normal', minWidth: 320 }}>{c.evidence}</td><td className="num-tab" style={{ whiteSpace: 'normal' }}>{c.hit}</td>
-                <td><Link to="/agents">{c.agent} agent <ArrowRight size={11} /></Link></td>
+                <td>{c.agent ? <Link to="/agents">{c.agent} agent <ArrowRight size={11} /></Link> : <span className="muted">{c.fix}</span>}</td>
               </tr>
             ))}
           </tbody>
@@ -69,7 +74,7 @@ export default function WhyLate() {
       </div>
 
       <div className="grid g3 section-gap">
-        <Card title="Routing is not the problem" sub="Clean orders: on-time by stops on the route." className="span2">
+        <Card title="Route planning is not the problem" sub="Clean orders: on-time by stops on the route." className="span2">
           <ResponsiveContainer height={220}>
             <BarChart data={routingData} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
               <CartesianGrid {...gridProps} />
@@ -81,9 +86,13 @@ export default function WhyLate() {
           </ResponsiveContainer>
         </Card>
         <Card title="What that means" sub="For the routing product leadership is about to buy.">
-          <p>On-time stays at {pct(Math.min(...routing.map((r) => r.on_time)), 0)}–{pct(Math.max(...routing.map((r) => r.on_time)), 0)} whether a route has 6 stops or 40,
-            and trucks drive {pct(overPlan, 0)} over the planned distance on every route, on time or late.</p>
-          <p className="muted small">Better routes cannot fix orders that leave late, leave from the wrong warehouse, or go with a slow carrier.</p>
+          <p>On-time stays at {pct(Math.min(...routing.map((r) => r.on_time)), 0)}–{pct(Math.max(...routing.map((r) => r.on_time)), 0)} whether a route has 6 stops or 40:
+            planning the route better does not move the number.</p>
+          <p>Route <i>execution</i> does: late clean orders drove {pct(detour.clean_late, 0)} over plan against {pct(detour.clean_on_time, 0)} for on-time ones. That links
+            to {pct(detour.detour_only_late / detour.late, 0)}–{pct(detour.detour_late_incl_carrier / detour.late, 0)} of late deliveries, about
+            +{((detour.detour_only_late / detour.deliveries) * 100).toFixed(1)}–{((detour.detour_late_incl_carrier / detour.deliveries) * 100).toFixed(1)} points.</p>
+          <p className="muted small">So scope the vendor proof of concept down to driver route adherence; it does not justify $680K as scoped. Better routes cannot fix
+            orders that leave late, leave from the wrong warehouse, or go with a slow carrier.</p>
         </Card>
       </div>
     </>

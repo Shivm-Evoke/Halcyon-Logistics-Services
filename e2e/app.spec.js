@@ -11,7 +11,7 @@ const PAGES = [
   ['/carriers', 'Carrier scorecard', '$85.92'],
   ['/control-tower', 'Exceptions control tower', '1,044'],
   ['/accounts', 'Account health', '$14.2M'],
-  ['/ai-model', 'AI risk model', 'Full AI operation'],
+  ['/ai-model', 'AI risk model', 'September backtest (ML policy)'],
   ['/data-quality', 'Data quality', 'Rule checks on the ingested data'],
   ['/inbound', 'Inbound gateway', 'Send data through the gateway'],
 ];
@@ -122,7 +122,7 @@ test('AI risk model shows out-of-time accuracy and the AI-driven backtest', asyn
   const screen = page.locator('#ai-model');
   await expect(screen.getByRole('heading', { level: 1, name: 'AI risk model' })).toBeVisible();
   await expect(screen.getByText(/^0\.8\d{2}$/).first()).toBeVisible();          // AUC
-  await expect(screen.getByText('Full AI operation')).toBeVisible();
+  await expect(screen.getByText(/September backtest \(ML policy\)/)).toBeVisible();
   await expect(screen.locator('.recharts-surface')).toHaveCount(4);
   // Live scorer: switching to an incomplete address raises the risk.
   const risk = screen.locator('.big-num').first();
@@ -170,7 +170,7 @@ test('inbound gateway processes a test email and shows fixes, holds and the repl
 
 test('inbound test pack: every channel and error pattern behaves as expected', async () => {
   const { execFileSync } = await import('node:child_process');
-  const out = execFileSync('node', ['ingest/run-test-pack.mjs'], { env: { ...process.env, API_URL: 'http://localhost:4100/api' }, encoding: 'utf8' });
+  const out = execFileSync('node', ['ingest/run-test-pack.mjs'], { env: { ...process.env, API_URL: `http://localhost:${process.env.E2E_API_PORT || '4100'}/api` }, encoding: 'utf8' });
   expect(out).toMatch(/(\d+)\/\1 checks passed/);
 });
 

@@ -1,19 +1,20 @@
 # Halcyon Control
 
 A working demo for Hackathon 5.0, Problem 2. Leadership blames carrier routing for Halcyon's late deliveries, but the data shows
-five causes, all before or at the warehouse. This app runs on the real six-month dataset (48,340 deliveries) and shows a solution
+five causes before or at the warehouse, plus route execution (trucks drifting more than 20% off the planned route, about 6–10% of
+late deliveries; route planning itself makes no difference). This app runs on the real six-month dataset (48,340 deliveries) and shows a solution
 at work: five AI agents that run Halcyon's operation and lift on-time from 71.0% to about 91%, with Claude (on Azure AI Foundry)
 reading orders, explaining every decision and briefing the manager.
 
 | Screen | What it does |
 |---|---|
 | Start here | Presenter guide: the story in seven steps, the brief mapped to screens, process map, known vs assumed, the data behind the app |
-| Why we're late | The five measured causes, and the evidence that route planning makes no difference |
+| Why we're late | The measured causes, the evidence that route planning makes no difference, and how much route execution explains |
 | Operations day | Live: the worst Friday of September replayed on a clock while the agents work; approval queue; Ops Lead briefings |
 | Six months with agents | All 48,340 orders re-run with the agents: weekly on-time, uplift by agent, money, at-risk accounts; editable assumptions |
 | Meet the agents | Each agent's job, rules and limits, with its latest decisions |
 | Test data | Drop a CSV of orders; the agents run on it and Operations day / Six months show the result |
-| The decision | Don't sign the routing contract as scoped; run the agents; rollout |
+| The decision | Don't sign the routing contract as scoped (scope it down to driver route adherence); run the agents; rollout |
 | Under the hood | Inbound gateway, Carrier scorecard, Inventory placement, Exceptions control tower, AI risk model, Data quality, Account health |
 
 ## Operations agents

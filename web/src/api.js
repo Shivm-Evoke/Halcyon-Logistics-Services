@@ -45,7 +45,7 @@ export const usdK = (v) => {
 export const num = (v) => (v == null ? '—' : Math.round(Number(v)).toLocaleString('en-US'));
 export const dt = (v) => (v ? String(v).replace('T', ' ').slice(0, 16) : '—');
 
-// Late-delivery causes take the first categorical slots; the routing residual is the neutral grey.
+// Late-delivery causes take the first categorical slots; route execution (the residual) is the neutral grey.
 // Colours are read from the live theme palette (theme.js), so they follow light/dark mode.
 const cause = (label, slot, issue) => ({
   label, issue,
@@ -57,7 +57,8 @@ export const CAUSES = {
   cutoff: cause('Same-day after 8am cutoff', 1, 'I2'),
   stock: cause('Stock not at nearest warehouse', 2, 'I3'),
   carrier: cause('Non-API carrier (D/E/F)', 3, 'I4'),
-  residual: cause('Residual (routing-addressable)', null, 'I6'),
+  // Every late delivery left here drove more than 20% over its planned route.
+  residual: cause('Route detour (>20% over plan)', null, 'I6'),
 };
 export { PAL };
 export const COMMITMENT = { same_day: 'Same-day', next_day: 'Next-day', standard: 'Standard' };

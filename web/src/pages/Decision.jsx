@@ -23,14 +23,15 @@ export default function Decision() {
   return (
     <>
       <PageHead title="The decision" eyebrow="For leadership">
-        Halcyon's late deliveries are decided before the truck leaves. The recommendation follows from that.
+        Most of Halcyon's late deliveries are decided before the truck leaves; a smaller share comes from trucks drifting off the
+        planned route. The recommendation follows from that.
       </PageHead>
 
       <div className="grid g2 section-gap">
         <Card>
           <div className="row small" style={{ gap: 8, marginBottom: 10, color: 'var(--bad-ink)' }}><XCircle size={15} /> Don't sign the routing contract as scoped</div>
-          <p style={{ fontSize: 'var(--t-lg)', fontWeight: 600, lineHeight: 1.35, margin: 0 }}>Route length and stops make no difference to on-time delivery in six months of data.</p>
-          <p className="small muted">The routing product optimises the one step that is not causing the delay.</p>
+          <p style={{ fontSize: 'var(--t-lg)', fontWeight: 600, lineHeight: 1.35, margin: 0 }}>Route planning makes no difference; route execution explains about 6–10% of late deliveries.</p>
+          <p className="small muted">Scope the vendor's proof of concept down to driver route adherence (about +1.7–2.8 points at best). It does not justify $680K as scoped.</p>
         </Card>
         <Card>
           <div className="row small" style={{ gap: 8, marginBottom: 10, color: 'var(--good-ink)' }}><CheckCircle2 size={15} /> Run the operations agents</div>
