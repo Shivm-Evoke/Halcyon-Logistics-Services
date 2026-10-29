@@ -4,17 +4,16 @@
 import express, { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { getContainer } from '../container.js';
 import { signToken, verifyToken, checkSecret } from '../ingest/auth.js';
 import { apiOrderResult } from '../ingest/reply.js';
 import { openApiSpec, docsPage } from '../ingest/openapi.js';
+import { SIGNING_KEY } from '../auth/key.js';
 
 const r = Router();
 const TOKEN_TTL = 3600;
 const MAX_ORDERS = 500;
-// Set JWT_SECRET in production; a random per-process key means tokens end when the server restarts.
-const JWT_KEY = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+const JWT_KEY = SIGNING_KEY;
 export const TEST_DATA_DIR = path.resolve(import.meta.dirname, '../../../ingest/test-data');
 
 const rawBody = express.text({ type: ['message/rfc822', 'text/plain', 'application/edi-x12', 'text/csv'], limit: '5mb' });

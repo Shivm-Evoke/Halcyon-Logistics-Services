@@ -14,6 +14,11 @@ import { ensureDecisionTable } from './agents/log.js';
 import { ensureDatasetTable } from './agents/datasetStore.js';
 import { watchInbox } from './ingest/inboxWatcher.js';
 import { getContainer } from './container.js';
+import session from './routes/session.js';
+import { gate } from './auth/access.js';
+import { SIGNING_KEY } from './auth/key.js';
+import { ensureUserTable, userStore, clientExists } from './auth/users.js';
+import { seedDemoUsers } from './auth/seed.js';
 
 const app = express();
 app.use(cors());
@@ -34,11 +39,14 @@ if (SITE_PASSWORD) {
 
 app.use(express.json({ limit: '5mb' }));
 
+// Signed-in users only: the portal for customers, every other screen's API for staff (REQUIRE_LOGIN=0 opens the staff area).
+app.use('/api', gate({ key: SIGNING_KEY, requireLogin: process.env.REQUIRE_LOGIN !== '0' }));
+
 app.get('/api/health', async (_req, res) => {
   await pool.query('SELECT 1');
   res.json({ ok: true });
 });
-app.use('/api', overview, operations, accounts, ml, ingest, agents);
+app.use('/api', session, overview, operations, accounts, ml, ingest, agents);
 
 // In production the API also serves the built website; every screen's path returns the app so deep links work.
 const SITE = path.resolve(import.meta.dirname, '../../web/dist');
@@ -56,6 +64,9 @@ const port = Number(process.env.PORT || 4000);
 // Warm the model before taking traffic so the first request is not slow.
 await ensureDecisionTable();
 await ensureDatasetTable();
+await ensureUserTable();
+const seeded = await seedDemoUsers(process.env, { store: userStore, clientExists });
+if (seeded.length) console.log(`Demo accounts ready: ${seeded.join(', ')}`);
 const container = await getContainer();
 // Load the agents' six months of orders up front, so the first replay or live day does not wait for it.
 await world();

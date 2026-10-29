@@ -4,7 +4,7 @@ SET client_min_messages = warning;
 -- the tables under "Solution layer" hold the records the new app creates.
 
 DROP VIEW IF EXISTS v_deliveries CASCADE;
-DROP TABLE IF EXISTS agent_datasets, agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
+DROP TABLE IF EXISTS shipment_events, users, agent_datasets, agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
   cs_time_study, warehouse_region_distance, warehouses, carriers, clients CASCADE;
 
 CREATE TABLE clients (
@@ -236,4 +236,17 @@ CREATE TABLE agent_datasets (
   has_outcomes boolean NOT NULL,
   rejected     jsonb NOT NULL DEFAULT '[]',
   orders       jsonb NOT NULL
+);
+
+-- Website accounts: customers (one client each) and Halcyon staff. Demo accounts are created at startup from env.
+CREATE TABLE users (
+  id             serial PRIMARY KEY,
+  email          text NOT NULL UNIQUE,
+  password_hash  text NOT NULL,
+  role           text NOT NULL CHECK (role IN ('customer', 'staff')),
+  client_id      text REFERENCES clients,
+  name           text,
+  created_at     timestamp NOT NULL DEFAULT now(),
+  last_login_at  timestamp,
+  CHECK (role = 'staff' OR client_id IS NOT NULL)
 );
