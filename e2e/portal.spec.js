@@ -1,17 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { CUSTOMER, STAFF_STATE } from './accounts.js';
+import { SIGNED_OUT, signIn, setDeskClock } from './helpers.js';
 
-const signedOut = { storageState: { cookies: [], origins: [] } };
-
-async function signIn(page, { email, password }, path = '/login') {
-  await page.goto(path);
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
-}
+const signedOut = { storageState: SIGNED_OUT };
 
 async function placeOrder(page, zip = '06103') {
   await page.goto('/portal/new-order');
+  await expect(page.getByRole('heading', { level: 1, name: 'Place orders' })).toBeVisible();
   await page.getByLabel('Item code (SKU)').fill('HX-2201');
   await page.getByLabel('Quantity').fill('5');
   await page.getByLabel('Recipient').fill('Ann Lee');
@@ -43,17 +38,20 @@ test.describe('signed out', () => {
 test.describe('customer', () => {
   test.use(signedOut);
 
-  test('places an order and tracks it while staff dispatch it', async ({ page, browser, baseURL }) => {
+  test('places an order and tracks it while staff move it on from Live operations', async ({ page, browser, baseURL }) => {
+    // Staff (the default signed-in state) start a fresh desk run, so the order is live and stays received until moved on.
+    const staff = await browser.newContext({ baseURL, storageState: STAFF_STATE });
+    await setDeskClock(staff.request, '2026-09-25 09:15');
     await signIn(page, CUSTOMER);
     await expect(page).toHaveURL(/\/portal$/);
     const ref = await placeOrder(page);
     await expect(page.locator('.timeline li.done')).toHaveCount(1);
-    // Staff (the default signed-in state) move it on one stage.
-    const staff = await browser.newContext({ baseURL, storageState: STAFF_STATE });
     const ops = await staff.newPage();
-    await ops.goto('/dispatch');
-    await ops.getByRole('button', { name: `Advance ${ref}` }).click();
-    await expect(ops.locator(`.dispatch-col[data-stage="picked"] [data-ref="${ref}"]`)).toBeVisible();
+    await ops.goto('/live-operations');
+    const row = ops.locator(`#live-orders tr[data-ref="${ref}"]`);
+    await expect(row).toContainText('Received');
+    await ops.getByRole('button', { name: `Move on ${ref}` }).click();
+    await expect(row).toContainText('Picked');
     await staff.close();
     await page.reload();
     await expect(page.locator('.timeline li.done')).toHaveCount(2);
@@ -80,6 +78,8 @@ test.describe('customer', () => {
     await expect(page).toHaveURL(/\/portal$/);
     expect((await page.request.get('/api/agents/datasets')).status()).toBe(403);
     expect((await page.request.get('/api/dispatch')).status()).toBe(403);
+    expect((await page.request.get('/api/desk')).status()).toBe(403);
+    expect((await page.request.post('/api/desk/advance')).status()).toBe(403);
   });
 });
 

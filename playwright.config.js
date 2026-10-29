@@ -4,7 +4,11 @@ import { STAFF_STATE } from './e2e/accounts.js';
 // E2E rebuilds and runs against its own database and ports, so it never touches the dev servers or demo data.
 // Empty Foundry settings keep the tests off the real Claude even when server/.env holds a key.
 // Test accounts are created in halcyon_test by e2e/seed-accounts.mjs; tests run signed in as staff (see e2e/global-setup.js).
-const env = { PGDATABASE: 'halcyon_test', INBOX_WATCH: '0', ANTHROPIC_FOUNDRY_API_KEY: '', ANTHROPIC_FOUNDRY_RESOURCE: '', REQUIRE_LOGIN: '1' };
+// The live order desk is on (DESK=1); sign-ins are signed with a test-only JWT secret.
+const env = {
+  PGDATABASE: 'halcyon_test', INBOX_WATCH: '0', ANTHROPIC_FOUNDRY_API_KEY: '', ANTHROPIC_FOUNDRY_RESOURCE: '', REQUIRE_LOGIN: '1',
+  DESK: '1', JWT_SECRET: 'e2e-only-jwt-secret-not-for-production',
+};
 
 export default defineConfig({
   testDir: 'e2e',

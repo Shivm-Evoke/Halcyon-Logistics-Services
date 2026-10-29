@@ -74,7 +74,7 @@ export const DEFECTS = {
   service_synonym: { label: 'Service in the client’s own words', expect: { fix: 'commitment_type' }, outcome: 'corrected' },
   qty_with_units: { label: 'Quantity with units ("12 units")', expect: { fix: 'quantity' }, outcome: 'corrected' },
   sku_format: { label: 'SKU spacing / case ("hx 2201")', expect: { fix: 'sku' }, outcome: 'corrected' },
-  same_day_after_cutoff: { label: 'Same-day requested after 8am', expect: { issue: 'same_day_after_cutoff' }, outcome: 'corrected' },
+  same_day_after_cutoff: { label: 'Same-day requested after 8am', expect: { issue: 'same_day_after_cutoff' }, outcome: 'accepted' }, // the desk keeps same-day; the Wave Planner decides
   missing_house_number: { label: 'Street without house number', expect: { issue: 'missing_house_number' }, outcome: 'held' },
   missing_city: { label: 'City missing', expect: { issue: 'missing_city' }, outcome: 'held' },
   missing_zip: { label: 'ZIP missing', expect: { issue: 'invalid_zip' }, outcome: 'held' },
