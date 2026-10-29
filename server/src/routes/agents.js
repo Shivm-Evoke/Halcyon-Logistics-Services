@@ -110,8 +110,14 @@ r.get('/agents/approvals', async (req, res) => {
 r.post('/agents/approvals/:id', async (req, res) => {
   const { approval } = req.body || {};
   if (!['approved', 'rejected'].includes(approval)) return res.status(400).json({ error: 'approval must be "approved" or "rejected"', field: 'approval' });
-  const result = await decisionLog.setApproval(Number(req.params.id), approval, 'manager');
+  const actor = typeof req.body?.actor === 'string' && req.body.actor.trim() ? req.body.actor.trim().slice(0, 40) : 'manager';
+  const result = await decisionLog.setApproval(Number(req.params.id), approval, actor);
   if (!result.row) return res.status(404).json({ error: 'No such decision' });
+  // A parked step of a demo order's golden thread carries on once decided (loaded lazily: the thread needs this module's world).
+  if (result.changed && result.row.run_id === 'thread') {
+    const { getThread } = await import('../orders/service.js');
+    await (await getThread()).thread.resume(result.row);
+  }
   res.json(result);
 });
 

@@ -11,6 +11,8 @@ import ml from './routes/ml.js';
 import ingest from './routes/ingest.js';
 import agents, { world } from './routes/agents.js';
 import health from './routes/health.js';
+import orders from './routes/orders.js';
+import { ensureOrderEventsTable } from './orders/events.js';
 import { ensureDecisionTable } from './agents/log.js';
 import { ensureDatasetTable } from './agents/datasetStore.js';
 import { ensureAppStateTable } from './ingest/liveWeek.js';
@@ -21,9 +23,10 @@ const app = express();
 app.use(cors());
 
 // A public deployment sets SITE_PASSWORD: the browser asks for it once (any user name).
-// The health check and the client API, which has its own token login, stay open.
+// The health check, the client API (its own token login) and the demo tracking page (an unguessable link) stay open.
 const SITE_PASSWORD = process.env.SITE_PASSWORD;
-const OPEN = /^\/api\/(health$|auth\/|v1\/)/;
+// The page shell and its built assets carry no data, so the tracking page can load them; every data API stays protected.
+const OPEN = /^\/api\/(health$|auth\/|v1\/|track\/)|^\/track\/|^\/assets\/|^\/(favicon|icons)/;
 const same = (a, b) => a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 if (SITE_PASSWORD) {
   app.use((req, res, next) => {
@@ -40,7 +43,7 @@ app.get('/api/health', async (_req, res) => {
   await pool.query('SELECT 1');
   res.json({ ok: true });
 });
-app.use('/api', health, overview, operations, accounts, ml, ingest, agents);
+app.use('/api', health, overview, operations, accounts, ml, ingest, agents, orders);
 
 // In production the API also serves the built website; every screen's path returns the app so deep links work.
 const SITE = path.resolve(import.meta.dirname, '../../web/dist');
@@ -59,6 +62,7 @@ const port = Number(process.env.PORT || 4000);
 await ensureDecisionTable();
 await ensureDatasetTable();
 await ensureAppStateTable();
+await ensureOrderEventsTable();
 const container = await getContainer();
 // Load the agents' six months of orders up front, so the first replay or live day does not wait for it.
 await world();

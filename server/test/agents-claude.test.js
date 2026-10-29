@@ -132,3 +132,11 @@ test('a working probe reports ok, and a later failed call records its reason', a
   assert.equal(claude.status().state, 'error');
   assert.match(claude.status().reason, /529|Overloaded/);
 });
+
+test('writeNotice drafts a short client message, or returns the template when Claude is unavailable', async () => {
+  const client = fake(() => text('Your order IN-000001 is running a day late; we are on it.'));
+  const ok = await createClaude({ client }).writeNotice({ order: 'IN-000001' }, 'template');
+  assert.deepEqual(ok, { text: 'Your order IN-000001 is running a day late; we are on it.', source: 'claude' });
+  assert.equal(client.calls[0].output_config.effort, 'low');
+  assert.deepEqual(await createClaude({ client: null }).writeNotice({ order: 'IN-000001' }, 'template'), { text: 'template', source: 'rules only' });
+});

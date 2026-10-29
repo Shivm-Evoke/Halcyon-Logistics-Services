@@ -5,6 +5,9 @@ import { PREMIUM, restricted } from './carrier.js';
 
 const MIN_GAIN = 0.05; // a move must cut the risk of being late by at least 5 points to be worth the disruption
 
+/** Key clients (Tier 1, or threatening to leave) get a proactive message, which a manager approves before it is sent. */
+export const needsClientNotice = (o) => o.account_tier === 'Tier 1' || o.account_status === 'threatening_to_leave';
+
 /**
  * @param usage  mutable { carrier_id: orders assigned today } from the carrier agent; upgrades move counts in place
  * @param canUse (order, carrier) => whether a move there stays within the approved cost limits
@@ -28,7 +31,7 @@ export function watch(dayOrders, assignments, { model, limits, usage, settings, 
       usage[current] = Math.max(0, (usage[current] || 0) - 1);
       usage[better.c] = (usage[better.c] || 0) + 1;
     }
-    const notifyClient = o.account_tier === 'Tier 1' || o.account_status === 'threatening_to_leave';
+    const notifyClient = needsClientNotice(o);
     out.set(o.delivery_id, {
       agent: 'watchtower',
       action: upgrade ? 'upgrade' : 'none',

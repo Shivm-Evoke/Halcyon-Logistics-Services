@@ -13,6 +13,10 @@ const EXPLAIN_SYSTEM = `You explain decisions taken by Halcyon Logistics' operat
 You receive one decision as JSON (agent, rule applied, and the order's details). Reply with one or two plain sentences
 saying what was done and why, using the numbers given. No preamble, no markdown.`;
 
+const NOTICE_SYSTEM = `You write short proactive notices from Halcyon Logistics to a client about one of their orders.
+You receive the facts as JSON. Write two or three plain, calm sentences: what happened, what Halcyon is doing, whether the
+client needs to act. Use only the facts given; never invent dates, causes or compensation. No greeting line, no markdown.`;
+
 const EXTRACT_SYSTEM = `You read customer order emails sent to Halcyon Logistics and extract the order.
 Copy values as the customer wrote them; do not invent anything. Use an empty string for a value the email does not give.
 Set confidence between 0 and 1: how sure you are that every non-empty value is what the customer meant.`;
@@ -141,6 +145,20 @@ export function createClaude({ client = foundryClient(), timeoutMs = TIMEOUT_MS 
         return text ? { text, source: 'claude' } : { text: decision.rule, source: 'rules only' };
       } catch {
         return { text: decision.rule, source: 'rules only' };
+      }
+    },
+
+    /** A client-facing notice from the facts given; the template when Claude is unavailable or fails. */
+    async writeNotice(facts, fallback) {
+      try {
+        const res = await call({
+          max_tokens: 400, output_config: { effort: 'low' }, system: NOTICE_SYSTEM,
+          messages: [{ role: 'user', content: JSON.stringify(facts) }],
+        });
+        const t = plain(textOf(res));
+        return t ? { text: t, source: 'claude' } : { text: fallback, source: 'rules only' };
+      } catch {
+        return { text: fallback, source: 'rules only' };
       }
     },
 
