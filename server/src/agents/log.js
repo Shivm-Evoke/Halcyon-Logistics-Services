@@ -45,6 +45,10 @@ export const decisionLog = {
     return { changed: false, row: row ?? null };
   },
 
+  setReason(id, reason, source) {
+    return q('UPDATE agent_decisions SET reason = $2, reason_source = $3 WHERE id = $1', [id, reason, source]);
+  },
+
   expire(runId, ids) {
     return q(`UPDATE agent_decisions SET approval = 'expired' WHERE run_id = $1 AND id = ANY($2) AND approval = 'pending' RETURNING id`, [runId, ids]);
   },
@@ -72,6 +76,10 @@ export function createMemoryLog() {
       if (row.approval !== 'pending') return { changed: false, row: { ...row } };
       Object.assign(row, { approval, actor });
       return { changed: true, row: { ...row } };
+    },
+    async setReason(id, reason, source) {
+      const row = rows.find((r) => r.id === Number(id));
+      if (row) Object.assign(row, { reason, reason_source: source });
     },
     async expire(runId, ids) {
       const hit = rows.filter((r) => r.run_id === runId && ids.includes(r.id) && r.approval === 'pending');

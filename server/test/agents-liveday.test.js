@@ -116,3 +116,35 @@ test('recorded mode replays saved reasons without calling Claude', async () => {
   assert.ok(Object.values(s.lanes).flat().some((e) => e.reason.startsWith('AI: ')));
   assert.ok(s.briefings.some((x) => x.text === 'Briefing at 08:00'));
 });
+
+test('review fix: every stock move of the day is its own decision', async () => {
+  const orders = history().map((o, i) => (i % 3 === 0
+    ? { ...o, stock_miss: 1, fulfilment_warehouse_id: 'W2', distance_miles: 1200 } : o));
+  const live = new LiveDay({ day: DAY, orders, distances: { ...distances, W2: { West: 1200 } }, rates, settings: S, claude: echo, log: createMemoryLog() });
+  await live.advance(24 * 60);
+  const moved = live.decided.filter((o, i) => orders.find((x) => x.delivery_id === o.delivery_id).stock_miss && !o.stock_miss).length;
+  assert.ok(moved > 1);
+  assert.equal((await live.state()).totals.stock, moved);
+});
+
+test('review fix: two tabs advancing at once never log a decision twice or leave an orphan', async () => {
+  const log = createMemoryLog();
+  const slow = { ...log, insert: async (rows) => { await new Promise((r) => setTimeout(r, 20)); return log.insert(rows); } };
+  const live = make({ log: slow });
+  await Promise.all([live.advance(6 * 60), live.advance(6 * 60), live.state()]);
+  const rows = await log.list({ runId: live.runId, limit: 100000 });
+  const keys = rows.map((r) => `${r.agent}:${r.delivery_id}`);
+  assert.equal(new Set(keys).size, keys.length);
+  const s = await live.state();
+  assert.equal(Object.values(s.totals).reduce((a, b) => a + b, 0), rows.length);
+  assert.equal(s.simTime, '12:00');
+});
+
+test('review fix: Claude\'s reasons are saved to the decision log', async () => {
+  const log = createMemoryLog();
+  const live = make({ log });
+  await live.advance(14 * 60);
+  await live.idle();
+  const rows = await log.list({ runId: live.runId, limit: 100000 });
+  assert.ok(rows.some((r) => r.reason_source === 'claude' && r.reason.startsWith('AI: ')));
+});

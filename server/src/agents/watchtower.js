@@ -6,10 +6,11 @@ import { PREMIUM, restricted } from './carrier.js';
 const MIN_GAIN = 0.05; // a move must cut the risk of being late by at least 5 points to be worth the disruption
 
 /**
- * @param usage mutable { carrier_id: orders assigned today } from the carrier agent; upgrades move counts in place
+ * @param usage  mutable { carrier_id: orders assigned today } from the carrier agent; upgrades move counts in place
+ * @param canUse (order, carrier) => whether a move there stays within the approved cost limits
  * @returns {Map<string, { agent:'watchtower', action:'none'|'upgrade', carrier_id, risk, notifyClient, needsApproval, rule }>}
  */
-export function watch(dayOrders, assignments, { model, limits, usage, settings }) {
+export function watch(dayOrders, assignments, { model, limits, usage, settings, canUse = () => true }) {
   const out = new Map();
   for (const o of dayOrders) {
     const current = assignments.get(o.delivery_id)?.carrier_id ?? o.carrier_id;
@@ -19,7 +20,7 @@ export function watch(dayOrders, assignments, { model, limits, usage, settings }
       continue;
     }
     const better = Object.keys(limits)
-      .filter((c) => c !== current && (usage[c] || 0) < limits[c] && (!restricted(o) || PREMIUM.includes(c)))
+      .filter((c) => c !== current && (usage[c] || 0) < limits[c] && (!restricted(o) || PREMIUM.includes(c)) && canUse(o, c))
       .map((c) => ({ c, risk: 1 - model.pOnTime({ ...o, carrier_id: c }) }))
       .sort((a, b) => a.risk - b.risk)[0];
     const upgrade = better && risk - better.risk >= MIN_GAIN;

@@ -66,7 +66,15 @@ export class LiveDay {
     this.briefings = [];
     this.work = new Set();
     this.simMinutes = 0;
+    this.queue = Promise.resolve();
     this.recompute();
+  }
+
+  // Two tabs, a jump and a poll can arrive together: each runs to completion before the next starts.
+  #serial(fn) {
+    const run = this.queue.then(fn);
+    this.queue = run.catch(() => {});
+    return run;
   }
 
   recompute() {
@@ -93,7 +101,11 @@ export class LiveDay {
   }
 
   /** Moves the clock forward, revealing decisions and starting Claude's work for each half-hour passed. */
-  async advance(minutes) {
+  advance(minutes) {
+    return this.#serial(() => this.#advance(minutes));
+  }
+
+  async #advance(minutes) {
     const target = Math.min(24 * 60, this.simMinutes + Math.max(0, minutes));
     const briefAt = new Set(['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', this.settings.secondWaveAt].map(minutesOf));
     let t = this.simMinutes;
@@ -105,7 +117,7 @@ export class LiveDay {
       t = next;
       this.simMinutes = t;
     }
-    return this.state();
+    return this.#state();
   }
 
   async #reveal(until) {
@@ -130,14 +142,19 @@ export class LiveDay {
   }
 
   #explain(ev) {
+    const save = (text) => {
+      Object.assign(ev, { reason: text, reason_source: 'claude' });
+      return this.log.setReason?.(ev.id, text, 'claude');
+    };
     if (this.mode === 'recorded') {
       const text = this.recorded.reasons[ev.key];
-      if (text) Object.assign(ev, { reason: text, reason_source: 'claude' });
+      if (text) this.#track(Promise.resolve(save(text)).catch(() => {}));
       return;
     }
     if (!this.claude?.available) return;
     this.#track(this.claude.explain(ev.decision, { order: ev.client, simTime: ev.simTime }).then((r) => {
-      if (r.source === 'claude') Object.assign(ev, { reason: r.text, reason_source: 'claude' });
+      if (r.source === 'claude') return save(r.text);
+      return undefined;
     }).catch(() => {}));
   }
 
@@ -218,7 +235,11 @@ export class LiveDay {
     if (changed) this.recompute();
   }
 
-  async state() {
+  state() {
+    return this.#serial(() => this.#state());
+  }
+
+  async #state() {
     await this.#syncApprovals();
     const lanes = Object.fromEntries(AGENT_ORDER.map((a) => [a, []]));
     const all = [...this.events.values()].sort((a, b) => b.at - a.at || b.id - a.id);

@@ -48,3 +48,36 @@ test('a decision that needs approval is not carried out until approved', () => {
   const approved = simulateDay([order], ctx(new Map([[approvalKey(d), 'approved']])));
   assert.equal(approved.decided[0].carrier_id, 'A');
 });
+
+test('review fix: per-order stock decisions each get their own key', () => {
+  assert.notEqual(approvalKey({ agent: 'stock', delivery_id: 'D1' }), approvalKey({ agent: 'stock', delivery_id: 'D2' }));
+  assert.equal(approvalKey({ agent: 'stock', pair: 'C1|West' }), 'stock:C1|West');
+});
+
+test('review fix: the watchtower cannot undo an unapproved or rejected carrier choice', () => {
+  // A wins on expected cost but is $10 dearer than D, over the $6 cap; the watchtower would like A too.
+  const model = { pOnTime: (o) => ({ A: 0.95, D: 0.3 }[o.carrier_id]) };
+  const orders = ['D1', 'D2', 'D3'].map((id) => ({ delivery_id: id, received_ts: '2026-09-24 06:00', commitment_type: 'standard', account_tier: 'Tier 2', sla: 1, carrier_id: 'D', address_incomplete: 0, stock_miss: 0, cutoff_breach: 0 }));
+  const ctx = (approvals) => ({
+    settings: { ...S, agents: { intake: false, wave: false, stock: false, carrier: true, watchtower: true } },
+    model, distances: {}, rates: { A: 20, D: 10 }, limits: { A: 10, D: 10 }, isFriday: false, rand: () => 0.5, approvals,
+  });
+  assert.deepEqual(simulateDay(orders, ctx(new Map())).decided.map((o) => o.carrier_id), ['D', 'D', 'D']);
+  const rejected = new Map(orders.map((o) => [`carrier:${o.delivery_id}`, 'rejected']));
+  assert.deepEqual(simulateDay(orders, ctx(rejected)).decided.map((o) => o.carrier_id), ['D', 'D', 'D']);
+  const approved = new Map(orders.map((o) => [`carrier:${o.delivery_id}`, 'approved']));
+  assert.deepEqual(simulateDay(orders, ctx(approved)).decided.map((o) => o.carrier_id), ['A', 'A', 'A']);
+});
+
+test('review fix: a same-day order over the cap falls back to the cheapest of A, B and C, never D, E or F', () => {
+  const model = { pOnTime: (o) => ({ A: 0.95, B: 0.7, F: 0.5 }[o.carrier_id]) };
+  const o = { delivery_id: 'S1', received_ts: '2026-09-24 06:00', commitment_type: 'same_day', account_tier: 'Tier 2', sla: 1, carrier_id: 'F', address_incomplete: 0, stock_miss: 0, cutoff_breach: 0 };
+  const { decided, decisions } = simulateDay([o], {
+    settings: { ...S, agents: { intake: false, wave: false, stock: false, carrier: true, watchtower: false } },
+    model, distances: {}, rates: { A: 30, B: 18, F: 10 }, limits: { A: 10, B: 10, F: 10 }, isFriday: false, rand: () => 0.5, approvals: new Map(),
+  });
+  const d = decisions.find((x) => x.agent === 'carrier');
+  assert.equal(d.carrier_id, 'A');
+  assert.equal(d.needsApproval, true);       // $12 above B, the cheapest allowed carrier
+  assert.equal(decided[0].carrier_id, 'B');
+});

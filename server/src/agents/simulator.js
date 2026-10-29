@@ -7,7 +7,7 @@ import { CarrierCapacity } from '../ml/CarrierCapacity.js';
 import { intakeDecide } from './intake.js';
 import { planWaves } from './wave.js';
 import { StockAgent } from './stock.js';
-import { allocateCarriers, dayLimits } from './carrier.js';
+import { allocateCarriers, dayLimits, withinCap } from './carrier.js';
 import { watch } from './watchtower.js';
 import { PENALTY_USD, REDELIVERY_USD } from '../rules.js';
 
@@ -39,7 +39,7 @@ function hash(s) {
 /** One random stream per day, so each day's decisions do not depend on the days before it. */
 export const randForDay = (seed, day) => mulberry32(hash(`${seed}|${day}`));
 
-export const approvalKey = (d) => (d.agent === 'stock' ? `stock:${d.pair}` : `${d.agent}:${d.delivery_id}`);
+export const approvalKey = (d) => (d.agent === 'stock' && d.pair ? `stock:${d.pair}` : `${d.agent}:${d.delivery_id}`);
 
 /**
  * Applies the enabled agents to one day's orders.
@@ -81,19 +81,23 @@ export function simulateDay(dayOrders, ctx) {
     }
   }
   const limitsToday = dayLimits(limits, settings, ctx.isFriday);
+  const approvedCarrier = new Map();   // order -> the over-cap carrier a manager approved for it
   if (on.carrier) {
     const { assignments } = allocateCarriers(orders, { model, limits, rates, settings, isFriday: ctx.isFriday });
     for (const o of orders) {
       const a = assignments.get(o.delivery_id);
-      o.carrier_id = ok(a, o.delivery_id) ? a.carrier_id : (a.fallbackCarrierId ?? a.carrier_id);
+      const approved = ok(a, o.delivery_id);
+      if (a.needsApproval && approved) approvedCarrier.set(o.delivery_id, a.carrier_id);
+      o.carrier_id = approved ? a.carrier_id : (a.fallbackCarrierId ?? a.carrier_id);
       decisions.push({ ...a, delivery_id: o.delivery_id });
     }
   }
+  const canUse = (o, c) => !on.carrier || withinCap(o, c, rates, settings) || approvedCarrier.get(o.delivery_id) === c;
   if (on.watchtower) {
     const usage = {};
     for (const o of orders) usage[o.carrier_id] = (usage[o.carrier_id] || 0) + 1;
     const current = new Map(orders.map((o) => [o.delivery_id, { carrier_id: o.carrier_id }]));
-    const watched = watch(orders, current, { model, limits: limitsToday, usage, settings });
+    const watched = watch(orders, current, { model, limits: limitsToday, usage, settings, canUse });
     for (const o of orders) {
       const w = watched.get(o.delivery_id);
       if (w.action === 'upgrade') o.carrier_id = w.carrier_id;

@@ -8,6 +8,12 @@ export const PREMIUM = ['A', 'B', 'C'];
 /** Same-day and Tier 1 orders only travel with A, B or C. */
 export const restricted = (o) => o.commitment_type === 'same_day' || o.account_tier === 'Tier 1';
 
+/** The cheapest rate an order may travel at: among A-C for same-day and Tier 1 orders, otherwise among all carriers. */
+export const cheapestFor = (o, rates) => Math.min(...Object.entries(rates).filter(([c]) => !restricted(o) || PREMIUM.includes(c)).map(([, r]) => r));
+
+/** True when carrier c costs no more than the cap above the cheapest carrier the order may use. */
+export const withinCap = (o, c, rates, settings) => rates[c] != null && rates[c] - cheapestFor(o, rates) <= settings.costCapUsd;
+
 /** Today's carrier limits, with A-C raised by the capacity pre-booked for Fridays. */
 export function dayLimits(limits, settings, isFriday) {
   const lim = { ...limits };
@@ -24,7 +30,6 @@ export function allocateCarriers(dayOrders, { model, limits, rates, settings, is
   const lim = dayLimits(limits, settings, isFriday);
   const usage = Object.fromEntries(Object.keys(lim).map((c) => [c, 0]));
   const hasRoom = (c) => usage[c] < lim[c];
-  const cheapest = Math.min(...Object.values(rates));
   const carriers = Object.keys(rates).filter((c) => c in lim);
 
   const prepared = dayOrders.map((o) => {
@@ -47,9 +52,10 @@ export function allocateCarriers(dayOrders, { model, limits, rates, settings, is
       rule = restricted(o) ? 'A, B and C at capacity today: best remaining carrier' : 'All preferred carriers at capacity: best remaining carrier';
     }
     usage[pick.c] = (usage[pick.c] || 0) + 1;
-    const extraCost = rates[pick.c] - cheapest;
+    // The cap is measured from the cheapest carrier this order may use, so a same-day order is never pushed off A-C.
+    const extraCost = rates[pick.c] - cheapestFor(o, rates);
     const needsApproval = extraCost > settings.costCapUsd;
-    const fallback = needsApproval ? all.find((x) => x.c !== pick.c && rates[x.c] - cheapest <= settings.costCapUsd && hasRoom(x.c)) : null;
+    const fallback = needsApproval ? allowed.find((x) => x.c !== pick.c && withinCap(o, x.c, rates, settings) && hasRoom(x.c)) : null;
     assignments.set(o.delivery_id, {
       agent: 'carrier',
       carrier_id: pick.c,
@@ -57,7 +63,7 @@ export function allocateCarriers(dayOrders, { model, limits, rates, settings, is
       extraCost,
       needsApproval,
       fallbackCarrierId: fallback?.c ?? null,
-      rule: needsApproval ? `${rule}; $${extraCost.toFixed(2)} above the cheapest carrier, over the $${settings.costCapUsd} cap` : rule,
+      rule: needsApproval ? `${rule}; ${extraCost.toFixed(2)} above the cheapest carrier it may use, over the ${settings.costCapUsd} cap` : rule,
     });
   }
   return { assignments, usage };
