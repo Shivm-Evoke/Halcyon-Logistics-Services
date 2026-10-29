@@ -73,6 +73,31 @@ Without them the app runs with rules only ("AI offline: rules running"). To reco
 Live mode, run it to the end, then `POST /api/agents/live/<runId>/record`; this writes `server/data/recorded-day.json`, which
 Recorded mode replays without any network.
 
+## Website: customers and staff
+
+The site is a logistics company's front door with three areas:
+
+- **Public** (`/`): the homepage and **Sign in** (`/login`).
+- **Customer portal** (`/portal`): a customer's dashboard, **New order**, **My shipments** and each shipment's page. A new
+  order goes through the inbound gateway like an API, email or file order. If it is held, the customer fixes it on the
+  shipment page and it is re-checked.
+- **Staff** (everything else): the operations story (Start here is `/start`) and the **Dispatch board**, where staff move a
+  shipment one stage at a time: received → picked → collected → in transit → delivered. The customer sees each move.
+
+Accounts are created at startup from environment variables only (never in code). Set them in `server/.env` locally and in
+the Azure Web App's App settings in production:
+
+| Variable | Meaning |
+|---|---|
+| `DEMO_CUSTOMER_EMAIL`, `DEMO_CUSTOMER_PASSWORD` | the demo customer's sign-in |
+| `DEMO_CUSTOMER_CLIENT` | the client that customer belongs to (default `C055`) |
+| `DEMO_STAFF_EMAIL`, `DEMO_STAFF_PASSWORD` | the Halcyon staff sign-in |
+| `REQUIRE_LOGIN` | `0` opens the staff area without signing in (default: sign-in required) |
+
+Sign-ins last 8 hours and need `JWT_SECRET` set in production, or they end when the server restarts. The client API
+(`/api/auth/login`, `/api/v1/orders`) keeps its own bearer tokens. The gateway scripts sign in with `STAFF_EMAIL` and
+`STAFF_PASSWORD` when the internal routes need it.
+
 ## Stack
 
 - **db/**: PostgreSQL schema, plus a `v_deliveries` view that tags every delivery with its failure flags and root cause

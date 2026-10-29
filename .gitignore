@@ -26,3 +26,6 @@ playwright/.cache/
 *.log
 .vscode/
 .idea/
+
+# Playwright sign-in state
+e2e/.auth/

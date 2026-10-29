@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { STAFF } from './accounts.js';
 
 const PAGES = [
   ['/why-late', "Why we're late", '71.0%'],
@@ -183,7 +184,7 @@ test('inbound gateway processes a test email and shows fixes, holds and the repl
 
 test('inbound test pack: every channel and error pattern behaves as expected', async () => {
   const { execFileSync } = await import('node:child_process');
-  const out = execFileSync('node', ['ingest/run-test-pack.mjs'], { env: { ...process.env, API_URL: 'http://localhost:4100/api' }, encoding: 'utf8' });
+  const out = execFileSync('node', ['ingest/run-test-pack.mjs'], { env: { ...process.env, API_URL: 'http://localhost:4100/api', STAFF_EMAIL: STAFF.email, STAFF_PASSWORD: STAFF.password }, encoding: 'utf8' });
   expect(out).toMatch(/(\d+)\/\1 checks passed/);
 });
 
@@ -229,7 +230,7 @@ test('theme switch applies dark mode, remembers it, recolours charts, and switch
 test('start here maps the story and links every step to its screen', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/');
+  await page.goto('/start');
   await expect(page.getByRole('heading', { level: 1, name: 'Start here' })).toBeVisible();
   await expect(page.getByText('Present it in seven steps')).toBeVisible();
   await expect(page.getByText('How the work runs today, and where it breaks')).toBeVisible();
@@ -242,7 +243,7 @@ test('start here maps the story and links every step to its screen', async ({ pa
 });
 
 test('story scroll: scrolling moves the sidebar and URL, choosing a screen scrolls to it', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/start');
   await expect(page.locator('#why-late .page-head h1')).toBeVisible();
   await page.waitForLoadState('networkidle');   // screens above finish loading, so positions are final
   // Scroll "Why we're late" up under the reading line: the sidebar and URL follow.
