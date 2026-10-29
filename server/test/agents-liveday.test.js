@@ -160,3 +160,14 @@ test('test data: a dataset with no September Friday plays its busiest day, judge
   assert.equal(s.counters.actual, null);
   assert.ok(s.counters.baseline > 0 && s.counters.agents >= s.counters.baseline);
 });
+
+test('test data: the live day\'s stock agent learns from the history before the test day', async () => {
+  const hist = history();
+  const shifted = hist.filter((o) => o.received_ts.startsWith(DAY)).map((o) => ({ ...o, delivery_id: `T-${o.delivery_id}`, received_ts: o.received_ts.replace(DAY, '2026-11-06'), stock_miss: 1, fulfilment_warehouse_id: 'W2', distance_miles: 1200, late: null }));
+  const withMisses = hist.map((o) => ({ ...o, stock_miss: 1, fulfilment_warehouse_id: 'W2', distance_miles: 1200 }));
+  const world = buildWorld(withMisses, S);
+  const dists = { ...distances, W2: { West: 1200 } };
+  const live = new LiveDay({ day: '2026-11-06', orders: shifted, history: withMisses, distances: dists, rates, settings: S, claude: echo, log: createMemoryLog(), world });
+  await live.advance(24 * 60);
+  assert.ok((await live.state()).totals.stock > 0);
+});

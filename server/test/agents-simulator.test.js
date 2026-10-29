@@ -92,9 +92,23 @@ test('test data: the yardstick comes from history, and without outcomes the comp
   assert.equal(r.overall.baseline, r.waterfall[0].onTime);
   assert.ok(r.overall.agents > r.overall.baseline);
   assert.ok(r.weekly.every((w) => w.actual === null && w.baseline > 0 && w.agents > 0));
+  assert.deepEqual(r.daily.map((d) => d.day), ['2026-09-21', '2026-09-22', '2026-09-23']);
+  assert.ok(r.daily.every((d) => d.actual === null && d.baseline > 0 && d.agents > 0));
   assert.ok(r.money.penaltiesSavedUsd > 0 && Number.isFinite(r.money.netUsd));
-  assert.ok(r.accounts.every((a) => a.actual === null && a.agents > 0));
+  assert.ok(r.accounts.every((a) => a.actual === null && a.agents > 0 && a.baseline > 0));
   assert.ok(!JSON.stringify(r).includes('NaN'));
   // The same orders judged with their own outcomes give the same agents' rate: the yardstick did not change.
   assert.equal(runReplay(history, { ...opts(), world }).overall.agents, r.overall.agents);
+});
+
+test('test data: the stock agent already knows the history, so it moves stock from the first test day', () => {
+  const history = fixture();
+  const world = buildWorld(history, DEFAULT_SETTINGS);
+  // One test day of orders that miss stock, for clients and regions that missed stock in the history.
+  const test = history.filter((o) => o.received_ts.startsWith('2026-09-21')).map((o) => ({ ...o, delivery_id: `T-${o.delivery_id}`, received_ts: o.received_ts.replace('2026-09-21', '2026-11-02'), late: null }));
+  const stockOnly = { ...DEFAULT_SETTINGS, agents: { intake: false, wave: false, stock: true, carrier: false, watchtower: false } };
+  const blind = runReplay(test, { ...opts(stockOnly), world });
+  const informed = runReplay(test, { ...opts(stockOnly), world, history });
+  assert.equal(blind.overall.agents, blind.overall.baseline);          // nothing learned yet
+  assert.ok(informed.overall.agents > informed.overall.baseline);
 });

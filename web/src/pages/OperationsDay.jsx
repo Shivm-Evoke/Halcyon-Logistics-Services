@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Play, Pause, Clock, Inbox, Layers, Warehouse, Truck, Radar, Sparkles, CheckCircle2, XCircle, PlayCircle, Bot } from 'lucide-react';
 import { api, pct, num } from '../api.js';
 import { PageHead, Card, Kpi, Badge } from '../components/ui.jsx';
+import { DataPicker, useDataset } from '../components/dataset.jsx';
 
 const LANES = [
   { id: 'intake', label: 'Intake', icon: Inbox, job: 'Completes addresses before the pick list' },
@@ -55,6 +56,7 @@ export default function OperationsDay() {
   const [deciding, setDeciding] = useState({}); // decision id -> message while/after deciding
   const [error, setError] = useState('');
   const inFlight = useRef(false);
+  const [dataset] = useDataset();
 
   const load = useCallback(async (runId) => {
     const s = await api(`/agents/live/${runId}`);
@@ -65,14 +67,14 @@ export default function OperationsDay() {
   // Resume a run that is already going (a refresh or a second tab).
   useEffect(() => {
     api('/agents/live/current')
-      .then(({ runId }) => load(runId).then((s) => setRun({ runId, day: s.day, mode: s.mode })))
+      .then(({ runId }) => load(runId).then((s) => setRun({ runId, day: s.day, mode: s.mode, label: s.label })))
       .catch(() => {});
   }, [load]);
 
   const start = async () => {
     setBusy(true); setError(''); setPlaying(false); setDeciding({});
     try {
-      const r = await api('/agents/live', { method: 'POST', body: { mode } });
+      const r = await api('/agents/live', { method: 'POST', body: { mode, dataset } });
       setRun(r);
       await load(r.runId);
     } catch (e) { setError(e.message); } finally { setBusy(false); }
@@ -111,20 +113,20 @@ export default function OperationsDay() {
 
   return (
     <>
-      <PageHead title="Operations day" eyebrow={run ? `Live · ${run.day} · the worst Friday of September` : 'Live · one real day, replayed'}
-        actions={(
-          <div className="row" style={{ gap: 8 }}>
+      <PageHead title="Operations day" eyebrow={run ? `Live · ${run.day} · ${run.label || 'the worst Friday of September'}` : 'Live · one day of orders, replayed'}>
+        One day of Halcyon's orders arrives as it really did (the worst Friday of September, or a day from your test data). Five
+        agents decide what happens to each one, within the limits a manager sets; anything outside those limits waits for approval
+        here. The counters compare the day without the agents and with them.
+      </PageHead>
+
+      <div className="row wrap ops-start section-gap" style={{ gap: 8 }}>
+            <DataPicker />
             <select id="ops-mode" className="input" value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Run mode">
               <option value="live">Live: Claude on Azure Foundry</option>
               <option value="recorded">Recorded: no network needed</option>
             </select>
             <button className="btn primary" onClick={start} disabled={busy}><PlayCircle size={15} /> {run ? 'Restart the day' : 'Start the day'}</button>
-          </div>
-        )}>
-        Halcyon's orders from its worst Friday in September arrive as they really did. Five agents decide what happens to each one,
-        within the limits a manager sets; anything outside those limits waits for approval here. The counter compares what really
-        happened that day with the same orders run by the agents.
-      </PageHead>
+      </div>
 
       {error && <div className="callout bad section-gap">{error}</div>}
       {!state && !error && <div className="callout section-gap">Start the day to watch the agents work. Recorded mode replays saved Claude reasoning and runs offline.</div>}
@@ -149,7 +151,9 @@ export default function OperationsDay() {
           </div>
 
           <div className="grid g4 section-gap">
-            <Kpi label="On time, as it really happened" value={<span id="ops-counter-actual">{pct(state.counters.actual)}</span>} sub={`${num(state.counters.orders)} orders received so far`} tone="bad" />
+            {state.counters.actual != null
+              ? <Kpi label="On time, as it really happened" value={<span id="ops-counter-actual">{pct(state.counters.actual)}</span>} sub={`${num(state.counters.orders)} orders received so far`} tone="bad" />
+              : <Kpi label="On time expected without agents" value={<span id="ops-counter-actual">{pct(state.counters.baseline)}</span>} sub={`${num(state.counters.orders)} test orders so far`} tone="bad" />}
             <Kpi label="On time with the agents" value={<span id="ops-counter-agents">{pct(state.counters.agents)}</span>} sub="Same orders, expected" tone="good" />
             <Kpi label="Second wave" value={num(state.totals.wave)} sub="Same-day orders placed after 08:00" />
             <Kpi label="Awaiting approval" value={num(state.approvals.length)} sub="Decisions outside the agents' limits" tone={state.approvals.length ? 'warn' : undefined} />

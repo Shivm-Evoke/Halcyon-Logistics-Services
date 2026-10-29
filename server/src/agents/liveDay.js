@@ -42,8 +42,10 @@ export class LiveDay {
    * @param world    { model, capacity } from the history, when `orders` is a test dataset
    * @param history  orders the agents have already seen before `orders` (the real history, for a test dataset)
    */
-  constructor({ day, orders, distances, rates, settings, claude, log, mode = 'live', recorded = null, world = null, history = [] }) {
+  constructor({ day, orders, distances, rates, settings, claude, log, mode = 'live', recorded = null, world = null, history = [], label = null, dataset = null }) {
     this.day = day;
+    this.label = label;
+    this.dataset = dataset;
     this.mode = mode;
     this.settings = settings;
     this.claude = claude;
@@ -193,7 +195,7 @@ export class LiveDay {
     const counts = Object.fromEntries(AGENT_ORDER.map((a) => [a, 0]));
     for (const e of this.events.values()) if (e.at <= at) counts[e.agent]++;
     const c = this.#counters(at);
-    return { orders: c.orders, onTimeActual: c.actual, onTimeAgents: c.agents, decisions: counts, pendingApprovals: this.#pending().length };
+    return { orders: c.orders, onTimeActual: c.actual, onTimeWithoutAgents: c.baseline, onTimeAgents: c.agents, decisions: counts, pendingApprovals: this.#pending().length };
   }
 
   #rulesBriefing(at) {
@@ -201,7 +203,7 @@ export class LiveDay {
     const waved = [...this.events.values()].filter((e) => e.agent === 'wave' && e.decision.wave === 2).length;
     const pct = (v) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
     const n = (k, one, many) => `${k} ${k === 1 ? one : many}`;
-    return `${hhmm(at)}: ${n(s.orders, 'order', 'orders')} in. Expected on time ${pct(s.onTimeAgents)} with the agents (recorded ${pct(s.onTimeActual)}). `
+    return `${hhmm(at)}: ${n(s.orders, 'order', 'orders')} in. Expected on time ${pct(s.onTimeAgents)} with the agents (${s.onTimeActual != null ? `recorded ${pct(s.onTimeActual)}` : `${pct(s.onTimeWithoutAgents)} without them`}). `
       + `${n(waved, 'same-day order', 'same-day orders')} in the second wave; ${n(s.decisions.watchtower, 'watchtower action', 'watchtower actions')}; ${n(s.pendingApprovals, 'decision', 'decisions')} awaiting approval.`;
   }
 
@@ -260,7 +262,7 @@ export class LiveDay {
     for (const e of all) if (lanes[e.agent].length < LANE_SIZE) lanes[e.agent].push(e);
     const totals = Object.fromEntries(AGENT_ORDER.map((a) => [a, all.filter((e) => e.agent === a).length]));
     return {
-      runId: this.runId, day: this.day, mode: this.mode, simTime: hhmm(this.simMinutes), simMinutes: this.simMinutes,
+      runId: this.runId, day: this.day, mode: this.mode, label: this.label, dataset: this.dataset, simTime: hhmm(this.simMinutes), simMinutes: this.simMinutes,
       aiAvailable: this.mode === 'recorded' || Boolean(this.claude?.available),
       counters: this.#counters(this.simMinutes), lanes, totals,
       approvals: this.#pending(), briefings: [...this.briefings].reverse(),

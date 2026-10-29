@@ -570,3 +570,11 @@ tr.filter-row select.input { padding-right: 24px; background-position: right 8px
 .setting { display: flex; flex-direction: column; gap: 6px; }
 .field-error { color: var(--bad-text); }
 .input[aria-invalid="true"] { border-color: var(--bad); }
+
+/* ---------- Test data ---------- */
+.dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 32px 16px; border: 1.5px dashed var(--line-hover); background: var(--surface-2); text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.dropzone:hover, .dropzone:focus-visible, .dropzone.over { border-color: var(--accent); background: var(--accent-soft); outline: none; }
+.col-name { display: inline-block; margin: 2px 4px 2px 0; padding: 0 6px; background: var(--surface-3); font-size: var(--t-xs); }
+.rejected-rows { margin: 4px 0 0; padding-left: 18px; max-height: 180px; overflow: auto; }
+.data-picker select { max-width: 360px; }
+.ops-start select.input { width: auto; }

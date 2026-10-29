@@ -12,6 +12,7 @@ reading orders, explaining every decision and briefing the manager.
 | Operations day | Live: the worst Friday of September replayed on a clock while the agents work; approval queue; Ops Lead briefings |
 | Six months with agents | All 48,340 orders re-run with the agents: weekly on-time, uplift by agent, money, at-risk accounts; editable assumptions |
 | Meet the agents | Each agent's job, rules and limits, with its latest decisions |
+| Test data | Drop a CSV of orders; the agents run on it and Operations day / Six months show the result |
 | The decision | Don't sign the routing contract as scoped; run the agents; rollout |
 | Under the hood | Inbound gateway, Carrier scorecard, Inventory placement, Exceptions control tower, AI risk model, Data quality, Account health |
 
@@ -37,6 +38,25 @@ reading orders, explaining every decision and briefing the manager.
   rule stands and the reason reads "rules only".
 - **Assumptions** the data does not record (carrier capacity, second-wave pick capacity, address fix rate) are settings on the
   Six months screen.
+
+### Test data: run the agents on your own orders
+
+Open **Test data** in the sidebar and drop a CSV of orders (same columns as `deliveries.csv`; required: `client_id`,
+`order_received_ts`, `commitment_type`, `address_status`, `destination_region`, `nearest_warehouse_id`,
+`nearest_warehouse_had_stock`, `distance_miles`, `carrier_id`; `on_time` is optional). Every row is checked; bad rows are
+listed with their line and reason. Then pick the dataset in the **Data** selector on Operations day or Six months with agents.
+Test data is stored apart from the history (`agent_datasets` table), judged by the history's on-time yardstick, and the agents
+start with what they learned from the history. Without `on_time` the comparison is "expected without agents".
+
+The same over HTTP (behind the site password when one is set):
+
+```bash
+curl -o week.csv https://<site>/api/agents/datasets/sample.csv          # a ready-made test week
+curl -X POST 'https://<site>/api/agents/datasets?name=My%20week' -H 'content-type: text/csv' --data-binary @week.csv
+curl https://<site>/api/agents/datasets                                  # list, with ids
+curl -X POST https://<site>/api/agents/replay -H 'content-type: application/json' -d '{"dataset": 1}'
+curl -X POST https://<site>/api/agents/live -H 'content-type: application/json' -d '{"dataset": 1, "mode": "live"}'
+```
 
 ### Claude on Azure AI Foundry
 

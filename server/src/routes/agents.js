@@ -167,8 +167,10 @@ r.post('/agents/live', async (req, res) => {
   const recorded = mode === 'recorded' && dataset == null ? readRecording() : null;
   const day = req.body?.day || recorded?.day || pickDemoDay(orders);
   if (!orders.some((o) => dayOf(o) === day)) return res.status(400).json({ error: `No orders on ${day}`, field: 'day' });
-  live = new LiveDay({ day, orders, distances: w.distances, rates: w.rates, settings: v.settings, claude, log: decisionLog, mode, recorded, world: worldFor?.(v.settings) ?? null, history: history ?? [] });
-  res.json({ runId: live.runId, day, mode, dataset, hasRecording: Boolean(recorded) });
+  const name = dataset == null ? null : (await datasetStore.list()).find((d) => d.id === Number(dataset))?.name;
+  const label = name ? `Test data: ${name}` : 'The worst Friday of September';
+  live = new LiveDay({ day, orders, distances: w.distances, rates: w.rates, settings: v.settings, claude, log: decisionLog, mode, recorded, world: worldFor?.(v.settings) ?? null, history: history ?? [], label, dataset });
+  res.json({ runId: live.runId, day, mode, dataset, label, hasRecording: Boolean(recorded) });
 });
 
 r.get('/agents/live/current', (_req, res) => (live ? res.json({ runId: live.runId }) : res.status(404).json({ error: 'No live run' })));

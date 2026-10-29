@@ -135,7 +135,7 @@ export function groupDays(orders) {
  */
 export function runReplay(orders, { settings, distances, rates, csComplaintHoursPerWeek = 461, penaltyUsdPerLateSla = PENALTY_USD, world = null, history = [] }) {
   if (!orders.length) {
-    return { overall: { actual: null, agents: null, baseline: null, hasOutcomes: false, orders: 0 }, weekly: [], waterfall: [], money: { extraCarrierUsd: 0, penaltiesSavedUsd: 0, redeliverySavedUsd: 0, csHoursSavedPerWeek: 0, netUsd: 0 }, accounts: [] };
+    return { overall: { actual: null, agents: null, baseline: null, hasOutcomes: false, orders: 0 }, weekly: [], daily: [], waterfall: [], money: { extraCarrierUsd: 0, penaltiesSavedUsd: 0, redeliverySavedUsd: 0, csHoursSavedPerWeek: 0, netUsd: 0 }, accounts: [] };
   }
   const { model, capacity } = world || buildWorld(orders, settings);
   const days = groupDays(orders);
@@ -194,6 +194,7 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
     if (!weeks.has(w)) weeks.set(w, []);
     weeks.get(w).push(o);
   }
+  const daily = days.map(([day, xs]) => ({ day, actual: actualOf(xs), baseline: baselineOf(xs), agents: agentsOf(xs) }));
   const weekly = [...weeks].sort(([a], [b]) => a.localeCompare(b)).map(([week, xs]) => ({ week, actual: actualOf(xs), baseline: baselineOf(xs), agents: agentsOf(xs) }));
 
   // Money: a late delivery avoided saves, on SLA contracts, the penalty paid per late order on average, and a redelivery; customer success hours scale
@@ -218,6 +219,7 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
   return {
     overall: { actual: actualOf(orders), agents: waterfall.at(-1).onTime, baseline: waterfall[0].onTime, hasOutcomes: orders.every((o) => o.late != null), orders: orders.length },
     weekly,
+    daily,
     waterfall,
     money: {
       extraCarrierUsd,
@@ -226,6 +228,6 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
       csHoursSavedPerWeek: weeksCount ? (lateAvoided / weeksCount) * csHoursPerLate : 0,
       netUsd: penaltiesSavedUsd + redeliverySavedUsd - extraCarrierUsd,
     },
-    accounts: [...atRisk.values()].map(({ orders: xs, ...a }) => ({ ...a, orders: xs.length, actual: actualOf(xs), agents: agentsOf(xs) })),
+    accounts: [...atRisk.values()].map(({ orders: xs, ...a }) => ({ ...a, orders: xs.length, actual: actualOf(xs), baseline: baselineOf(xs), agents: agentsOf(xs) })),
   };
 }

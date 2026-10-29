@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Microscope, Warehouse, Truck, Radar, Users, BrainCircuit, ShieldCheck, Network, Sun, Moon, Monitor, Compass, ArrowDown,
-  PlayCircle, LineChart as LineChartIcon, Bot, Scale, Database,
+  PlayCircle, LineChart as LineChartIcon, Bot, Scale, Database, UploadCloud,
 } from 'lucide-react';
 import Inventory from './pages/Inventory.jsx';
 import Carriers from './pages/Carriers.jsx';
@@ -18,6 +18,7 @@ import OperationsDay from './pages/OperationsDay.jsx';
 import SixMonths from './pages/SixMonths.jsx';
 import Agents from './pages/Agents.jsx';
 import Decision from './pages/Decision.jsx';
+import TestData from './pages/TestData.jsx';
 import { MOTION, replayCharts, useReveal } from './components/motion.jsx';
 
 // Sidebar in presentation order: the problem, the solution at work, the decision, then what is under the hood.
@@ -29,6 +30,7 @@ const NAV = [
   { to: '/operations-day', label: 'Operations day', icon: PlayCircle, tag: 'LIVE', el: <OperationsDay /> },
   { to: '/six-months', label: 'Six months with agents', icon: LineChartIcon, el: <SixMonths /> },
   { to: '/agents', label: 'Meet the agents', icon: Bot, el: <Agents /> },
+  { to: '/test-data', label: 'Test data', icon: UploadCloud, tag: 'TRY', el: <TestData /> },
   { section: '3 · The decision' },
   { to: '/decision', label: 'The decision', icon: Scale, el: <Decision /> },
   { section: '4 · Under the hood' },
