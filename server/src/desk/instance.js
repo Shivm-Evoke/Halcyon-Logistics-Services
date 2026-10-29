@@ -30,11 +30,17 @@ export const deskClockNow = () => desk?.clockNow() ?? null;
 
 /**
  * The ops clock, building the desk and loading its clock first if needed (the first order after a restart is on the
- * ops clock too); null with DESK=0.
+ * ops clock too); null with DESK=0 or when the desk cannot load.
  */
-export async function deskClock() {
+export async function deskClock({ build = getDesk, logger = console } = {}) {
   if (process.env.DESK === '0') return null;
-  return (await getDesk()).currentClock();
+  // A desk that cannot load (database, history) never fails order intake or dispatch: they fall back to now().
+  try {
+    return await (await build()).currentClock();
+  } catch (e) {
+    logger.error(`Desk clock unavailable: ${e.message}`);
+    return null;
+  }
 }
 
 /** Re-runs the desk after an order arrives, is fixed or an approval changes; never throws, so a response never fails on it. */

@@ -309,3 +309,12 @@ test('deskClock: null with DESK=0, without building the desk', async () => {
   process.env.DESK = '0';
   try { assert.equal(await deskClock(), null); } finally { if (before === undefined) delete process.env.DESK; else process.env.DESK = before; }
 });
+
+test('deskClock: a desk that fails to build gives null (callers use now()) and logs once, so intake never fails', async () => {
+  const logged = [];
+  const at = await deskClock({ build: async () => { throw new Error('world load failed'); }, logger: { error: (m) => logged.push(m) } });
+  assert.equal(at, null);
+  assert.deepEqual(logged, ['Desk clock unavailable: world load failed']);
+  assert.equal(await deskClock({ build: async () => ({ currentClock: async () => { throw new Error('db down'); } }), logger: { error: () => {} } }), null);
+  assert.equal(await deskClock({ build: async () => ({ currentClock: async () => '2026-09-25 09:15' }) }), '2026-09-25 09:15');
+});
