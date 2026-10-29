@@ -118,19 +118,25 @@ export class IngestPipeline {
       receivedTs: order.received_ts, commitmentType: requested,
       secondWaveAt: SETTINGS.secondWaveAt, wave2Room: Boolean(wave2 && wave2.used < SETTINGS.wave2CapacityPerWarehouse),
     });
-    if (promise.wave === 2) {
-      if (!held) wave2.used += 1;
+    // A held order is promised when it is fixed (reprocess runs this again), so nothing is decided or reported yet.
+    if (held) {
+      order.pick_list_date = promise.pickListDate;
+      order.wave = null;
+    } else if (promise.wave === 2) {
+      wave2.used += 1;
       issues.push({ code: 'second_wave', severity: 'warning', field: 'commitment_type',
         message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 cutoff: on the ${SETTINGS.secondWaveAt} second pick list at ${warehouse_id}, so same-day is kept` });
     }
-    if (promise.offeredCommitment !== requested) {
+    if (!held && promise.offeredCommitment !== requested) {
       corrections.push({ field: 'commitment_type', from: requested, to: promise.offeredCommitment, rule: 'same-day after 8am cutoff re-promised' });
       issues.push({ code: 'same_day_after_cutoff', severity: 'warning', field: 'commitment_type',
         message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 pick-list cutoff and the second wave is not available: promised next-day ${promise.promisedDate} instead of same-day` });
     }
-    order.commitment_type = promise.offeredCommitment;
-    order.pick_list_date = promise.pickListDate;
-    order.wave = promise.wave;
+    if (!held) {
+      order.commitment_type = promise.offeredCommitment;
+      order.pick_list_date = promise.pickListDate;
+      order.wave = promise.wave;
+    }
 
     const hour = Number(order.received_ts.slice(11, 13));
     for (const f of this.ai.anomalies.inspect({

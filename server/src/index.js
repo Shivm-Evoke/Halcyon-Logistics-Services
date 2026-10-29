@@ -13,6 +13,7 @@ import agents, { world } from './routes/agents.js';
 import health from './routes/health.js';
 import { ensureDecisionTable } from './agents/log.js';
 import { ensureDatasetTable } from './agents/datasetStore.js';
+import { ensureAppStateTable } from './ingest/liveWeek.js';
 import { watchInbox } from './ingest/inboxWatcher.js';
 import { getContainer } from './container.js';
 
@@ -57,6 +58,7 @@ const port = Number(process.env.PORT || 4000);
 // Warm the model before taking traffic so the first request is not slow.
 await ensureDecisionTable();
 await ensureDatasetTable();
+await ensureAppStateTable();
 const container = await getContainer();
 // Load the agents' six months of orders up front, so the first replay or live day does not wait for it.
 await world();

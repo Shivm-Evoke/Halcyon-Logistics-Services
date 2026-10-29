@@ -15,6 +15,8 @@ RUN npm --prefix server ci --omit=dev
 COPY server/ server/
 COPY db/ db/
 COPY ingest/ ingest/
+# The test pack and the synthetic week are generated, not committed: both generators are deterministic and read db/data.
+RUN node ingest/generate-test-data.mjs && node ingest/generate-live-week.mjs
 COPY --from=web /web/dist web/dist
 ENV NODE_ENV=production INBOX_WATCH=0 PORT=4000
 EXPOSE 4000

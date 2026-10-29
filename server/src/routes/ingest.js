@@ -9,6 +9,7 @@ import { getContainer } from '../container.js';
 import { signToken, verifyToken, checkSecret } from '../ingest/auth.js';
 import { apiOrderResult } from '../ingest/reply.js';
 import { openApiSpec, docsPage } from '../ingest/openapi.js';
+import { runLiveWeek, savedReport } from '../ingest/liveWeek.js';
 
 const r = Router();
 const TOKEN_TTL = 3600;
@@ -143,11 +144,31 @@ r.get('/ingest/test-files/:dir/:name', (req, res) => {
 
 // Result of the synthetic live week (ingest/run-live-week.mjs), scored against its ground truth.
 const LIVE_WEEK_DIR = path.resolve(TEST_DATA_DIR, '../live-week');
-r.get('/ingest/live-week', (_req, res) => {
+// The newest report wins: the one stored by the in-process run (deploy seeding or the button) or the file
+// written by `npm run demo:week`.
+r.get('/ingest/live-week', async (_req, res) => {
   const file = path.join(LIVE_WEEK_DIR, 'report.json');
-  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Not run yet: npm run demo:week' });
-  const manifest = JSON.parse(fs.readFileSync(path.join(LIVE_WEEK_DIR, 'manifest.json'), 'utf8'));
-  res.json({ ...JSON.parse(fs.readFileSync(file, 'utf8')), injected: manifest.injected, seed: manifest.seed });
+  const fromFile = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+  const fromDb = await savedReport().catch(() => null);
+  const report = [fromDb, fromFile].filter(Boolean).sort((a, b) => String(b.ran_at).localeCompare(String(a.ran_at)))[0];
+  if (!report) return res.status(404).json({ error: 'Not run yet: use "Run the demo week" or npm run demo:week' });
+  const manifestFile = path.join(LIVE_WEEK_DIR, 'manifest.json');
+  const manifest = fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : {};
+  res.json({ ...report, injected: manifest.injected, seed: manifest.seed });
+});
+
+// Admin button: send the week through the gateway in-process. Once is enough: a second run would find every
+// purchase order already received and fill the second waves of the same days, so it needs force=1.
+let weekRunning = false;
+r.post('/ingest/live-week/run', async (req, res) => {
+  if (weekRunning) return res.status(409).json({ error: 'The demo week is already running' });
+  if (await savedReport().catch(() => null) && req.query.force !== '1') return res.status(409).json({ error: 'The demo week has already been run on this database' });
+  weekRunning = true;
+  try {
+    res.json(await runLiveWeek((await getContainer()).ingest));
+  } finally {
+    weekRunning = false;
+  }
 });
 
 // ---------- API documentation ----------

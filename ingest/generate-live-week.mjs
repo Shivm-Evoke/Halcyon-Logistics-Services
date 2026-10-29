@@ -30,6 +30,7 @@ const csv = (file) => {
   return rows.map((r) => Object.fromEntries(r.split(',').map((v, i) => [cols[i], v])));
 };
 const clients = csv('clients.csv');
+const distanceRows = csv('warehouse_region_distance_miles.csv');
 const deliveries = csv('deliveries.csv');
 const profile = Object.fromEntries(clients.map((c) => [c.client_id, { ...c, n: 0, regions: {}, services: {}, hours: {} }]));
 for (const d of deliveries) {
@@ -74,7 +75,8 @@ export const DEFECTS = {
   service_synonym: { label: 'Service in the client’s own words', expect: { fix: 'commitment_type' }, outcome: 'corrected' },
   qty_with_units: { label: 'Quantity with units ("12 units")', expect: { fix: 'quantity' }, outcome: 'corrected' },
   sku_format: { label: 'SKU spacing / case ("hx 2201")', expect: { fix: 'sku' }, outcome: 'corrected' },
-  same_day_after_cutoff: { label: 'Same-day requested after 8am', expect: { issue: 'same_day_after_cutoff' }, outcome: 'corrected' },
+  same_day_after_cutoff: { label: 'Same-day requested after 8am, second wave not available', expect: { issue: 'same_day_after_cutoff' }, outcome: 'corrected' },
+  same_day_second_wave: { label: 'Same-day requested after 8am, kept on the 13:00 second wave', expect: { issue: 'second_wave' }, outcome: 'accepted' },
   missing_house_number: { label: 'Street without house number', expect: { issue: 'missing_house_number' }, outcome: 'held' },
   missing_city: { label: 'City missing', expect: { issue: 'missing_city' }, outcome: 'held' },
   missing_zip: { label: 'ZIP missing', expect: { issue: 'invalid_zip' }, outcome: 'held' },
@@ -121,7 +123,7 @@ function makeOrder(client, channel, day) {
   const [city, state, zip] = pick(CITIES[region]);
   const service = weighted(Object.entries(client.services));
   const o = {
-    client_id: client.client_id, channel, po: `LW-${client.client_id}-${++poSeq}`, received: `${day}T${pad(hour)}:${pad(int(0, 59))}`,
+    client_id: client.client_id, region, channel, po: `LW-${client.client_id}-${++poSeq}`, received: `${day}T${pad(hour)}:${pad(int(0, 59))}`,
     sku: pick(SKUS), quantity: String(int(1, 120)), service, serviceText: CANONICAL[service],
     ship_to: { name: `${pick(FIRST)} ${pick(LAST)}`, street: `${int(1, 9800)} ${pick(STREETS)}${pick(UNITS)}`, city, state, zip },
     defects: [],
@@ -225,7 +227,7 @@ const dayTotal = DAY_WEIGHT.reduce((s, w) => s + w, 0);
 let fileSeq = 0;
 const name = (dir, ext, label) => `${String(++fileSeq).padStart(4, '0')}-${label}.${ext}`;
 const record = (dir, file, orders, extra = {}) => {
-  manifest.push({ dir, file, ...extra, orders: orders.map((o) => ({ po: o.po, client_id: o.client_id, channel: o.channel, received: o.received, defects: o.defects, expected: expectedStatus(o) })) });
+  manifest.push({ dir, file, ...extra, orders: orders.map((o) => ({ po: o.po, client_id: o.client_id, region: o.region, channel: o.channel, received: o.received, defects: o.defects, expected: expectedStatus(o) })) });
 };
 const sentOrders = [];
 
@@ -337,6 +339,30 @@ for (const [i, day] of [[0, DAYS[0]], [2, DAYS[2]], [4, DAYS[4]]]) {
   const file = `${c.client_id}_weekly_${day}_${i}.csv`;
   fs.writeFileSync(path.join(OUT, 'files', file), csvRows(orders, chance(0.5) ? ';' : ','));
   record('files', file, orders);
+}
+
+// The gateway keeps a same-day order received 08:00-12:59 on the 13:00 second pick list while its nearest warehouse
+// has room that day (30 orders, as in server/src/agents/settings.js); held, rejected and duplicate orders take no room.
+// Replay the gateway's ledger in send order so the ground truth matches what it will do.
+const WAVE2_CAPACITY = 30;
+const nearest = Object.fromEntries(['Midwest', 'Southeast', 'Northeast', 'West'].map((r) => [r, distanceRows.reduce((a, b) => (Number(b[r]) < Number(a[r]) ? b : a)).warehouse_id]));
+const wave2Used = new Map();
+for (const m of manifest) {
+  for (const o of m.orders) {
+    if (!o.defects.includes('same_day_after_cutoff')) continue;
+    if (expectedStatus(o) === 'held') { o.defects = o.defects.filter((d) => d !== 'same_day_after_cutoff'); continue; }
+    if (o.received.slice(11, 16) >= '13:00') continue;
+    const asWave2 = { ...o, defects: o.defects.map((d) => (d === 'same_day_after_cutoff' ? 'same_day_second_wave' : d)) };
+    const status = expectedStatus(asWave2);
+    const key = `${o.received.slice(0, 10)}|${nearest[o.region]}`;
+    // A held order is promised only once it is fixed; rejected and duplicate orders are never promised.
+    if (status === 'held') { o.defects = o.defects.filter((d) => d !== 'same_day_after_cutoff'); continue; }
+    if (['rejected', 'duplicate'].includes(status)) continue;
+    if ((wave2Used.get(key) || 0) >= WAVE2_CAPACITY) continue;
+    wave2Used.set(key, (wave2Used.get(key) || 0) + 1);
+    o.defects = asWave2.defects;
+    o.expected = status;
+  }
 }
 
 const totals = manifest.flatMap((m) => m.orders);

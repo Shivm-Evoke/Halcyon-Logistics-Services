@@ -142,6 +142,10 @@ repo → Apply, and enter a `SITE_PASSWORD` when asked. Every push to `main` red
 - On first start the container loads `db/data/` into the empty database and trains the model (seconds). On a database loaded
   earlier, the server creates the agents' `agent_decisions` table at startup.
 - Claude needs the Foundry variables above; without them the agents run on rules only.
+  `GET /api/health/ai` says whether Claude answers and, if not, why (missing settings, wrong deployment name, key, timeout).
+- The image generates the gateway test pack and the synthetic week at build time. Set `SEED_DEMO_WEEK=1` to send the week
+  through the gateway once on first start (or press "Run the demo week" on the Inbound gateway screen); the report is
+  stored in the database.
 - `SITE_PASSWORD` puts a browser password prompt in front of the site; `/api/health` and the client API
   (`/api/auth/login`, `/api/v1/*`, token-authenticated) stay open.
 - Client API secrets are generated on first load. To keep your local ones, add your

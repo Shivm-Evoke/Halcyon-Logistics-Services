@@ -1,5 +1,6 @@
-import { CheckCircle2, AlertTriangle } from 'lucide-react';
-import { useApi, pct, num } from '../api.js';
+import { useState } from 'react';
+import { CheckCircle2, AlertTriangle, PlayCircle } from 'lucide-react';
+import { api, useApi, pct, num } from '../api.js';
 import { Card, Badge, Meter } from './ui.jsx';
 import DataTable from './DataTable.jsx';
 
@@ -8,11 +9,22 @@ const KIND_LABEL = { 'auto-fix': 'Auto-fixed', hold: 'Held for client', reject: 
 
 // Scorecard of the synthetic live week: every injected problem against what the gateway did with it.
 export default function LiveWeekCard() {
-  const { data, error } = useApi('/ingest/live-week');
+  const { data, error, reload } = useApi('/ingest/live-week');
+  const [running, setRunning] = useState(false);
+  const [runError, setRunError] = useState('');
+  const runWeek = async () => {
+    setRunning(true); setRunError('');
+    try { await api('/ingest/live-week/run', { method: 'POST' }); await reload(); } catch (e) { setRunError(e.message); } finally { setRunning(false); }
+  };
   if (error) {
     return (
       <Card title="Synthetic live week" className="section-gap">
-        <div className="small muted">Not run yet. Generate and send a realistic week of orders with <span className="mono">npm run demo:week</span>.</div>
+        <div className="row wrap" style={{ gap: 12 }}>
+          <div className="small muted" style={{ flex: 1 }}>Not run yet on this database. Send a realistic week of about 2,000 orders through the gateway and score it
+            against its ground truth (locally: <span className="mono">npm run demo:week</span>).</div>
+          <button className="btn primary" onClick={runWeek} disabled={running}><PlayCircle size={15} /> {running ? 'Running the week…' : 'Run the demo week'}</button>
+        </div>
+        {runError && <div className="callout bad" style={{ marginTop: 10 }}>{runError}</div>}
       </Card>
     );
   }

@@ -46,3 +46,10 @@ test('a same-day order at 10:15 is re-promised next-day when the second wave is 
   assert.equal(r.normalized.wave, 'next');
   assert.ok(r.issues.some((i) => i.code === 'same_day_after_cutoff'));
 });
+
+test('a held order is not promised yet: no wave, no re-promise, the requested service is kept', async () => {
+  const r = await assess(pipeline(), record({ ship_to: { name: 'Sam Lee', street: '12 Peachtree Road', city: 'Atlanta', state: 'GA', zip: '' } }));
+  assert.equal(r.status, 'held');
+  assert.equal(r.commitment_type, 'same_day');
+  assert.ok(!r.issues.some((i) => ['second_wave', 'same_day_after_cutoff'].includes(i.code)));
+});
