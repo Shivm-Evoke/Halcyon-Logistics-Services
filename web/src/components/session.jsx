@@ -25,7 +25,7 @@ export function SessionProvider({ children }) {
 /** { user, loading, signIn(email, password), signOut() } */
 export const useSession = () => useContext(SessionContext);
 
-export const homeFor = (user) => (user?.role === 'customer' ? '/portal' : '/start');
+export const homeFor = (user) => (user?.role === 'customer' ? '/portal' : '/problem');
 
 /** Renders children only for the given role; others go to sign in, or to their own area. */
 export function RequireRole({ role, children }) {
