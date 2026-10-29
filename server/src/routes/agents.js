@@ -12,7 +12,7 @@ import { runReplay, buildWorld, dayOf } from '../agents/simulator.js';
 import { parseDataset, REQUIRED_COLUMNS, OPTIONAL_COLUMNS } from '../agents/datasets.js';
 import { datasetStore } from '../agents/datasetStore.js';
 import { decisionLog } from '../agents/log.js';
-import { LiveDay, pickDemoDay } from '../agents/liveDay.js';
+import { LiveDay, pickDemoDay, busiestDay, listDays } from '../agents/liveDay.js';
 
 export const RECORDED_FILE = process.env.RECORDED_DAY_FILE || path.resolve(import.meta.dirname, '../../data/recorded-day.json');
 
@@ -149,6 +149,9 @@ r.get('/agents/causes', async (_req, res) => {
 // ---------- Live operations day: one run at a time, kept on the server so a refresh or a second tab resumes it ----------
 let live = null;
 const MODES = ['live', 'recorded'];
+// The day a live run plays when none is chosen: the worst September Friday of the history, or a test dataset's busiest day.
+const suggestedDay = (orders, dataset) => (dataset == null || dataset === '' ? pickDemoDay(orders) : busiestDay(orders));
+
 const readRecording = () => { try { return JSON.parse(fs.readFileSync(RECORDED_FILE, 'utf8')); } catch { return null; } };
 const liveRun = (req, res) => {
   if (!live || live.runId !== req.params.runId) { res.status(404).json({ error: 'No such live run; start a new one' }); return null; }
@@ -165,12 +168,20 @@ r.post('/agents/live', async (req, res) => {
   if (!orders) return res.status(404).json({ error: `No test dataset ${dataset}`, field: 'dataset' });
   // A recording is for one day of the history; without one (or on test data), reasons come from the rules.
   const recorded = mode === 'recorded' && dataset == null ? readRecording() : null;
-  const day = req.body?.day || recorded?.day || pickDemoDay(orders);
+  const day = req.body?.day || recorded?.day || suggestedDay(orders, dataset);
   if (!orders.some((o) => dayOf(o) === day)) return res.status(400).json({ error: `No orders on ${day}`, field: 'day' });
   const name = dataset == null ? null : (await datasetStore.list()).find((d) => d.id === Number(dataset))?.name;
-  const label = name ? `Test data: ${name}` : 'The worst Friday of September';
+  const label = name ? `Test data: ${name}` : day === pickDemoDay(orders) ? 'The worst Friday of September' : 'A day from the history';
   live = new LiveDay({ day, orders, distances: w.distances, rates: w.rates, settings: v.settings, claude, log: decisionLog, mode, recorded, world: worldFor?.(v.settings) ?? null, history: history ?? [], label, dataset });
   res.json({ runId: live.runId, day, mode, dataset, label, hasRecording: Boolean(recorded) });
+});
+
+// The days a live run can play, for the picker; "default" is the day chosen when none is given.
+r.get('/agents/days', async (req, res) => {
+  const { orders } = await ordersFor(req.query.dataset);
+  if (!orders) return res.status(404).json({ error: `No test dataset ${req.query.dataset}`, field: 'dataset' });
+  const recorded = req.query.dataset ? null : readRecording();
+  res.json({ days: listDays(orders), default: suggestedDay(orders, req.query.dataset), recordedDay: recorded?.day ?? null });
 });
 
 r.get('/agents/live/current', (_req, res) => (live ? res.json({ runId: live.runId }) : res.status(404).json({ error: 'No live run' })));

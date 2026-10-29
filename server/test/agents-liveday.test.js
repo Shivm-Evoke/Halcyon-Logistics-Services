@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LiveDay, pickDemoDay } from '../src/agents/liveDay.js';
+import { LiveDay, pickDemoDay, busiestDay, listDays } from '../src/agents/liveDay.js';
 import { buildWorld, simulateDay, randForDay, isFriday } from '../src/agents/simulator.js';
 import { createMemoryLog } from '../src/agents/log.js';
 import { DEFAULT_SETTINGS } from '../src/agents/settings.js';
@@ -200,4 +200,20 @@ test('the Ops Lead sees the day as it stood at its briefing, with clearly named 
   assert.ok(!('onTimeActual' in at8.state));
   assert.ok(at8.pending.every((e) => e.simTime <= '08:00'), JSON.stringify(at8.pending.map((e) => e.simTime)));
   assert.ok(at8.wave.every((d) => d.wave !== 2));             // the 13:00 wave had not happened at 08:00
+});
+
+test('listDays gives every day in the data, in date order, with its order count and on-time rate where known', () => {
+  const rows = [
+    { received_ts: '2026-10-23 09:00', late: 0 }, { received_ts: '2026-10-23 10:00', late: 1 },
+    { received_ts: '2026-10-19 08:00' },
+  ];
+  assert.deepEqual(listDays(rows), [
+    { day: '2026-10-19', weekday: 'Mon', orders: 1, onTime: null },
+    { day: '2026-10-23', weekday: 'Fri', orders: 2, onTime: 0.5 },
+  ]);
+});
+
+test('busiestDay is the day with the most orders, the earliest on a tie', () => {
+  const rows = ['2026-09-25', '2026-10-20', '2026-10-20', '2026-10-21', '2026-10-21'].map((d) => ({ received_ts: `${d} 09:00` }));
+  assert.equal(busiestDay(rows), '2026-10-20');
 });

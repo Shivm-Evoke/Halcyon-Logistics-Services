@@ -57,6 +57,16 @@ export default function OperationsDay() {
   const [error, setError] = useState('');
   const inFlight = useRef(false);
   const [dataset] = useDataset();
+  const [days, setDays] = useState(null);       // { days: [{ day, weekday, orders, onTime }], default, recordedDay }
+  const [day, setDay] = useState('');           // '' = the suggested day
+
+  // The days the chosen data covers; the choice resets when the data changes.
+  useEffect(() => {
+    setDay(''); setDays(null);
+    api(`/agents/days${dataset != null ? `?dataset=${dataset}` : ''}`).then(setDays).catch(() => setDays(null));
+  }, [dataset]);
+  // A recording holds Claude's reasons for one day of the history only.
+  const recordedOnly = mode === 'recorded' && dataset == null && days?.recordedDay;
 
   const load = useCallback(async (runId) => {
     const s = await api(`/agents/live/${runId}`);
@@ -74,7 +84,7 @@ export default function OperationsDay() {
   const start = async () => {
     setBusy(true); setError(''); setPlaying(false); setDeciding({});
     try {
-      const r = await api('/agents/live', { method: 'POST', body: { mode, dataset } });
+      const r = await api('/agents/live', { method: 'POST', body: { mode, dataset, day: (recordedOnly ? days.recordedDay : day) || undefined } });
       setRun(r);
       await load(r.runId);
     } catch (e) { setError(e.message); } finally { setBusy(false); }
@@ -114,13 +124,14 @@ export default function OperationsDay() {
   return (
     <>
       <PageHead title="Operations day" eyebrow={run ? `Live · ${run.day} · ${run.label || 'the worst Friday of September'}` : 'Live · one day of orders, replayed'}>
-        One day of Halcyon's orders arrives as it really did (the worst Friday of September, or a day from your test data). Five
+        One day of Halcyon's orders arrives as it really did: the worst Friday of September unless you pick another day, from the history or your test data. Five
         agents decide what happens to each one, within the limits a manager sets; anything outside those limits waits for approval
         here. The counters compare the day without the agents and with them.
       </PageHead>
 
       <div className="row wrap ops-start section-gap" style={{ gap: 8 }}>
             <DataPicker />
+            <DayPicker days={days} value={recordedOnly ? days.recordedDay : day} onChange={setDay} disabled={Boolean(recordedOnly)} />
             <select id="ops-mode" className="input" value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Run mode">
               <option value="live">Live: Claude on Azure Foundry</option>
               <option value="recorded">Recorded: no network needed</option>
@@ -202,5 +213,22 @@ export default function OperationsDay() {
         </>
       )}
     </>
+  );
+}
+
+const dayLabel = (d, suggested) => `${d.weekday} ${d.day} · ${num(d.orders)} ${d.orders === 1 ? 'order' : 'orders'}${d.onTime != null ? ` · ${pct(d.onTime)} on time` : ''}${suggested ? ' · suggested' : ''}`;
+
+/** "Day: Fri 2026-09-25 ▾": any day the chosen data covers, the suggested one first; '' = the suggested day. */
+function DayPicker({ days, value, onChange, disabled }) {
+  if (!days?.days?.length) return null;
+  const suggested = days.days.find((d) => d.day === days.default);
+  return (
+    <label className="row data-picker" style={{ gap: 8 }} title={disabled ? 'Recorded mode replays the day it was recorded on' : undefined}>
+      <span className="small muted">Day</span>
+      <select className="input" value={value || days.default} onChange={(e) => onChange(e.target.value === days.default ? '' : e.target.value)} disabled={disabled} aria-label="Day to play">
+        {suggested && <option value={suggested.day}>{dayLabel(suggested, true)}</option>}
+        {days.days.filter((d) => d !== suggested).map((d) => <option key={d.day} value={d.day}>{dayLabel(d)}</option>)}
+      </select>
+    </label>
   );
 }
