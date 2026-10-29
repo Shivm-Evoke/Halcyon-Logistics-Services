@@ -46,16 +46,31 @@ test.describe('customer', () => {
     await expect(page).toHaveURL(/\/portal$/);
     const ref = await placeOrder(page);
     await expect(page.locator('.timeline li.done')).toHaveCount(1);
+    const receivedAt = (await page.locator('.timeline li.done').first().locator('.small').textContent()).trim();
+    expect(receivedAt).toMatch(/^2026-09-25 \d\d:\d\d$/); // the ops clock, as Live operations shows it
     const ops = await staff.newPage();
     await ops.goto('/live-operations');
+    // Staff find it by searching the number of its ref: a form order, received when the customer's timeline says.
+    await ops.getByLabel('Search live orders').fill(String(Number(ref.slice(3))));
+    await expect(ops.locator('#live-orders tbody tr[data-ref]')).toHaveCount(1);
     const row = ops.locator(`#live-orders tr[data-ref="${ref}"]`);
+    await expect(row.locator('td').nth(2)).toHaveText('Portal form');
+    await expect(row.locator('td').nth(3)).toHaveText(receivedAt);
     await expect(row).toContainText('Received');
+    await ops.getByRole('button', { name: `Details for ${ref}` }).click();
+    const tracking = ops.getByRole('list', { name: `Tracking for ${ref}` });
+    await expect(tracking.locator('li[data-stage="received"]')).toContainText(receivedAt);
+    await expect(tracking.locator('li.done')).toHaveCount(1);
     await ops.getByRole('button', { name: `Move on ${ref}` }).click();
     await expect(row).toContainText('Picked');
+    await expect(tracking.locator('li.done')).toHaveCount(2);
+    const pickedAt = (await tracking.locator('li[data-stage="picked"] .small').textContent()).trim();
+    expect(pickedAt).toMatch(/^2026-09-25 \d\d:\d\d$/);
     await staff.close();
     await page.reload();
     await expect(page.locator('.timeline li.done')).toHaveCount(2);
     await expect(page.locator('.timeline li.done').last()).toContainText('Picked');
+    await expect(page.locator('.timeline li.done').last()).toContainText(pickedAt); // one clock on both sides
   });
 
   test('a held order is fixed from the portal, and reloading a shipment keeps the portal', async ({ page }) => {

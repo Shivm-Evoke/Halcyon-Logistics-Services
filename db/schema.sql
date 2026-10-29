@@ -167,7 +167,7 @@ CREATE TABLE api_clients (
 -- One row per inbound message: an API call, an email or an EDI file.
 CREATE TABLE inbound_messages (
   id          serial PRIMARY KEY,
-  channel     text NOT NULL,                 -- API | Email | EDI
+  channel     text NOT NULL,                 -- API | Email | EDI | File | Portal form (scored as API)
   source      text,                          -- sender address, API client or file name
   subject     text,
   received_at timestamp NOT NULL DEFAULT now(),

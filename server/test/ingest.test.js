@@ -237,3 +237,53 @@ test('gateway: forced client overrides an email sender', async () => {
   assert.ok(saved.length);
   for (const o of saved) assert.equal(o.client_id, 'C055');
 });
+
+// ---- channel label: the portal form is shown as 'Portal form', scored as the history's 'API' ----
+import { modelChannel, RISK_FEATURES } from '../src/ml/features.js';
+
+function spyGateway() {
+  const seen = { messages: [], inspected: [], scored: [], saved: [] };
+  const repo = {
+    createMessage: async (m) => { seen.messages.push(m); return { id: 1 }; },
+    saveOrder: async (o) => { seen.saved.push(o); return { id: seen.saved.length }; },
+    finishMessage: async () => {},
+    findLiveOrder: async () => null,
+    otherClientsUsingRef: async () => [],
+    carrierUsage: async () => ({}),
+  };
+  const ai = {
+    distances: { W1: { NE: 100 } },
+    anomalies: { inspect: (o) => { seen.inspected.push(o); return { findings: [] }; } },
+    capacity: { forDay: () => ({ reserve() {} }) },
+    nextBestAction: { decide: () => ({ best: { carrier_id: 'K1' } }) },
+    scorer: { score: (f) => { seen.scored.push(f); return { risk: 0, drivers: [] }; } },
+    avgDailyOrders: 10,
+    stockMiss: () => 0,
+  };
+  return { service: new IngestService(new IngestPipeline({ repo, clients: new Map([['C001', {}]]), ai })), seen };
+}
+
+test('channel: the history knows API, EDI and Email only; the portal form is scored as API', () => {
+  const known = RISK_FEATURES.find((f) => f.name === 'order_channel').values;
+  assert.deepEqual(known, ['API', 'EDI', 'Email']);
+  assert.equal(modelChannel('Portal form'), 'API');
+  for (const c of known) assert.equal(modelChannel(c), c);
+});
+
+test('gateway: a portal form order is labelled Portal form, while the model and anomaly screen see API', async () => {
+  const { service, seen } = spyGateway();
+  const { orders } = await service.form('C001', apiOrder);
+  assert.equal(orders.length, 1);
+  assert.equal(seen.messages[0].channel, 'Portal form');
+  assert.equal(seen.saved[0].normalized.channel, 'Portal form');
+  assert.equal(seen.inspected[0].order_channel, 'API');
+  assert.equal(seen.scored[0].order_channel, 'API');
+});
+
+test('gateway: a /v1 API client order stays API', async () => {
+  const { service, seen } = spyGateway();
+  await service.api('C001', [apiOrder]);
+  assert.equal(seen.messages[0].channel, 'API');
+  assert.equal(seen.saved[0].normalized.channel, 'API');
+  assert.equal(seen.scored[0].order_channel, 'API');
+});

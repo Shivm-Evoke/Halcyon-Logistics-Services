@@ -640,6 +640,14 @@ button.link { background: none; border: 0; padding: 0; color: var(--brand); curs
 .live-detail { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(280px, 2fr); gap: 24px; padding: 8px 0; white-space: normal; }
 .live-detail-row > td { background: var(--surface-2); }
 @media (max-width: 860px) { .live-detail { grid-template-columns: 1fr; } }
+.live-track { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; }
+.live-track-facts { display: flex; flex-wrap: wrap; gap: 6px 24px; }
+.live-timeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; list-style: none; margin: 0; padding: 0; }
+.live-timeline li { display: flex; flex-direction: column; gap: 2px; color: var(--muted); }
+.live-timeline li.done { color: var(--good-ink, var(--good)); }
+.live-timeline li[data-stage="on_hold"].done { color: var(--warn-ink); }
+.live-timeline li[data-stage="cancelled"].done { color: var(--bad-ink); }
+#live-orders tr.live-new > td { background: var(--accent-soft); transition: background 0.6s ease; }
 .nav-group {
   position: relative; display: flex; align-items: center; gap: 11px; width: 100%; margin-bottom: 1px;
   padding: 8px 12px; background: none; border: 0; border-radius: 0; cursor: pointer; text-align: left;

@@ -5,7 +5,7 @@
 import { normalizeOrder } from './normalize.js';
 import { validateOrder } from './validate.js';
 import { validateAddress, promiseDelivery } from '../rules.js';
-import { orderFeatures } from '../ml/features.js';
+import { orderFeatures, modelChannel } from '../ml/features.js';
 import { RISK_THRESHOLD } from '../ml/ModelRegistry.js';
 
 // Anomaly codes the validator already covers, so they are not reported twice.
@@ -100,7 +100,9 @@ export class IngestPipeline {
   }
 
   // AI layer: promise, anomaly screen, risk score and the carrier decision within capacity.
-  async decide(order, { channel, held, ledgers }) {
+  async decide(order, { channel: label, held, ledgers }) {
+    // The label (e.g. 'Portal form') stays on the message and the order; the model sees a channel its history knows.
+    const channel = modelChannel(label);
     const corrections = [];
     const issues = [];
     const client = this.clients.get(order.client_id);

@@ -260,6 +260,10 @@ test('end to end: five channels, five causes, approval, delivered', async ({ bro
     await expect(desk.locator(`.ops-lanes [data-agent="${agent}"] .value`), agent).not.toHaveText('0');
   }
   await expect(desk.locator(`#live-orders tr[data-ref="${r2}"] + tr.live-detail-row`)).toContainText('Wave Planner');
+  // The form sample is labelled as such; the API samples stay API. Newest first: the form, sent last, is on top.
+  await expect(desk.locator(`#live-orders tr[data-ref="${r4}"] td`).nth(2)).toHaveText('Portal form');
+  await expect(desk.locator(`#live-orders tr[data-ref="${r3}"] td`).nth(2)).toHaveText('API');
+  await expect(rows.first()).toHaveAttribute('data-ref', r4);
 
   // What waits for a manager (the intake fix and/or the watchtower client flag) is approved on the desk.
   const queue = desk.locator('.ops-approvals .ops-approval');

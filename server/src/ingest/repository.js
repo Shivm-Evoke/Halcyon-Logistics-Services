@@ -1,9 +1,11 @@
 // Data access for the inbound gateway.
 import { q, one } from '../db.js';
 import { shipmentStore } from '../shipments/store.js';
+import { deskClockNow } from '../desk/instance.js';
 
-// Every saved or re-checked order gets its shipment stage from the gateway's verdict.
-const recorded = async (row) => { if (row) await shipmentStore.recordVerdict(row); return row; };
+// Every saved or re-checked order gets its shipment stage from the gateway's verdict, at the desk's ops clock
+// (the database's now() with the desk off), so its timeline reads on the same clock as Live operations.
+const recorded = async (row) => { if (row) await shipmentStore.recordVerdict(row, deskClockNow()); return row; };
 
 export const ingestRepository = {
   loadClients: async () => new Map((await q('SELECT * FROM clients')).map((c) => [c.client_id, c])),

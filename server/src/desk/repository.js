@@ -1,5 +1,6 @@
 // The live order desk's SQL: the ops clock, the day's live orders, stage notes and the agents' decisions.
 import { q, one } from '../db.js';
+import { eventTime } from '../shipments/store.js';
 
 const UPDATABLE = ['commitment_type', 'promised_date', 'carrier_id', 'warehouse_id', 'status'];
 
@@ -15,7 +16,8 @@ export const ensureDeskTable = () => q(`
   );
   ALTER TABLE desk_clock ADD COLUMN IF NOT EXISTS run_from timestamp;`);
 
-export const deskRepo = {
+/** @param db { q, one } */
+export const createDeskRepo = ({ q, one }) => ({
   getClock: () => one('SELECT * FROM desk_clock WHERE id = 1'),
   /** Starts a new run at `setTo`: run number up by one, run and clock start now; the run is named after `setTo`. */
   setClock: (setTo) => one(`
@@ -41,12 +43,12 @@ export const deskRepo = {
     const sets = keys.map((k, i) => `${k} = $${i + 2}`).concat('updated_at = now()');
     return one(`UPDATE inbound_orders SET ${sets.join(', ')} WHERE id = $1 RETURNING *`, [id, ...keys.map((k) => fields[k])]);
   },
-  /** Adds a note event as the agents unless the order already has that note. */
-  addNoteOnce: (orderId, stage, note) => one(`
-    INSERT INTO shipment_events (order_id, stage, by, note)
-    SELECT $1, $2, 'agents', $3
+  /** Adds a note event as the agents unless the order already has that note; `at` is the ops clock (null: now). */
+  addNoteOnce: (orderId, stage, note, at = null) => one(`
+    INSERT INTO shipment_events (order_id, stage, by, note, at)
+    SELECT $1, $2, 'agents', $3, ${eventTime('$4')}
     WHERE NOT EXISTS (SELECT 1 FROM shipment_events WHERE order_id = $1 AND note = $3)
-    RETURNING *`, [orderId, stage, note]),
+    RETURNING *`, [orderId, stage, note, at]),
   decisions: (runId) => q('SELECT * FROM agent_decisions WHERE run_id = $1 ORDER BY id', [runId]),
   /**
    * Updates a decision's content. With `reset` (the agents now choose differently), its approval starts again:
@@ -59,4 +61,6 @@ export const deskRepo = {
       reason = CASE WHEN $4::text IS NULL THEN reason ELSE $3 END,
       reason_source = CASE WHEN $4::text IS NULL THEN reason_source ELSE 'rules only' END
     WHERE id = $1 RETURNING *`, [id, JSON.stringify(decision), rule, reset?.approval ?? null, reset?.sim_ts ?? null]),
-};
+});
+
+export const deskRepo = createDeskRepo({ q, one });

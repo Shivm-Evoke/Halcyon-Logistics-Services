@@ -75,7 +75,7 @@ r.get('/portal/orders/:ref', async (req, res) => {
 // One order from the portal form, through the same gateway pipeline as API, email and EDI orders.
 r.post('/portal/orders', async (req, res) => {
   const { ingest } = await getContainer();
-  const result = await ingest.api(req.user.client_id, [formOrder(req.body || {})], force(req));
+  const result = await ingest.form(req.user.client_id, formOrder(req.body || {}), force(req));
   await refreshDesk();
   res.status(201).json((await shipmentsOf(result.orders))[0]);
 });

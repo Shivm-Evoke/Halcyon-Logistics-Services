@@ -22,7 +22,9 @@ export default function Shipment() {
 
   if (!o) return <Loading error={error} />;
   const reached = new Set(o.events.map((e) => e.stage));
-  const at = Object.fromEntries(o.events.map((e) => [e.stage, e.at]));
+  // When each stage was reached: its first stage event, not a later note written while it was there.
+  const at = {};
+  for (const e of o.events) if (!e.note && !(e.stage in at)) at[e.stage] = e.at;
   const save = async (e) => {
     e.preventDefault();
     setBusy(true);

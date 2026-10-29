@@ -13,8 +13,9 @@ import {
 
 function makeGateway() {
   const saved = [];
+  const messages = [];
   const repo = {
-    createMessage: async () => ({ id: 1 }),
+    createMessage: async (m) => { messages.push(m); return { id: 1 }; },
     saveOrder: async (o) => { saved.push(o); return { id: saved.length }; },
     finishMessage: async () => {},
     findLiveOrder: async () => null,
@@ -31,7 +32,7 @@ function makeGateway() {
     stockMiss: () => 0,
   };
   const clients = new Map([['C001', {}], ['C055', {}]]);
-  return { service: new IngestService(new IngestPipeline({ repo, clients, ai }), null), saved };
+  return { service: new IngestService(new IngestPipeline({ repo, clients, ai }), null), saved, messages };
 }
 
 const customer = { role: 'customer', client_id: 'C055' };
@@ -62,13 +63,14 @@ test('portal: an unknown sample is not sent', async () => {
 
 test('portal: every sample reaches the gateway as one order of the customer\'s client, at the ops clock', async () => {
   for (const n of Object.keys(SAMPLES)) {
-    const { service, saved } = makeGateway();
+    const { service, saved, messages } = makeGateway();
     const out = await sendSample(service, n, forceFor(customer, '2026-09-25 09:15'), { suffix: 'T1' });
     assert.equal(out.channel, SAMPLES[n].channel);
     assert.equal(saved.length, 1, `sample ${n}`);
     assert.equal(saved[0].client_id, 'C055', `sample ${n}`);
     assert.equal(saved[0].normalized.received_ts.slice(0, 16).replace('T', ' '), '2026-09-25 09:15', `sample ${n}`);
     assert.equal(saved[0].client_order_ref, `SAMPLE-${n}-T1`, `sample ${n}`);
+    assert.equal(messages[0].channel, SAMPLES[n].channel, `sample ${n}: the gateway records the channel staff see`);
   }
 });
 

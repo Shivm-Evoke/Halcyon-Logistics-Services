@@ -39,8 +39,12 @@ const clone = (x) => structuredClone(x);
 function fakeDb() {
   const log = createMemoryLog();
   const state = { t: new Date('2026-10-29T10:00:00Z'), clock: null, orders: [], events: [], nextId: 1 };
-  const event = (order_id, stage, by, note = null) => {
-    const e = { id: state.events.length + 1, order_id, stage, by, note, at: new Date(state.t).toISOString() };
+  // As shipmentStore: `at` is the time given (the ops clock) or real time, never before the order's latest event.
+  const realTs = () => new Date(state.t).toISOString().slice(0, 16).replace('T', ' ');
+  const event = (order_id, stage, by, note = null, at = null) => {
+    const last = state.events.filter((x) => x.order_id === order_id).map((x) => x.at).sort().at(-1);
+    const t = at ?? realTs();
+    const e = { id: state.events.length + 1, order_id, stage, by, note, at: last && last > t ? last : t };
     state.events.push(e);
     return e;
   };
@@ -60,7 +64,7 @@ function fakeDb() {
       for (const k of UPDATABLE) if (k in fields) o[k] = fields[k];
       return clone(o);
     },
-    addNoteOnce: async (orderId, stage, note) => (state.events.some((e) => e.order_id === orderId && e.note === note) ? null : event(orderId, stage, 'agents', note)),
+    addNoteOnce: async (orderId, stage, note, at = null) => (state.events.some((e) => e.order_id === orderId && e.note === note) ? null : event(orderId, stage, 'agents', note, at)),
     // As deskRepo: the run's rows by id; updateDecision writes the row itself, so approvals and expiry see it.
     decisions: async (runId) => (await log.list({ runId, limit: 1e9 })).reverse().map(clone),
     updateDecision: async (id, { decision, rule, reset = null }) => {
@@ -70,12 +74,12 @@ function fakeDb() {
   };
   const shipments = {
     eventsFor: async (ids) => state.events.filter((e) => ids.includes(e.order_id)).map(clone),
-    advance: async (orderId, from, next, by) => (latest(orderId) === from ? event(orderId, next, by) : null),
-    recordVerdict: async (order) => {
+    advance: async (orderId, from, next, by, at = null) => (latest(orderId) === from ? event(orderId, next, by, null, at) : null),
+    recordVerdict: async (order, at = null) => {
       const stage = initialStage(order.status);
       const current = latest(order.id);
       if (current === stage || (current && current !== 'on_hold' && current !== 'received')) return null;
-      return event(order.id, stage, 'system');
+      return event(order.id, stage, 'system', null, at);
     },
   };
   /** Adds an order as the gateway would, received now on the ops clock. */
@@ -89,7 +93,7 @@ function fakeDb() {
       created_at: new Date(state.t), ...over,
     };
     state.orders.push(o);
-    event(id, initialStage(o.status), 'system');
+    event(id, initialStage(o.status), 'system', null, receivedTs); // the gateway records its verdict at the ops clock
     return o;
   };
   const tick = (minutes) => { state.t = new Date(state.t.getTime() + minutes * MIN); };
@@ -174,8 +178,10 @@ test('a desk rebuilt from the same stores (restart) shows the same state', async
   const db = fakeDb();
   const desk = deskOn(db);
   await desk.setClock('2026-09-25 09:15');
-  db.addOrder('2026-09-25 09:15');
-  db.addOrder('2026-09-25 09:15', { status: 'held' });
+  // The gateway keeps its carrier on the order, so a re-run after the desk changed it notes nothing new.
+  const kept = { normalized: { sku: 'X', quantity: 1, ship_to, commitment_type: 'same_day', received_ts: '2026-09-25 09:15', gateway_carrier_id: 'D' } };
+  db.addOrder('2026-09-25 09:15', kept);
+  db.addOrder('2026-09-25 09:15', { status: 'held', ...kept });
   await desk.refresh();
   const before = await desk.state();
   const again = deskOn(db);
@@ -328,4 +334,55 @@ test('a decision taken without approval waits for staff once it needs approval',
   assert.deepEqual([row.decision.carrier_id, row.approval, row.sim_ts], ['A', 'pending', '2026-09-25 09:20']);
   assert.equal(db.state.orders[0].carrier_id, 'D', 'not applied before approval');
   assert.ok((await desk.state()).approvals.some((a) => a.ref === ref && a.agent === 'carrier'));
+});
+
+// ---- one clock: the desk stamps shipment events with the ops clock; staff see the whole timeline ----
+
+test('notes and stage moves by the desk are stamped with the ops clock, not real time', async () => {
+  const db = fakeDb();
+  const desk = deskOn(db);
+  await desk.setClock('2026-09-25 07:30');          // real time is 2026-10-29 10:00
+  const o = db.addOrder('2026-09-25 07:30', standard('2026-09-25 07:30'));
+  db.tick(37);                                       // ops clock 08:07: the first wave has picked it
+  await desk.refresh();
+  const notes = db.state.events.filter((e) => e.order_id === o.id && e.note);
+  assert.ok(notes.length, 'the agents wrote notes');
+  for (const e of notes) assert.equal(e.at, '2026-09-25 08:07', e.note);
+  await desk.advance();                              // 13:00
+  await desk.advance();                              // 14:00: collected
+  const r = await desk.advanceOrder(`IN-${String(o.id).padStart(6, '0')}`);   // Move on
+  assert.equal(r.stage, 'in_transit');
+  const moves = db.state.events.filter((e) => e.order_id === o.id && !e.note).map((e) => [e.stage, e.at]);
+  assert.deepEqual(moves, [
+    ['received', '2026-09-25 07:30'], ['picked', '2026-09-25 08:07'], ['collected', '2026-09-25 14:00'], ['in_transit', '2026-09-25 14:00'],
+  ]);
+  assert.ok(db.state.events.every((e) => e.at.startsWith('2026-09-25')), 'no real-time stamps');
+});
+
+test('a held order the desk releases is received at the ops clock', async () => {
+  const db = fakeDb();
+  const desk = deskOn(db);
+  await desk.setClock('2026-09-25 09:15');
+  const o = db.addOrder('2026-09-25 09:15', { status: 'held' });
+  db.tick(10);
+  await desk.refresh();
+  const received = db.state.events.find((e) => e.order_id === o.id && e.stage === 'received' && !e.note);
+  assert.equal(received.at, '2026-09-25 09:25');
+});
+
+test('state carries each order\'s shipment events for the timeline, oldest first', async () => {
+  const db = fakeDb();
+  const desk = deskOn(db);
+  await desk.setClock('2026-09-25 09:15');
+  const o = db.addOrder('2026-09-25 09:15', standard('2026-09-25 09:15'));
+  await desk.refresh();
+  await desk.advanceOrder(`IN-${String(o.id).padStart(6, '0')}`);
+  const [order] = (await desk.state()).orders;
+  assert.ok(Array.isArray(order.events));
+  assert.deepEqual(order.events.filter((e) => !e.note).map((e) => [e.stage, e.at, e.by]),
+    [['received', '2026-09-25 09:15', 'system'], ['picked', '2026-09-25 09:15', 'staff']]);
+  assert.ok(order.events.some((e) => e.by === 'agents' && e.note));
+  for (const e of order.events) assert.deepEqual(Object.keys(e).sort(), ['at', 'by', 'note', 'stage']);
+  assert.equal(order.promised_date, '2026-09-28');
+  assert.equal(typeof order.risk, 'number');
 });

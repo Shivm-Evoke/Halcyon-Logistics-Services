@@ -35,7 +35,7 @@ const MAX_PASSES = 3;              // a release or a reset approval re-runs the 
  * Creates the desk.
  * @param repo       deskRepo-like store (clock, live orders, order updates, notes, decision rows)
  * @param log        decisionLog-like store (insert, expire, setReason)
- * @param shipments  shipmentStore-like store (eventsFor, advance, recordVerdict)
+ * @param shipments  shipmentStore-like store (eventsFor, advance, recordVerdict); events are stamped with the ops clock
  * @param world      async () => { orders (history), distances, rates }
  * @param claude     createClaude() result or null (reasons then stay the rules)
  * @param stockMiss  (clientId, region) => historical share of stock misses; threshold from settings
@@ -87,9 +87,14 @@ export function createDesk({
     return pairsByDay.get(day);
   };
 
-  const stagesOf = async (rows) => {
+  // Each order's shipment events (oldest first) and its stage from them.
+  const eventsOf = async (rows) => {
     const events = rows.length ? await shipments.eventsFor(rows.map((r) => r.id)) : [];
-    return new Map(rows.map((r) => [r.id, stageOf(events.filter((e) => e.order_id === r.id)) ?? initialStage(r.status)]));
+    return new Map(rows.map((r) => [r.id, events.filter((e) => e.order_id === r.id)]));
+  };
+  const stagesOf = async (rows, byOrder = null) => {
+    const events = byOrder ?? await eventsOf(rows);
+    return new Map(rows.map((r) => [r.id, stageOf(events.get(r.id)) ?? initialStage(r.status)]));
   };
 
   const explain = (row, client, simTime) => {
@@ -183,10 +188,10 @@ export function createDesk({
       }
       if (changed.status) {
         released = true;
-        await shipments.recordVerdict(row);
+        await shipments.recordVerdict(row, nowTs);
         stages.set(row.id, initialStage(row.status));
       }
-      for (const note of notes) await repo.addNoteOnce(row.id, stages.get(row.id), note);
+      for (const note of notes) await repo.addNoteOnce(row.id, stages.get(row.id), note, nowTs);
     }
 
     // A released order joins the other agents' decisions at once; a reset approval no longer steers them.
@@ -201,7 +206,7 @@ export function createDesk({
       if (due === 'delivered' && !row.promised_date) due = 'in_transit';
       while (stage !== due) {
         const next = nextStage(stage);
-        if (!next || !(await shipments.advance(row.id, stage, next, 'ops clock'))) break;
+        if (!next || !(await shipments.advance(row.id, stage, next, 'ops clock', nowTs))) break;
         stage = next;
       }
     }
@@ -235,7 +240,8 @@ export function createDesk({
     const rows = await repo.liveOrders(c.run_started_at);
     const refs = new Set(rows.map((r) => orderRef(r.id)));
     const decisionRows = (await repo.decisions(runId)).filter((d) => refs.has(d.delivery_id));
-    const stages = await stagesOf(rows);
+    const events = await eventsOf(rows);
+    const stages = await stagesOf(rows, events);
     const client = (r) => ({ client_id: r.client_id, client_name: r.client_name ?? null, account_tier: r.account_tier ?? null });
     const shown = (d) => ({ id: d.id, agent: d.agent, rule: d.rule, reason: d.reason, reason_source: d.reason_source, approval: d.approval, at: d.sim_ts });
     const byRef = new Map(rows.map((r) => [orderRef(r.id), r]));
@@ -255,6 +261,8 @@ export function createDesk({
         carrier_id: r.carrier_id ?? null,
         warehouse_id: r.warehouse_id ?? null,
         risk: r.risk == null ? null : Number(r.risk),
+        // The shipment's timeline, at the ops clock: stage moves and the agents' notes, oldest first.
+        events: events.get(r.id).map(({ stage, at, by, note }) => ({ stage, at: String(at).replace('T', ' ').slice(0, 16), by, note: note ?? null })),
         checks: [
           ...(r.issues || []).map((i) => ({ kind: 'issue', ...i })),
           ...(r.corrections || []).filter((x) => x.rule !== 'formatting').map((x) => ({ kind: 'correction', ...x })),
@@ -300,7 +308,7 @@ export function createDesk({
       if (!row) return null;
       const from = (await stagesOf([row])).get(row.id);
       const next = nextStage(from);
-      const moved = Boolean(next && (await shipments.advance(row.id, from, next, 'staff')));
+      const moved = Boolean(next && (await shipments.advance(row.id, from, next, 'staff', clockNow(c, now()))));
       if (moved) await refresh();
       return { moved, stage: moved ? next : from, state: await state() };
     }),

@@ -3,6 +3,7 @@
 import { simulateDay } from '../agents/simulator.js';
 import { validateAddress, PICK_LIST_CUTOFF } from '../rules.js';
 import { orderRef } from '../shipments/views.js';
+import { modelChannel } from '../ml/features.js';
 
 const isoTs = (ts) => String(ts ?? '').replace('T', ' ').slice(0, 16);
 
@@ -35,7 +36,7 @@ export function toAgentOrder(row, { client = {}, distances = {}, stockMiss = () 
     carrier_id: row.carrier_id ?? null,
     gateway_carrier_id: n.gateway_carrier_id ?? row.carrier_id ?? null, // older orders: the carrier on the row
     cutoff_breach: commitment === 'same_day' && receivedTs.slice(11, 16) >= PICK_LIST_CUTOFF ? 1 : 0,
-    order_channel: row.channel ?? n.order_channel ?? null,
+    order_channel: modelChannel(row.channel ?? n.order_channel ?? null), // the agents' model knows API, EDI and Email
   };
 }
 

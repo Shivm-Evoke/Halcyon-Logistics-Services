@@ -51,7 +51,12 @@ export class IngestService {
   }
 
   /** Orders posted by an authenticated API client. The client comes from the token, never the payload. */
-  api(clientId, orders, force = null) {
+  api(clientId, orders, force = null) { return this.#orders('API', clientId, orders, force); }
+
+  /** One order from the customer portal's form: as an API order, but labelled 'Portal form' wherever staff see it. */
+  form(clientId, order, force = null) { return this.#orders('Portal form', clientId, [order], force); }
+
+  #orders(channel, clientId, orders, force) {
     const records = orders.map((o, i) => ({
       client_hint: clientId,
       client_order_ref: o.client_order_ref ?? o.po_number,
@@ -63,7 +68,7 @@ export class IngestService {
       ship_to: o.ship_to || {},
       source_ref: `orders[${i}]`,
     }));
-    return this.#complete('API', { source: clientId, subject: `${orders.length} order(s)`, raw: JSON.stringify(orders), records }, () => null, force);
+    return this.#complete(channel, { source: clientId, subject: `${orders.length} order(s)`, raw: JSON.stringify(orders), records }, () => null, force);
   }
 
   /** CSV batch file dropped by a client (file name must start with its client id, e.g. C055_orders.csv). */

@@ -41,7 +41,7 @@ export async function sendSample(ingest, n, force, { dir = SAMPLES_DIR, suffix =
   const opts = { filename: sample.file };
   const result = sample.channel === 'Email' ? await ingest.email(raw, opts, force)
     : sample.channel === 'EDI' ? await ingest.edi(raw, opts, force)
-      : sample.channel === 'Portal form' ? await ingest.api(force.client_id, [formOrder(JSON.parse(raw))], force)
+      : sample.channel === 'Portal form' ? await ingest.form(force.client_id, formOrder(JSON.parse(raw)), force)
         : await ingest.api(force.client_id, JSON.parse(raw).orders, force);
   return { channel: sample.channel, result };
 }
