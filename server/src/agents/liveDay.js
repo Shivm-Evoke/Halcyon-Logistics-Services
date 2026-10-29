@@ -17,7 +17,7 @@ const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m %
 const atOf = (o) => minutesOf(String(o.received_ts).slice(11, 16));
 const mean = (xs) => (xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : null);
 
-/** The September 2026 Friday with the lowest recorded on-time rate. */
+/** The September 2026 Friday with the lowest recorded on-time rate; for test data without one, its busiest day. */
 export function pickDemoDay(orders) {
   const days = new Map();
   for (const o of orders) {
@@ -27,7 +27,11 @@ export function pickDemoDay(orders) {
     s.n++; s.ok += o.late ? 0 : 1;
     days.set(d, s);
   }
-  return [...days].sort(([, a], [, b]) => a.ok / a.n - b.ok / b.n)[0]?.[0] ?? null;
+  const worst = [...days].sort(([, a], [, b]) => a.ok / a.n - b.ok / b.n)[0]?.[0];
+  if (worst) return worst;
+  const volume = new Map();
+  for (const o of orders) volume.set(dayOf(o), (volume.get(dayOf(o)) || 0) + 1);
+  return [...volume].sort(([da, a], [db, b]) => b - a || da.localeCompare(db))[0]?.[0] ?? null;
 }
 
 export class LiveDay {
@@ -35,8 +39,9 @@ export class LiveDay {
    * @param orders   all history (the world is measured on it; the day's orders are taken from it)
    * @param claude   createClaude() result; @param log decisionLog-like store
    * @param recorded { reasons: { key: text }, briefings: { 'HH:MM': text } } for mode 'recorded'
+   * @param world    { model, capacity } from the history, when `orders` is a test dataset
    */
-  constructor({ day, orders, distances, rates, settings, claude, log, mode = 'live', recorded = null }) {
+  constructor({ day, orders, distances, rates, settings, claude, log, mode = 'live', recorded = null, world = null }) {
     this.day = day;
     this.mode = mode;
     this.settings = settings;
@@ -59,7 +64,7 @@ export class LiveDay {
     this.stockPairs = tonight.pairs;
     this.stockTransfers = tonight.decisions;
 
-    const { model, capacity } = buildWorld(orders, settings);
+    const { model, capacity } = world || buildWorld(orders, settings);
     this.ctx = { settings, model, distances, rates, limits: capacity.forDay(this.dayOrders.length).limits, isFriday: isFriday(day), autoApprove: false };
     this.approvals = new Map();
     this.events = new Map();   // decision key -> event
@@ -67,6 +72,9 @@ export class LiveDay {
     this.work = new Set();
     this.simMinutes = 0;
     this.queue = Promise.resolve();
+    // The same orders with every agent off: the comparison when the test data has no outcomes.
+    this.baseline = new Map(simulateDay(this.dayOrders, { ...this.ctx, settings: { ...settings, agents: Object.fromEntries(AGENT_ORDER.map((a) => [a, false])) }, rand: randForDay(settings.seed, day) })
+      .decided.map((o) => [o.delivery_id, o.pOnTime]));
     this.recompute();
   }
 
@@ -207,7 +215,12 @@ export class LiveDay {
 
   #counters(at) {
     const arrived = this.decided.filter((o) => atOf(o) <= at);
-    return { orders: arrived.length, actual: mean(arrived.map((o) => (o.late ? 0 : 1))), agents: mean(arrived.map((o) => o.pOnTime)) };
+    return {
+      orders: arrived.length,
+      actual: mean(arrived.filter((o) => o.late != null).map((o) => (o.late ? 0 : 1))),
+      baseline: mean(arrived.map((o) => this.baseline.get(o.delivery_id))),
+      agents: mean(arrived.map((o) => o.pOnTime)),
+    };
   }
 
   #track(p) {

@@ -148,3 +148,15 @@ test('review fix: Claude\'s reasons are saved to the decision log', async () => 
   const rows = await log.list({ runId: live.runId, limit: 100000 });
   assert.ok(rows.some((r) => r.reason_source === 'claude' && r.reason.startsWith('AI: ')));
 });
+
+test('test data: a dataset with no September Friday plays its busiest day, judged against the expected rate without agents', async () => {
+  const shifted = history().map((o) => ({ ...o, delivery_id: `T-${o.delivery_id}`, received_ts: o.received_ts.replace('2026-09', '2026-11'), late: null }));
+  const day = pickDemoDay(shifted);
+  assert.ok(day.startsWith('2026-11'));
+  const world = buildWorld(history(), S);
+  const live = new LiveDay({ day, orders: shifted, distances, rates, settings: S, claude: echo, log: createMemoryLog(), world });
+  await live.advance(24 * 60);
+  const s = await live.state();
+  assert.equal(s.counters.actual, null);
+  assert.ok(s.counters.baseline > 0 && s.counters.agents >= s.counters.baseline);
+});

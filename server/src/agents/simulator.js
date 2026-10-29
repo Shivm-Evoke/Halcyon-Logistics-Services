@@ -129,12 +129,14 @@ export function groupDays(orders) {
  * Runs all orders day by day under the settings and reports actual against with-agents.
  * @param csComplaintHoursPerWeek customer success hours spent on complaints in the time-study week (461)
  * @param penaltyUsdPerLateSla     penalties actually paid divided by late SLA deliveries (not every late SLA order is charged)
+ * @param world                    { model, capacity } measured on the history; test datasets pass the history's, so test
+ *                                 orders are judged by the same yardstick. Orders may lack outcomes (late: null).
  */
-export function runReplay(orders, { settings, distances, rates, csComplaintHoursPerWeek = 461, penaltyUsdPerLateSla = PENALTY_USD }) {
+export function runReplay(orders, { settings, distances, rates, csComplaintHoursPerWeek = 461, penaltyUsdPerLateSla = PENALTY_USD, world = null }) {
   if (!orders.length) {
-    return { overall: { actual: null, agents: null }, weekly: [], waterfall: [], money: { extraCarrierUsd: 0, penaltiesSavedUsd: 0, redeliverySavedUsd: 0, csHoursSavedPerWeek: 0, netUsd: 0 }, accounts: [] };
+    return { overall: { actual: null, agents: null, baseline: null, hasOutcomes: false, orders: 0 }, weekly: [], waterfall: [], money: { extraCarrierUsd: 0, penaltiesSavedUsd: 0, redeliverySavedUsd: 0, csHoursSavedPerWeek: 0, netUsd: 0 }, accounts: [] };
   }
-  const { model, capacity } = buildWorld(orders, settings);
+  const { model, capacity } = world || buildWorld(orders, settings);
   const days = groupDays(orders);
 
   const run = (agents) => {
@@ -159,7 +161,9 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
     return out;
   };
 
-  const waterfall = [{ agent: 'baseline', onTime: mean(run(NONE).map((o) => o.pOnTime)) }];
+  const baselineRun = run(NONE);
+  const baselineById = new Map(baselineRun.map((o) => [o.delivery_id, o.pOnTime]));
+  const waterfall = [{ agent: 'baseline', onTime: mean(baselineRun.map((o) => o.pOnTime)) }];
   const enabled = { ...NONE };
   let final;
   for (const name of AGENT_ORDER) {
@@ -170,8 +174,12 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
 
   const byId = new Map(final.map((o) => [o.delivery_id, o]));
   const pAgents = (o) => byId.get(o.delivery_id).pOnTime;
-  const actualOf = (xs) => mean(xs.map((o) => (o.late ? 0 : 1)));
+  // Recorded on-time counts only orders whose outcome is known; test data may have none.
+  const actualOf = (xs) => mean(xs.filter((o) => o.late != null).map((o) => (o.late ? 0 : 1)));
   const agentsOf = (xs) => mean(xs.map(pAgents));
+  const baselineOf = (xs) => mean(xs.map((o) => baselineById.get(o.delivery_id)));
+  // How late an order was (recorded), or was expected to be without the agents when no outcome is known.
+  const lateRef = (o) => (o.late != null ? o.late : 1 - baselineById.get(o.delivery_id));
 
   const weeks = new Map();
   for (const o of orders) {
@@ -179,12 +187,12 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
     if (!weeks.has(w)) weeks.set(w, []);
     weeks.get(w).push(o);
   }
-  const weekly = [...weeks].sort(([a], [b]) => a.localeCompare(b)).map(([week, xs]) => ({ week, actual: actualOf(xs), agents: agentsOf(xs) }));
+  const weekly = [...weeks].sort(([a], [b]) => a.localeCompare(b)).map(([week, xs]) => ({ week, actual: actualOf(xs), baseline: baselineOf(xs), agents: agentsOf(xs) }));
 
   // Money: a late delivery avoided saves, on SLA contracts, the penalty paid per late order on average, and a redelivery; customer success hours scale
   // with the number of late deliveries (461 complaint hours in the time-study week against that period's weekly lates).
-  const lateActual = orders.reduce((s, o) => s + (o.late ? 1 : 0), 0);
-  const avoided = (xs) => xs.reduce((s, o) => s + (o.late ? 1 : 0) - (1 - pAgents(o)), 0);
+  const lateActual = orders.reduce((s, o) => s + lateRef(o), 0);
+  const avoided = (xs) => xs.reduce((s, o) => s + lateRef(o) - (1 - pAgents(o)), 0);
   const lateAvoided = avoided(orders);
   const weeksCount = days.length / 7;
   const csHoursPerLate = lateActual ? csComplaintHoursPerWeek / (lateActual / weeksCount) : 0;
@@ -201,7 +209,7 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
   }
 
   return {
-    overall: { actual: actualOf(orders), agents: waterfall.at(-1).onTime, orders: orders.length },
+    overall: { actual: actualOf(orders), agents: waterfall.at(-1).onTime, baseline: waterfall[0].onTime, hasOutcomes: orders.every((o) => o.late != null), orders: orders.length },
     weekly,
     waterfall,
     money: {

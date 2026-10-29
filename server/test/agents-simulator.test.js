@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { runReplay } from '../src/agents/simulator.js';
+import { runReplay, buildWorld } from '../src/agents/simulator.js';
 import { DEFAULT_SETTINGS } from '../src/agents/settings.js';
 
 // Three days of orders on a good carrier (A) and a poor one (D), with every kind of problem the agents fix.
@@ -80,4 +80,21 @@ test('no orders gives nulls, never NaN', () => {
   assert.equal(r.overall.agents, null);
   assert.deepEqual(r.weekly, []);
   assert.ok(!JSON.stringify(r).includes('NaN'));
+});
+
+test('test data: the yardstick comes from history, and without outcomes the comparison is the expected rate without agents', () => {
+  const history = fixture();
+  const world = buildWorld(history, DEFAULT_SETTINGS);
+  const test = fixture().map((o) => ({ ...o, delivery_id: `T-${o.delivery_id}`, late: null }));
+  const r = runReplay(test, { ...opts(), world });
+  assert.equal(r.overall.actual, null);
+  assert.equal(r.overall.hasOutcomes, false);
+  assert.equal(r.overall.baseline, r.waterfall[0].onTime);
+  assert.ok(r.overall.agents > r.overall.baseline);
+  assert.ok(r.weekly.every((w) => w.actual === null && w.baseline > 0 && w.agents > 0));
+  assert.ok(r.money.penaltiesSavedUsd > 0 && Number.isFinite(r.money.netUsd));
+  assert.ok(r.accounts.every((a) => a.actual === null && a.agents > 0));
+  assert.ok(!JSON.stringify(r).includes('NaN'));
+  // The same orders judged with their own outcomes give the same agents' rate: the yardstick did not change.
+  assert.equal(runReplay(history, { ...opts(), world }).overall.agents, r.overall.agents);
 });
