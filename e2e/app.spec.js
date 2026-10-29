@@ -208,6 +208,7 @@ test('start here maps the story and links every step to its screen', async ({ pa
 test('story scroll: scrolling moves the sidebar and URL, choosing a screen scrolls to it', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#why-late .page-head h1')).toBeVisible();
+  await page.waitForLoadState('networkidle');   // screens above finish loading, so positions are final
   // Scroll "Why we're late" up under the reading line: the sidebar and URL follow.
   const y = await page.evaluate(() => document.getElementById('why-late').offsetTop);
   await page.mouse.move(800, 500);
