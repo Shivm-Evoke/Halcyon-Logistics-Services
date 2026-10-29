@@ -26,6 +26,10 @@ const stable = (v) => (Array.isArray(v) ? `[${v.map(stable).join(',')}]`
   : v && typeof v === 'object' ? `{${Object.keys(v).filter((k) => v[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${stable(v[k])}`).join(',')}}`
     : JSON.stringify(v ?? null));
 const keyOfRow = (r) => approvalKey({ agent: r.agent, delivery_id: r.delivery_id });
+// What staff approve: whether it needs approval and what the agent chose. When this changes the approval starts again.
+const choiceOf = (d) => stable({ needsApproval: Boolean(d?.needsApproval), carrier_id: d?.carrier_id, fallbackCarrierId: d?.fallbackCarrierId,
+  wave: d?.wave, fixAddress: d?.fixAddress, action: d?.action, notifyClient: d?.notifyClient });
+const MAX_PASSES = 3;              // a release or a reset approval re-runs the agents, at most this many times
 
 /**
  * Creates the desk.
@@ -97,7 +101,7 @@ export function createDesk({
     p.finally(() => work.delete(p));
   };
 
-  async function run() {
+  async function run(pass = 1) {
     const c = await load();
     const nowTs = clockNow(c, now());
     const runId = runIdOf(c);
@@ -120,13 +124,20 @@ export function createDesk({
     }
 
     // One row per (agent, order): new decisions are inserted, changed ones updated.
+    // A changed choice (another carrier, a wave, now needing approval or not) is a new decision for staff: an earlier
+    // approval or rejection does not carry over to it.
     const fresh = [];
+    const reset = [];
     for (const d of decisions) {
       const row = byKey.get(approvalKey(d));
       if (!row) fresh.push(d);
       else if (stable(row.decision) !== stable(d) || (row.rule ?? null) !== (d.rule ?? null)) {
-        await repo.updateDecision(row.id, { decision: d, rule: d.rule ?? null });
-        byKey.set(approvalKey(d), { ...row, decision: d, rule: d.rule ?? null });
+        const rule = d.rule ?? null;
+        const again = choiceOf(row.decision) !== choiceOf(d) ? { approval: d.needsApproval ? 'pending' : 'auto', sim_ts: nowTs } : null;
+        await repo.updateDecision(row.id, { decision: d, rule, ...(again ? { reset: again } : {}) });
+        const updated = { ...row, decision: d, rule, ...(again ? { ...again, actor: null, reason: rule, reason_source: 'rules only' } : {}) };
+        byKey.set(approvalKey(d), updated);
+        if (again) reset.push(updated);
       }
     }
     const inserted = fresh.length ? await log.insert(fresh.map((d) => ({
@@ -178,8 +189,8 @@ export function createDesk({
       for (const note of notes) await repo.addNoteOnce(row.id, stages.get(row.id), note);
     }
 
-    // A released order joins the other agents' decisions at once (each order is released only once).
-    if (released) return run();
+    // A released order joins the other agents' decisions at once; a reset approval no longer steers them.
+    if ((released || reset.some((r) => DECIDED.has(approvals.get(keyOfRow(r))))) && pass < MAX_PASSES) return run(pass + 1);
 
     // Stages move on the ops clock: picked at the order's wave, collected at 14:00, delivered on the promised date.
     for (const row of rows) {
@@ -197,7 +208,7 @@ export function createDesk({
 
     // Claude explains the notable new decisions in the background; the rule stands until it answers.
     const clients = new Map(rows.map((r) => [orderRef(r.id), { client_id: r.client_id, client_name: r.client_name, tier: r.account_tier }]));
-    const notable = inserted.filter(({ decision: d }) => d.needsApproval || d.agent === 'wave' || d.agent === 'watchtower'
+    const notable = [...inserted, ...reset].filter(({ decision: d }) => d.needsApproval || d.agent === 'wave' || d.agent === 'watchtower'
       || (d.agent === 'intake' && d.fixAddress) || (d.agent === 'carrier' && d.carrier_id !== decidedBy.get(d.delivery_id)?.gateway_carrier_id))
       .sort((a, b) => (b.decision.needsApproval ? 1 : 0) - (a.decision.needsApproval ? 1 : 0)).slice(0, MAX_EXPLAINS_PER_RUN);
     for (const r of notable) explain(r, clients.get(r.delivery_id), nowTs.slice(11));

@@ -48,6 +48,15 @@ export const deskRepo = {
     WHERE NOT EXISTS (SELECT 1 FROM shipment_events WHERE order_id = $1 AND note = $3)
     RETURNING *`, [orderId, stage, note]),
   decisions: (runId) => q('SELECT * FROM agent_decisions WHERE run_id = $1 ORDER BY id', [runId]),
-  updateDecision: (id, { decision, rule }) => one(
-    'UPDATE agent_decisions SET decision = $2, rule = $3 WHERE id = $1 RETURNING *', [id, JSON.stringify(decision), rule]),
+  /**
+   * Updates a decision's content. With `reset` (the agents now choose differently), its approval starts again:
+   * approval and sim_ts as given, no actor, and the reason back to the rule until Claude explains it again.
+   */
+  updateDecision: (id, { decision, rule, reset = null }) => one(`
+    UPDATE agent_decisions SET decision = $2, rule = $3,
+      approval = COALESCE($4, approval), sim_ts = COALESCE($5, sim_ts),
+      actor = CASE WHEN $4::text IS NULL THEN actor END,
+      reason = CASE WHEN $4::text IS NULL THEN reason ELSE $3 END,
+      reason_source = CASE WHEN $4::text IS NULL THEN reason_source ELSE 'rules only' END
+    WHERE id = $1 RETURNING *`, [id, JSON.stringify(decision), rule, reset?.approval ?? null, reset?.sim_ts ?? null]),
 };

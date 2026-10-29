@@ -38,7 +38,7 @@ const clone = (x) => structuredClone(x);
 /** The deskRepo, decision table and shipment store in memory, on a real-time clock the test moves. */
 function fakeDb() {
   const log = createMemoryLog();
-  const state = { t: new Date('2026-10-29T10:00:00Z'), clock: null, orders: [], events: [], overrides: new Map(), nextId: 1 };
+  const state = { t: new Date('2026-10-29T10:00:00Z'), clock: null, orders: [], events: [], nextId: 1 };
   const event = (order_id, stage, by, note = null) => {
     const e = { id: state.events.length + 1, order_id, stage, by, note, at: new Date(state.t).toISOString() };
     state.events.push(e);
@@ -61,8 +61,12 @@ function fakeDb() {
       return clone(o);
     },
     addNoteOnce: async (orderId, stage, note) => (state.events.some((e) => e.order_id === orderId && e.note === note) ? null : event(orderId, stage, 'agents', note)),
-    decisions: async (runId) => (await log.list({ runId, limit: 1e9 })).reverse().map((r) => ({ ...clone(r), ...clone(state.overrides.get(r.id) ?? {}) })),
-    updateDecision: async (id, f) => { noUndefined(f); state.overrides.set(id, clone(f)); },
+    // As deskRepo: the run's rows by id; updateDecision writes the row itself, so approvals and expiry see it.
+    decisions: async (runId) => (await log.list({ runId, limit: 1e9 })).reverse().map(clone),
+    updateDecision: async (id, { decision, rule, reset = null }) => {
+      noUndefined({ decision, rule });
+      return log.update(id, { decision: clone(decision), rule, ...(reset ? { ...reset, actor: null, reason: rule, reason_source: 'rules only' } : {}) });
+    },
   };
   const shipments = {
     eventsFor: async (ids) => state.events.filter((e) => ids.includes(e.order_id)).map(clone),
@@ -274,4 +278,54 @@ test('with the desk off nothing runs and the state says so', async () => {
   assert.deepEqual(await desk.state(), { enabled: false, clock: null, orders: [], approvals: [], counts: { intake: 0, wave: 0, stock: 0, carrier: 0, watchtower: 0 } });
   assert.equal(db.state.clock, null);
   assert.equal((await db.log.list()).length, 0);
+});
+
+// Order 1 alone wants carrier A over the cap; a same-day order arriving later loses more without A and takes the
+// day's only A slot, so order 1 moves to D within the cap (and back when order 2 leaves the run).
+const standard = (ts) => ({ commitment_type: 'standard', promised_date: '2026-09-28', normalized: { ship_to, commitment_type: 'standard', received_ts: ts } });
+const carrierRow = async (db, ref) => (await db.log.list({ limit: 1e9 })).find((r) => r.agent === 'carrier' && r.delivery_id === ref);
+
+test('an approval does not carry over when a later order changes the carrier decision', async () => {
+  const db = fakeDb();
+  const desk = deskOn(db);
+  await desk.setClock('2026-09-25 09:15');
+  const o = db.addOrder('2026-09-25 09:15', standard('2026-09-25 09:15'));
+  await desk.refresh();
+  const ref = `IN-${String(o.id).padStart(6, '0')}`;
+  const first = await carrierRow(db, ref);
+  assert.deepEqual([first.decision.carrier_id, first.approval], ['A', 'pending']);
+  await db.log.setApproval(first.id, 'approved', 'manager');
+  await desk.refresh();
+  assert.equal(db.state.orders[0].carrier_id, 'A');
+
+  db.tick(10);
+  db.addOrder('2026-09-25 09:25');
+  await desk.refresh();
+  const after = await carrierRow(db, ref);
+  assert.equal(after.id, first.id, 'still one row per agent and order');
+  assert.deepEqual([after.decision.carrier_id, after.decision.needsApproval, after.approval, after.actor, after.sim_ts], ['D', false, 'auto', null, '2026-09-25 09:25']);
+  assert.equal(db.state.orders[0].carrier_id, 'D');
+  const s = await desk.state();
+  assert.equal(s.approvals.some((a) => a.ref === ref), false);
+  const two = s.approvals.find((a) => a.agent === 'carrier');
+  assert.equal(two.ref, `IN-${String(o.id + 1).padStart(6, '0')}`, 'the newcomer now waits for approval of A');
+});
+
+test('a decision taken without approval waits for staff once it needs approval', async () => {
+  const db = fakeDb();
+  const desk = deskOn(db);
+  await desk.setClock('2026-09-25 09:15');
+  const o = db.addOrder('2026-09-25 09:15', standard('2026-09-25 09:15'));
+  const other = db.addOrder('2026-09-25 09:15');
+  await desk.refresh();
+  const ref = `IN-${String(o.id).padStart(6, '0')}`;
+  assert.deepEqual([(await carrierRow(db, ref)).decision.carrier_id, (await carrierRow(db, ref)).approval], ['D', 'auto']);
+
+  db.tick(5);
+  other.status = 'rejected';
+  await desk.refresh();
+  const row = await carrierRow(db, ref);
+  assert.deepEqual([row.decision.carrier_id, row.approval, row.sim_ts], ['A', 'pending', '2026-09-25 09:20']);
+  assert.equal(db.state.orders[0].carrier_id, 'D', 'not applied before approval');
+  assert.ok((await desk.state()).approvals.some((a) => a.ref === ref && a.agent === 'carrier'));
 });
