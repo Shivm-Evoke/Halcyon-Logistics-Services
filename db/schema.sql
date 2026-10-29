@@ -238,7 +238,7 @@ CREATE TABLE agent_datasets (
   orders       jsonb NOT NULL
 );
 
--- Website accounts: customers (one client each) and Halcyon staff. Demo accounts are created at startup from env.
+-- Website accounts: customers (one client each) and Halcyon staff, created with the account tool (npm --prefix server run users).
 CREATE TABLE users (
   id             serial PRIMARY KEY,
   email          text NOT NULL UNIQUE,
@@ -248,6 +248,8 @@ CREATE TABLE users (
   name           text,
   created_at     timestamp NOT NULL DEFAULT now(),
   last_login_at  timestamp,
+  active         boolean NOT NULL DEFAULT true,
+  session_version integer NOT NULL DEFAULT 0,  -- raised on sign-out, password reset or disable: ends existing sessions
   CHECK (role = 'staff' OR client_id IS NOT NULL)
 );
 

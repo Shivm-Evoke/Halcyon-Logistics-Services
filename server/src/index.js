@@ -14,17 +14,32 @@ import { ensureDecisionTable } from './agents/log.js';
 import { ensureDatasetTable } from './agents/datasetStore.js';
 import { watchInbox } from './ingest/inboxWatcher.js';
 import { getContainer } from './container.js';
-import session from './routes/session.js';
+import { sessionRoutes } from './routes/session.js';
 import portal from './routes/portal.js';
 import dispatch from './routes/dispatch.js';
-import { gate } from './auth/access.js';
+import { gate, cachedLookup } from './auth/access.js';
 import { SIGNING_KEY } from './auth/key.js';
-import { ensureUserTable, userStore, clientExists } from './auth/users.js';
-import { seedDemoUsers } from './auth/seed.js';
+import { ensureUserTable, userStore } from './auth/users.js';
 import { ensureShipmentTable } from './shipments/store.js';
 
+// Sign-ins are signed with JWT_SECRET; without it in production every restart would sign everyone out.
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('JWT_SECRET must be set in production');
+  process.exit(1);
+}
+
 const app = express();
-app.use(cors());
+// Azure App Service terminates TLS in front of the app: trust its one hop for the client address (sign-in limits).
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
+// Browsers may not frame the site, guess file types, or send our URLs to other sites.
+app.use((_req, res, next) => {
+  res.set({ 'X-Frame-Options': 'DENY', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin',
+    'Content-Security-Policy': "frame-ancestors 'none'" });
+  next();
+});
+// The website and API share one origin in production; cross-origin calls are for local development only.
+if (process.env.NODE_ENV !== 'production') app.use(cors());
 
 // A public deployment sets SITE_PASSWORD: the browser asks for it once (any user name).
 // The health check and the client API, which has its own token login, stay open.
@@ -43,13 +58,14 @@ if (SITE_PASSWORD) {
 app.use(express.json({ limit: '5mb' }));
 
 // Signed-in users only: the portal for customers, every other screen's API for staff (REQUIRE_LOGIN=0 opens the staff area).
-app.use('/api', gate({ key: SIGNING_KEY, requireLogin: process.env.REQUIRE_LOGIN !== '0' }));
+const lookup = cachedLookup((id) => userStore.byId(id));
+app.use('/api', gate({ key: SIGNING_KEY, requireLogin: process.env.REQUIRE_LOGIN !== '0', lookup }));
 
 app.get('/api/health', async (_req, res) => {
   await pool.query('SELECT 1');
   res.json({ ok: true });
 });
-app.use('/api', session, portal, dispatch, overview, operations, accounts, ml, ingest, agents);
+app.use('/api', sessionRoutes({ lookup }), portal, dispatch, overview, operations, accounts, ml, ingest, agents);
 
 // In production the API also serves the built website; every screen's path returns the app so deep links work.
 const SITE = path.resolve(import.meta.dirname, '../../web/dist');
@@ -69,12 +85,9 @@ await ensureDecisionTable();
 await ensureDatasetTable();
 await ensureUserTable();
 await ensureShipmentTable();
-const seeded = await seedDemoUsers(process.env, { store: userStore, clientExists });
-if (seeded.length) console.log(`Demo accounts ready: ${seeded.join(', ')}`);
-if (process.env.REQUIRE_LOGIN !== '0' && await userStore.count() === 0) {
-  console.warn('WARNING: sign-in is required but no accounts exist. Set DEMO_STAFF_EMAIL and DEMO_STAFF_PASSWORD, or nobody can open the staff screens.');
+if (process.env.REQUIRE_LOGIN !== '0' && !(await userStore.list()).some((u) => u.role === 'staff' && u.active)) {
+  console.warn('WARNING: no active staff account. Create one with: npm --prefix server run users -- add --email <you> --role staff');
 }
-if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) console.warn('WARNING: JWT_SECRET is not set; every restart signs everyone out.');
 const container = await getContainer();
 // Load the agents' six months of orders up front, so the first replay or live day does not wait for it.
 await world();

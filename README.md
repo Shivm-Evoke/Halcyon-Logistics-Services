@@ -84,19 +84,35 @@ The site is a logistics company's front door with three areas:
 - **Staff** (everything else): the operations story (Start here is `/start`) and the **Dispatch board**, where staff move a
   shipment one stage at a time: received → picked → collected → in transit → delivered. The customer sees each move.
 
-Accounts are created at startup from environment variables only (never in code). Set them in `server/.env` locally and in
-the Azure Web App's App settings in production:
+Accounts live only in Postgres (`users` table) and are managed with the account tool, against whichever database
+`DATABASE_URL` (or the `PG*` variables) points to. Passwords are typed at a hidden prompt and stored as scrypt hashes;
+they never go in `.env`, App Settings, the code or logs.
 
-| Variable | Meaning |
-|---|---|
-| `DEMO_CUSTOMER_EMAIL`, `DEMO_CUSTOMER_PASSWORD` | the demo customer's sign-in |
-| `DEMO_CUSTOMER_CLIENT` | the client that customer belongs to (default `C055`) |
-| `DEMO_STAFF_EMAIL`, `DEMO_STAFF_PASSWORD` | the Halcyon staff sign-in |
-| `REQUIRE_LOGIN` | `0` opens the staff area without signing in (default: sign-in required) |
+```bash
+npm --prefix server run users -- add --email ops@halcyon.com --role staff
+npm --prefix server run users -- add --email buyer@acme.com --role customer --client C055
+npm --prefix server run users -- list
+npm --prefix server run users -- reset-password --email buyer@acme.com
+npm --prefix server run users -- disable --email buyer@acme.com
+```
 
-Sign-ins last 8 hours and need `JWT_SECRET` set in production, or they end when the server restarts. The client API
-(`/api/auth/login`, `/api/v1/orders`) keeps its own bearer tokens. The gateway scripts sign in with `STAFF_EMAIL` and
-`STAFF_PASSWORD` when the internal routes need it.
+For production, run `add` once from your machine with `DATABASE_URL` set to the Azure database to create the first staff
+account. Passwords need at least 12 characters.
+
+How sign-in is protected:
+
+- A sign-in lasts 8 hours in an HttpOnly, SameSite=Lax cookie (Secure in production), signed with `JWT_SECRET`; the
+  server refuses to start in production without it.
+- Every request checks the account in Postgres (cached for 5 seconds): signing out, a password reset or `disable` ends
+  the account's sessions everywhere.
+- Wrong email and wrong password give the same answer in the same time. Attempts are limited per email (10) and per
+  address (30) every 15 minutes.
+- Customers only ever see their own client's orders; every other API needs a staff account. `REQUIRE_LOGIN=0` opens the
+  staff area for local work.
+- Responses forbid framing and type sniffing; cross-origin calls are allowed only outside production.
+
+The client API (`/api/auth/login`, `/api/v1/orders`) keeps its own bearer tokens. The gateway scripts sign in with
+`STAFF_EMAIL` and `STAFF_PASSWORD` when the internal routes need it.
 
 ## Stack
 

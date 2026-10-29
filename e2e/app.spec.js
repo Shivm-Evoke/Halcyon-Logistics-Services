@@ -196,7 +196,10 @@ test('inbound gateway: a held order is fixed from the message drawer and release
   await expect(page.getByRole('cell', { name: 'held', exact: true })).toBeVisible();
   await expect(page.getByText(/Please fix: City is missing/)).toBeVisible();          // reply to the client
 
-  await page.locator('#inbound tbody tr.clickable').first().click();                          // newest message
+  // This test's own email (other tests, such as the test pack, add messages too).
+  const row = page.locator('#inbound tbody tr.clickable').filter({ hasText: /Order TP\w*-E02/ }).first();
+  await expect(row).toBeVisible();
+  await row.click();
   const drawer = page.locator('.drawer');
   await drawer.getByRole('button', { name: 'Fix', exact: true }).click();
   await drawer.getByLabel('street').fill('418 Harbor Street');

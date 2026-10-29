@@ -82,3 +82,22 @@ test.describe('customer', () => {
     expect((await page.request.get('/api/dispatch')).status()).toBe(403);
   });
 });
+
+test.describe('sessions', () => {
+  test.use(signedOut);
+
+  test('signing out ends the session, even for a copied cookie', async ({ page }) => {
+    const login = await page.request.post('/api/session/login', { data: CUSTOMER });
+    expect(login.status()).toBe(200);
+    const cookie = login.headers()['set-cookie'].split(';')[0];
+    expect((await page.request.get('/api/portal/orders', { headers: { cookie } })).status()).toBe(200);
+    await page.request.post('/api/session/logout', { headers: { cookie } });
+    expect((await page.request.get('/api/portal/orders', { headers: { cookie } })).status()).toBe(401);
+  });
+
+  test('responses refuse framing and type sniffing', async ({ page }) => {
+    const res = await page.request.get('/api/health');
+    expect(res.headers()['x-frame-options']).toBe('DENY');
+    expect(res.headers()['x-content-type-options']).toBe('nosniff');
+  });
+});

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { accessFor } from '../src/auth/access.js';
+import { accessFor, cachedLookup } from '../src/auth/access.js';
 
 const C = { role: 'customer', client_id: 'C055' };
 const S = { role: 'staff' };
@@ -32,4 +32,15 @@ test('the email provider webhook stays open and paths match whatever their case'
   assert.equal(accessFor('/ingest/email', null, on), 401);
   assert.equal(accessFor('/PORTAL/orders', { role: 'staff' }, on), 403);
   assert.equal(accessFor('/Portal/orders', null, { requireLogin: false }), 401);
+});
+
+test('account lookups are cached for a few seconds and can be forgotten', async () => {
+  let t = 0, calls = 0;
+  const get = cachedLookup(async (id) => { calls++; return { id }; }, { ttlMs: 5000, now: () => t });
+  await get(1); await get(1);
+  assert.equal(calls, 1);
+  t = 6000; await get(1);
+  assert.equal(calls, 2);
+  get.forget(1); await get(1);
+  assert.equal(calls, 3);
 });
