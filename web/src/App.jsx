@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Microscope, Warehouse, Truck, Radar, Users, BrainCircuit, ShieldCheck, Network, Sun, Moon, Monitor, Compass, ArrowDown,
-  PlayCircle, LineChart as LineChartIcon, Bot, Scale, Database, UploadCloud,
+  PlayCircle, LineChart as LineChartIcon, Bot, Scale, Database, UploadCloud, ClipboardList, LogOut,
 } from 'lucide-react';
 import Inventory from './pages/Inventory.jsx';
 import Carriers from './pages/Carriers.jsx';
@@ -19,11 +19,13 @@ import SixMonths from './pages/SixMonths.jsx';
 import Agents from './pages/Agents.jsx';
 import Decision from './pages/Decision.jsx';
 import TestData from './pages/TestData.jsx';
+import Dispatch from './pages/Dispatch.jsx';
+import { useSession } from './components/session.jsx';
 import { MOTION, replayCharts, useReveal } from './components/motion.jsx';
 
 // Sidebar in presentation order: the problem, the solution at work, the decision, then what is under the hood.
 const NAV = [
-  { to: '/', label: 'Start here', icon: Compass, el: <StartHere />, section: 'Guide' },
+  { to: '/start', label: 'Start here', icon: Compass, el: <StartHere />, section: 'Guide' },
   { section: '1 · The problem' },
   { to: '/why-late', label: 'Why we\'re late', icon: Microscope, el: <WhyLate /> },
   { section: '2 · The solution at work' },
@@ -41,12 +43,14 @@ const NAV = [
   { to: '/ai-model', label: 'AI risk model', icon: BrainCircuit, tag: 'ML', el: <AiModel /> },
   { to: '/data-quality', label: 'Data quality', icon: ShieldCheck, el: <DataQuality /> },
   { to: '/accounts', label: 'Account health', icon: Users, el: <Accounts /> },
+  { section: '5 · Run the company' },
+  { to: '/dispatch', label: 'Dispatch board', icon: ClipboardList, tag: 'NEW', el: <Dispatch /> },
 ];
 let section = '';
 const PAGES = NAV.flatMap((n) => (n.section && !n.to ? ((section = n.section), []) : [{ ...n, section: n.section || section }]));
 
 const TOPBAR = 56;
-const idOf = (to) => (to === '/' ? 'start-here' : to.slice(1));
+const idOf = (to) => (to === '/start' ? 'start-here' : to.slice(1));
 const top = (to) => {
   const el = document.getElementById(idOf(to));
   return el ? el.getBoundingClientRect().top + window.scrollY - TOPBAR : null;
@@ -112,8 +116,10 @@ function useStoryScroll() {
 
 const THEMES = [['light', Sun, 'Light'], ['dark', Moon, 'Dark'], ['system', Monitor, 'Match system']];
 
+/** The staff area: the operations story and the Dispatch board. */
 export default function App() {
   const { pathname } = useLocation();
+  const { user, signOut } = useSession();
   const [choice, setChoice] = useState(savedChoice);
   const [mode, setMode] = useState(() => resolve(savedChoice()));
   const savedY = useRef(null);
@@ -156,6 +162,11 @@ export default function App() {
           <div className="row">
             <span className="pill"><Database size={13} /> 48,340 deliveries · Apr–Sep 2026</span>
             <span className="pill"><span className="live" /> Data through 25 Sep</span>
+            {user && (
+              <button className="pill pill-button" onClick={() => signOut().then(() => window.location.assign('/'))} title={`Signed in as ${user.email}`}>
+                <LogOut size={13} /> Sign out
+              </button>
+            )}
             <div className="seg" role="radiogroup" aria-label="Colour theme">
               {THEMES.map(([value, Icon, label]) => (
                 <button key={value} role="radio" aria-checked={choice === value} aria-label={label} title={label}

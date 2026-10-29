@@ -8,6 +8,10 @@ export async function api(path, { method = 'GET', body } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));
+  // A session that ended (expired or signed out elsewhere): back to sign in, except for the session calls themselves.
+  if (res.status === 401 && !path.startsWith('/session') && window.location.pathname !== '/login') {
+    window.location.assign(`/login?expired=1&next=${encodeURIComponent(window.location.pathname)}`);
+  }
   if (!res.ok) throw Object.assign(new Error(data.error || `Request failed (${res.status})`), { status: res.status, field: data.field });
   return data;
 }

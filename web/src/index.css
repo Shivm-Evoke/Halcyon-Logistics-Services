@@ -578,3 +578,55 @@ tr.filter-row select.input { padding-right: 24px; background-position: right 8px
 .rejected-rows { margin: 4px 0 0; padding-left: 18px; max-height: 180px; overflow: auto; }
 .data-picker select { max-width: 360px; }
 .ops-start select.input { width: auto; }
+
+/* ---------- Public site, sign-in and customer portal ---------- */
+.public { min-height: 100vh; background: var(--bg); color: var(--ink, inherit); }
+.public-bar, .portal-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 32px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.public-brand { padding: 0; color: inherit; text-decoration: none; }
+.public-brand small { color: var(--muted); }
+.public-hero { max-width: 880px; padding: 72px 32px 40px; }
+.public-hero h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.08; letter-spacing: -0.02em; margin: 8px 0 16px; }
+.public-kicker { color: var(--brand); text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; font-weight: 600; }
+.public-lede { color: var(--muted); font-size: 18px; line-height: 1.55; max-width: 680px; margin-bottom: 24px; }
+.public-facts { display: flex; flex-wrap: wrap; gap: 40px; padding: 8px 32px 40px; }
+.public-facts div { display: flex; flex-direction: column; }
+.public-facts b { font-size: 32px; letter-spacing: -0.02em; }
+.public-facts span { color: var(--muted); font-size: 13px; }
+.public-services { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; padding: 0 32px 48px; }
+.public-services h3 { margin: 10px 0 6px; font-size: 15px; }
+.public-foot { padding: 24px 32px; border-top: 1px solid var(--line); }
+.login-page { display: grid; place-items: center; padding: 32px 16px; }
+.login-card { width: min(400px, 100%); display: flex; flex-direction: column; gap: 14px; }
+.login-card h2 { margin: 4px 0 0; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.field > span { color: var(--muted); font-weight: 500; }
+.field .input { width: 100%; }
+.field-error { color: var(--bad, #b42318); }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px; }
+.form-grid .wide { grid-column: span 2; }
+.form-section { font-size: 14px; margin: 8px 0 12px; }
+.portal { min-height: 100vh; background: var(--bg); }
+.portal-nav { display: flex; gap: 4px; }
+.portal-nav a { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; color: var(--muted); text-decoration: none; font-size: 14px; }
+.portal-nav a.active { color: var(--brand); box-shadow: inset 0 -2px 0 var(--brand); }
+.portal-page { max-width: 1120px; margin: 0 auto; padding: 32px; }
+.stage-count { display: flex; flex-direction: column; text-decoration: none; color: inherit; min-width: 90px; }
+.stage-count b { font-size: 24px; }
+.stage-count span { color: var(--muted); font-size: 12px; }
+.kpi-value-sm { font-size: 20px; font-weight: 600; margin-top: 6px; }
+.timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; list-style: none; margin: 0; }
+.timeline li { display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
+.timeline li.done { color: var(--good-text, var(--good)); }
+.pill-button { cursor: pointer; font: inherit; }
+button.link { background: none; border: 0; padding: 0; color: var(--brand); cursor: pointer; font: inherit; text-decoration: underline; }
+.dispatch { display: grid; grid-template-columns: repeat(5, minmax(180px, 1fr)); gap: 12px; overflow-x: auto; }
+.dispatch-col { background: var(--surface-2); border: 1px solid var(--line); padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 200px; }
+.dispatch-head { display: flex; justify-content: space-between; align-items: baseline; }
+.dispatch-card { background: var(--surface); border: 1px solid var(--line); padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+.dispatch-card .btn { align-self: flex-start; margin-top: 4px; }
+@media (max-width: 720px) {
+  .public-bar, .portal-bar { padding: 12px 16px; flex-wrap: wrap; }
+  .public-hero, .public-facts, .public-services, .portal-page { padding-left: 16px; padding-right: 16px; }
+  .form-grid .wide { grid-column: auto; }
+  .timeline { grid-template-columns: 1fr; }
+}
