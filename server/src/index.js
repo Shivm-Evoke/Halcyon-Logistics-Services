@@ -15,6 +15,8 @@ import { ensureDatasetTable } from './agents/datasetStore.js';
 import { watchInbox } from './ingest/inboxWatcher.js';
 import { getContainer } from './container.js';
 import session from './routes/session.js';
+import portal from './routes/portal.js';
+import dispatch from './routes/dispatch.js';
 import { gate } from './auth/access.js';
 import { SIGNING_KEY } from './auth/key.js';
 import { ensureUserTable, userStore, clientExists } from './auth/users.js';
@@ -47,7 +49,7 @@ app.get('/api/health', async (_req, res) => {
   await pool.query('SELECT 1');
   res.json({ ok: true });
 });
-app.use('/api', session, overview, operations, accounts, ml, ingest, agents);
+app.use('/api', session, portal, dispatch, overview, operations, accounts, ml, ingest, agents);
 
 // In production the API also serves the built website; every screen's path returns the app so deep links work.
 const SITE = path.resolve(import.meta.dirname, '../../web/dist');
