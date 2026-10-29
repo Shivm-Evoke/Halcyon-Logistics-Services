@@ -1,0 +1,19 @@
+From: purchasing@buyer.example
+To: orders@halcyon.example
+Subject: Order SAMPLE-1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+Please ship the order below.
+
+PO: SAMPLE-1
+SKU: HX-2201   Qty: 12
+Delivery: next day
+Ship to: Maya Patel
+Address: Peachtree Street
+City: Atlanta
+State: GA
+
+Thanks,
+Purchasing

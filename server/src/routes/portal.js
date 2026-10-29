@@ -1,14 +1,37 @@
-// Customer portal: a signed-in customer's account summary, new orders and shipments. Everything is scoped to
-// the session's client; another client's order reads as not found.
-import { Router } from 'express';
+// Customer portal: a signed-in customer's account summary, new orders (form, EDI, email, samples), API key and
+// shipments. Everything is scoped to the session's client; another client's order reads as not found.
+import express, { Router } from 'express';
 import { q, one, DEMO_NOW } from '../db.js';
 import { getContainer } from '../container.js';
 import { asShipments, idFromRef } from '../shipments/views.js';
 import { shipmentStore } from '../shipments/store.js';
 import { customerCanEdit, initialStage } from '../shipments/stages.js';
-import { refreshDesk } from '../desk/instance.js';
+import { getDesk, refreshDesk, deskClockNow } from '../desk/instance.js';
+import { forceFor, formOrder, sendSample, rotateApiKey, customerDecisions } from '../portal/channels.js';
 
 const r = Router();
+const rawBody = express.text({ type: ['message/rfc822', 'text/plain', 'application/edi-x12'], limit: '5mb' });
+const content = (req) => (typeof req.body === 'string' ? req.body : req.body?.content || '');
+// Portal orders are the session's client's, received at the ops clock.
+const force = (req) => forceFor(req.user, deskClockNow());
+
+// The gateway's results as shipments (an order it did not store stays as the gateway reported it).
+async function shipmentsOf(results) {
+  const { ingestRepo } = await getContainer();
+  return Promise.all(results.map(async (o) => {
+    const row = o.ref && await ingestRepo.getOrder(idFromRef(o.ref));
+    return row ? (await asShipments([row], { withEvents: true }))[0] : o;
+  }));
+}
+
+// What the agents decided about an order in the desk's current run; an order outside it, or a desk that is off or failing, has none.
+async function decisionsFor(ref) {
+  try {
+    return customerDecisions((await (await getDesk()).state()).orders.find((o) => o.ref === ref));
+  } catch {
+    return [];
+  }
+}
 
 r.get('/portal/summary', async (req, res) => {
   const id = req.user.client_id;
@@ -37,22 +60,46 @@ async function own(req, res) {
 
 r.get('/portal/orders/:ref', async (req, res) => {
   const o = await own(req, res);
-  if (o) res.json((await asShipments([o], { withEvents: true }))[0]);
+  if (!o) return;
+  const [shipment] = await asShipments([o], { withEvents: true });
+  res.json({ ...shipment, decisions: await decisionsFor(shipment.ref) });
 });
 
 // One order from the portal form, through the same gateway pipeline as API, email and EDI orders.
 r.post('/portal/orders', async (req, res) => {
-  const b = req.body || {};
-  const order = {
-    client_order_ref: b.client_order_ref || undefined, sku: b.sku, quantity: b.quantity, service: b.service,
-    requested_date: b.requested_date || undefined, ship_to: b.ship_to || {},
-  };
-  const { ingest, ingestRepo } = await getContainer();
-  const result = await ingest.api(req.user.client_id, [order]);
+  const { ingest } = await getContainer();
+  const result = await ingest.api(req.user.client_id, [formOrder(req.body || {})], force(req));
   await refreshDesk();
-  const ref = result.orders[0]?.ref;
-  const row = ref && await ingestRepo.getOrder(idFromRef(ref));
-  res.status(201).json(row ? (await asShipments([row], { withEvents: true }))[0] : result.orders[0]);
+  res.status(201).json((await shipmentsOf(result.orders))[0]);
+});
+
+// An X12 850 file or a raw email (.eml), as text or { content }. The client is the session's, whatever the file says.
+r.post('/portal/edi', rawBody, async (req, res) => {
+  if (!content(req).trim()) return res.status(400).json({ error: 'Empty EDI file' });
+  const result = await (await getContainer()).ingest.edi(content(req), { filename: req.body?.filename }, force(req));
+  await refreshDesk();
+  res.status(201).json({ orders: await shipmentsOf(result.orders) });
+});
+
+r.post('/portal/email', rawBody, async (req, res) => {
+  if (!content(req).trim()) return res.status(400).json({ error: 'Empty email' });
+  const result = await (await getContainer()).ingest.email(content(req), { filename: req.body?.filename }, force(req));
+  await refreshDesk();
+  res.status(201).json({ orders: await shipmentsOf(result.orders) });
+});
+
+// One of the five sample orders (1-5), each showing one cause of late deliveries, sent through its own channel.
+r.post('/portal/samples/:n', async (req, res) => {
+  const sent = await sendSample((await getContainer()).ingest, req.params.n, force(req));
+  if (!sent) return res.status(404).json({ error: 'not_found', message: `No sample ${req.params.n}; samples are 1 to 5` });
+  await refreshDesk();
+  res.status(201).json({ channel: sent.channel, orders: await shipmentsOf(sent.result.orders) });
+});
+
+// A new API key for the client: the secret is shown once, and the previous one stops working.
+r.post('/portal/api-key', async (req, res) => {
+  const { ingestRepo } = await getContainer();
+  res.status(201).set('Cache-Control', 'no-store').json(await rotateApiKey(ingestRepo, req.user.client_id));
 });
 
 // Fix a held order; it is re-checked and released when clean.

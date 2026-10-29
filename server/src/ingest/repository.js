@@ -50,6 +50,9 @@ export const ingestRepository = {
     .map((r) => [r.carrier_id, r.n])),
 
   getApiClient: (id) => one('SELECT * FROM api_clients WHERE client_id = $1', [id]),
+  // A client's new API secret (hashed) replaces any earlier one, which stops working at once.
+  setApiSecret: (id, secretHash) => q(`INSERT INTO api_clients (client_id, secret_hash) VALUES ($1, $2)
+    ON CONFLICT (client_id) DO UPDATE SET secret_hash = EXCLUDED.secret_hash, created_at = now(), last_login_at = NULL`, [id, secretHash]),
   touchLogin: (id) => q('UPDATE api_clients SET last_login_at = now() WHERE client_id = $1', [id]),
   getIdempotent: (clientId, key) => one('SELECT response FROM api_idempotency WHERE client_id = $1 AND key = $2', [clientId, key]),
   saveIdempotent: (clientId, key, response) => q(

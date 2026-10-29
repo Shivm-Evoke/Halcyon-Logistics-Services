@@ -1,0 +1,12 @@
+ISA*00*          *00*          *ZZ*C055           *ZZ*HALCYON        *      *    *U*00401*000000002*0*P*>~
+GS*PO*C055*HALCYON*****1*X*004010~
+ST*850*0001~
+BEG*00*SA*SAMPLE-2~
+TD5*****SAME DAY~
+N1*ST*Luis Ortega~
+N3*410 Tryon Street~
+N4*Charlotte*NC*28202~
+PO1*1*20*EA***VP*HX-5150~
+SE*8*0001~
+GE*1*1~
+IEA*1*000000002~

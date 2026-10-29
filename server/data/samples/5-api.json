@@ -1,0 +1,11 @@
+{
+  "orders": [
+    {
+      "client_order_ref": "SAMPLE-5",
+      "sku": "HX-1270",
+      "quantity": 45,
+      "service": "same_day",
+      "ship_to": { "name": "Erin Walsh", "street": "75 State Street", "city": "Boston", "state": "MA", "zip": "02109" }
+    }
+  ]
+}

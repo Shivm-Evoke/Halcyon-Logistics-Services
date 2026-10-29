@@ -1,0 +1,7 @@
+{
+  "client_order_ref": "SAMPLE-4",
+  "sku": "HX-6630",
+  "quantity": 8,
+  "service": "same_day",
+  "ship_to": { "name": "Omar Haddad", "street": "220 Broadway", "city": "Nashville", "state": "TN", "zip": "37203" }
+}
