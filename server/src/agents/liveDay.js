@@ -28,10 +28,31 @@ export function pickDemoDay(orders) {
     days.set(d, s);
   }
   const worst = [...days].sort(([, a], [, b]) => a.ok / a.n - b.ok / b.n)[0]?.[0];
-  if (worst) return worst;
+  return worst ?? busiestDay(orders);
+}
+
+/** The day with the most orders (the earliest on a tie). */
+export function busiestDay(orders) {
   const volume = new Map();
   for (const o of orders) volume.set(dayOf(o), (volume.get(dayOf(o)) || 0) + 1);
   return [...volume].sort(([da, a], [db, b]) => b - a || da.localeCompare(db))[0]?.[0] ?? null;
+}
+
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** Every day in the data, for the day picker: order count and recorded on-time rate (null where outcomes are blank). */
+export function listDays(orders) {
+  const days = new Map();
+  for (const o of orders) {
+    const d = dayOf(o);
+    const s = days.get(d) || { orders: 0, known: 0, ok: 0 };
+    s.orders++;
+    if (o.late != null) { s.known++; s.ok += o.late ? 0 : 1; }
+    days.set(d, s);
+  }
+  return [...days].sort(([a], [b]) => a.localeCompare(b)).map(([day, s]) => ({
+    day, weekday: WEEKDAYS[new Date(`${day}T12:00:00Z`).getUTCDay()], orders: s.orders, onTime: s.known ? s.ok / s.known : null,
+  }));
 }
 
 export class LiveDay {

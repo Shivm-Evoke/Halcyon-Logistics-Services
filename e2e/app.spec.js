@@ -93,6 +93,19 @@ test('operations day: the worst Friday runs offline, opens a second wave, and an
   expect((await again.json()).changed).toBe(false);
 });
 
+test('operations day: any day of the data can be picked and played', async ({ page }) => {
+  await page.goto('/operations-day');
+  const screen = page.locator('#operations-day');
+  const day = screen.getByLabel('Day to play');
+  await expect(day).toHaveValue('2026-09-25');
+  await screen.locator('#ops-mode').selectOption('recorded');
+  await expect(day).toBeDisabled(); // a recording holds one day's reasons
+  await screen.locator('#ops-mode').selectOption('live');
+  await day.selectOption('2026-04-03');
+  await screen.getByRole('button', { name: /Start the day|Restart the day/ }).click();
+  await expect(page.getByText(/Live · 2026-04-03 · A day from the history/i)).toBeVisible();
+});
+
 test('test data: a dropped CSV is checked, saved, and the agents run on it', async ({ page }) => {
   const sample = await (await page.request.get('/api/agents/datasets/sample.csv')).text();
   const lines = sample.trim().split('\n');
