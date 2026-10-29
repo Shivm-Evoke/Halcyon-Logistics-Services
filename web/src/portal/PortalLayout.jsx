@@ -18,7 +18,7 @@ export default function PortalLayout() {
         <Link to="/portal" className="brand public-brand"><div className="brand-mark">H</div><div>Halcyon Logistics<small>Customer portal</small></div></Link>
         <nav className="portal-nav">
           <NavLink to="/portal" end><LayoutDashboard size={15} /> Dashboard</NavLink>
-          <NavLink to="/portal/new-order"><PackagePlus size={15} /> New order</NavLink>
+          <NavLink to="/portal/new-order"><PackagePlus size={15} /> Place orders</NavLink>
           <NavLink to="/portal/shipments"><Package size={15} /> My shipments</NavLink>
         </nav>
         <div className="row" style={{ gap: 10 }}>

@@ -630,3 +630,8 @@ button.link { background: none; border: 0; padding: 0; color: var(--brand); curs
   .form-grid .wide { grid-column: auto; }
   .timeline { grid-template-columns: 1fr; }
 }
+
+/* Customer tracking: what the agents did */
+.decisions { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.decisions li { display: grid; grid-template-columns: 120px 1fr auto; gap: 12px; align-items: baseline; }
+@media (max-width: 720px) { .decisions li { grid-template-columns: 1fr; gap: 2px; } }

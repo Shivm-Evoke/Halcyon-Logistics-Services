@@ -1,11 +1,12 @@
 import { PAL } from './theme.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export async function api(path, { method = 'GET', body } = {}) {
+export async function api(path, { method = 'GET', body, text } = {}) {
+  // `text` sends a raw text body (an EDI file or an email) instead of JSON.
   const res = await fetch(`/api${path}`, {
     method,
-    headers: body ? { 'content-type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
+    headers: text != null ? { 'content-type': 'text/plain' } : body ? { 'content-type': 'application/json' } : undefined,
+    body: text != null ? text : body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));
   // A session that ended (expired or signed out elsewhere): back to sign in, except for the session calls themselves.

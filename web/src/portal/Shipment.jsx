@@ -7,6 +7,7 @@ import { PageHead, Badge, Loading } from '../components/ui.jsx';
 import { STAGES, STAGE_LABEL, stageTone } from './stages.js';
 import { AddressFields } from './NewOrder.jsx';
 
+const AGENT_NAME = { intake: 'Intake', wave: 'Wave Planner', stock: 'Stock', carrier: 'Carrier', watchtower: 'Watchtower' };
 const when = (t) => String(t).slice(0, 16).replace('T', ' ');
 
 export default function Shipment() {
@@ -39,6 +40,17 @@ export default function Shipment() {
         <div className="card"><div className="small muted">Promised delivery</div><div className="kpi-value-sm">{o.promised_date ? String(o.promised_date).slice(0, 10) : 'Once the order is fixed'}</div></div>
         <div className="card"><div className="small muted">Carrier</div><div className="kpi-value-sm">{o.carrier_id && o.stage !== 'on_hold' && o.stage !== 'cancelled' ? `Carrier ${o.carrier_id}` : '—'}</div></div>
       </div>
+
+      {o.decisions?.length > 0 && (
+        <section className="card section-gap" aria-label="What we did">
+          <h3 className="form-section">What we did</h3>
+          <ul className="decisions">
+            {o.decisions.map((d, i) => (
+              <li key={i}><b>{AGENT_NAME[d.agent] || d.agent}</b> <span>{d.text}</span> <span className="small muted">{d.at ? when(d.at) : ''}</span></li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {o.stage !== 'on_hold' && o.stage !== 'cancelled' && (
         <ol className="timeline card section-gap" aria-label="Shipment progress">

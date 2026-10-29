@@ -11,7 +11,7 @@ export default function Dashboard({ summary }) {
   return (
     <>
       <PageHead title={`Welcome, ${client.client_name}`} eyebrow={`${client.account_tier} · ${client.region}`}
-        actions={<Link className="btn primary" to="/portal/new-order"><PackagePlus size={15} /> New order</Link>}>
+        actions={<Link className="btn primary" to="/portal/new-order"><PackagePlus size={15} /> Place orders</Link>}>
         Your orders with Halcyon at a glance.
       </PageHead>
       <div className="grid g4 section-gap">
