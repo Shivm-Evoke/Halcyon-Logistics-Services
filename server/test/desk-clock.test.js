@@ -17,6 +17,7 @@ test('clockNow accepts a Date set_to and defaults when there is no row', () => {
 
 test('runIdOf names the run by day and number', () => {
   assert.equal(runIdOf({ set_to: '2026-09-25 07:30', run_no: 3 }), 'desk-2026-09-25-3');
+  assert.equal(runIdOf({ set_to: '2026-09-26 08:00', run_from: '2026-09-25 07:30', run_no: 3 }), 'desk-2026-09-25-3');
 });
 
 test('nextEvent finds the next checkpoint, rolling to the next morning', () => {

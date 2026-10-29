@@ -13,6 +13,7 @@ import { parseDataset, REQUIRED_COLUMNS, OPTIONAL_COLUMNS } from '../agents/data
 import { datasetStore } from '../agents/datasetStore.js';
 import { decisionLog } from '../agents/log.js';
 import { LiveDay, pickDemoDay, busiestDay, listDays } from '../agents/liveDay.js';
+import { refreshDesk } from '../desk/instance.js';
 
 export const RECORDED_FILE = process.env.RECORDED_DAY_FILE || path.resolve(import.meta.dirname, '../../data/recorded-day.json');
 
@@ -112,6 +113,8 @@ r.post('/agents/approvals/:id', async (req, res) => {
   if (!['approved', 'rejected'].includes(approval)) return res.status(400).json({ error: 'approval must be "approved" or "rejected"', field: 'approval' });
   const result = await decisionLog.setApproval(Number(req.params.id), approval, 'manager');
   if (!result.row) return res.status(404).json({ error: 'No such decision' });
+  // A decision on the live order desk changes what the agents do next: the desk re-runs before answering.
+  if (String(result.row.run_id).startsWith('desk-')) await refreshDesk();
   res.json(result);
 });
 

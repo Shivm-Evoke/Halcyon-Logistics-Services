@@ -13,7 +13,8 @@ const handlerFor = (ingest, name) => {
   return null;
 };
 
-export function watchInbox(ingest, dir = INBOX_DIR) {
+/** @param afterIngest called after each processed file (the live order desk re-runs) */
+export function watchInbox(ingest, dir = INBOX_DIR, afterIngest = async () => {}) {
   for (const sub of ['', 'processed', 'failed']) fs.mkdirSync(path.join(dir, sub), { recursive: true });
   const busy = new Set();
 
@@ -31,6 +32,7 @@ export function watchInbox(ingest, dir = INBOX_DIR) {
       fs.renameSync(file, path.join(dir, 'processed', `${stamp}_${name}`));
       if (result.reply) fs.writeFileSync(path.join(dir, 'processed', `${stamp}_${name}.reply.txt`), result.reply);
       console.log(`inbox: ${name} -> message ${result.message_id} (${result.status})`);
+      await afterIngest();
     } catch (e) {
       console.error(`inbox: ${name} failed`, e);
       if (fs.existsSync(file)) fs.renameSync(file, path.join(dir, 'failed', name));

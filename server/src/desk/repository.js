@@ -10,17 +10,19 @@ export const ensureDeskTable = () => q(`
     set_to         timestamp NOT NULL,
     set_at         timestamptz NOT NULL,
     run_no         int NOT NULL,
-    run_started_at timestamptz NOT NULL
-  )`);
+    run_started_at timestamptz NOT NULL,
+    run_from       timestamp
+  );
+  ALTER TABLE desk_clock ADD COLUMN IF NOT EXISTS run_from timestamp;`);
 
 export const deskRepo = {
   getClock: () => one('SELECT * FROM desk_clock WHERE id = 1'),
-  /** Starts a new run at `setTo`: run number up by one, run and clock start now. */
+  /** Starts a new run at `setTo`: run number up by one, run and clock start now; the run is named after `setTo`. */
   setClock: (setTo) => one(`
-    INSERT INTO desk_clock (id, set_to, set_at, run_no, run_started_at) VALUES (1, $1, now(), 1, now())
-    ON CONFLICT (id) DO UPDATE SET set_to = $1, set_at = now(), run_no = desk_clock.run_no + 1, run_started_at = now()
+    INSERT INTO desk_clock (id, set_to, set_at, run_no, run_started_at, run_from) VALUES (1, $1, now(), 1, now(), $1)
+    ON CONFLICT (id) DO UPDATE SET set_to = $1, set_at = now(), run_no = desk_clock.run_no + 1, run_started_at = now(), run_from = $1
     RETURNING *`, [setTo]),
-  /** Moves the clock within the same run. */
+  /** Moves the clock within the same run (its name stays). */
   shiftClock: (to) => one('UPDATE desk_clock SET set_to = $1, set_at = now() WHERE id = 1 RETURNING *', [to]),
   /**
    * Orders the gateway took in this run. created_at is a zone-less timestamp written by now() in the session's

@@ -17,11 +17,13 @@ import { getContainer } from './container.js';
 import { sessionRoutes } from './routes/session.js';
 import portal from './routes/portal.js';
 import dispatch from './routes/dispatch.js';
+import desk from './routes/desk.js';
 import { gate, cachedLookup } from './auth/access.js';
 import { SIGNING_KEY } from './auth/key.js';
 import { ensureUserTable, userStore } from './auth/users.js';
 import { ensureShipmentTable } from './shipments/store.js';
 import { ensureDeskTable } from './desk/repository.js';
+import { getDesk, refreshDesk } from './desk/instance.js';
 
 // Sign-ins are signed with JWT_SECRET; without it in production every restart would sign everyone out.
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
@@ -69,7 +71,7 @@ app.get('/api/health', async (_req, res) => {
   await pool.query('SELECT 1');
   res.json({ ok: true });
 });
-app.use('/api', sessionRoutes({ lookup }), portal, dispatch, overview, operations, accounts, ml, ingest, agents);
+app.use('/api', sessionRoutes({ lookup }), portal, dispatch, desk, overview, operations, accounts, ml, ingest, agents);
 
 // In production the API also serves the built website; every screen's path returns the app so deep links work.
 const SITE = path.resolve(import.meta.dirname, '../../web/dist');
@@ -96,6 +98,8 @@ if (process.env.REQUIRE_LOGIN !== '0' && !(await userStore.list()).some((u) => u
 const container = await getContainer();
 // Load the agents' six months of orders up front, so the first replay or live day does not wait for it.
 await world();
+// Load the ops clock (the gateway stamps orders with it) and run the desk once.
+await getDesk();
 // Drop .eml / .edi / C###_*.csv files into the inbox folder to process them (INBOX_WATCH=0 disables).
-if (process.env.INBOX_WATCH !== '0') watchInbox(container.ingest);
+if (process.env.INBOX_WATCH !== '0') watchInbox(container.ingest, undefined, refreshDesk);
 app.listen(port, () => console.log(`Halcyon API on http://localhost:${port}`));

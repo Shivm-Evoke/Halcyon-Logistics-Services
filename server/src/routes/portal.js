@@ -6,6 +6,7 @@ import { getContainer } from '../container.js';
 import { asShipments, idFromRef } from '../shipments/views.js';
 import { shipmentStore } from '../shipments/store.js';
 import { customerCanEdit, initialStage } from '../shipments/stages.js';
+import { refreshDesk } from '../desk/instance.js';
 
 const r = Router();
 
@@ -48,6 +49,7 @@ r.post('/portal/orders', async (req, res) => {
   };
   const { ingest, ingestRepo } = await getContainer();
   const result = await ingest.api(req.user.client_id, [order]);
+  await refreshDesk();
   const ref = result.orders[0]?.ref;
   const row = ref && await ingestRepo.getOrder(idFromRef(ref));
   res.status(201).json(row ? (await asShipments([row], { withEvents: true }))[0] : result.orders[0]);
@@ -61,6 +63,7 @@ r.patch('/portal/orders/:ref', async (req, res) => {
   if (!customerCanEdit(stage)) return res.status(409).json({ error: `This order is already ${stage.replace('_', ' ')} and can't be changed` });
   const { ingest, ingestRepo } = await getContainer();
   await ingest.reprocess(o.id, req.body || {});
+  await refreshDesk();
   res.json((await asShipments([await ingestRepo.getOrder(o.id)], { withEvents: true }))[0]);
 });
 

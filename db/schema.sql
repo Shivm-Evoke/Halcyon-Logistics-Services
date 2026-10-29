@@ -270,5 +270,6 @@ CREATE TABLE desk_clock (
   set_to         timestamp NOT NULL,              -- the simulated time when the clock was last set
   set_at         timestamptz NOT NULL,            -- the real time it was set; the clock runs on from here
   run_no         int NOT NULL,
-  run_started_at timestamptz NOT NULL
+  run_started_at timestamptz NOT NULL,
+  run_from       timestamp                        -- set_to when the run started; names the run (advancing keeps it)
 );

@@ -9,6 +9,7 @@ import { signToken, verifyToken, checkSecret } from '../ingest/auth.js';
 import { apiOrderResult } from '../ingest/reply.js';
 import { openApiSpec, docsPage } from '../ingest/openapi.js';
 import { SIGNING_KEY } from '../auth/key.js';
+import { refreshDesk } from '../desk/instance.js';
 
 const r = Router();
 const TOKEN_TTL = 3600;
@@ -57,6 +58,7 @@ r.post('/v1/orders', requireClient, async (req, res) => {
     if (prior) return res.set('Idempotent-Replay', 'true').json(prior.response);
   }
   const result = await ingest.api(req.clientId, orders);
+  await refreshDesk();
   const response = { message_id: result.message_id, status: result.status, summary: result.summary, orders: result.orders };
   if (key) await ingestRepo.saveIdempotent(req.clientId, key, response);
   res.json(response);
@@ -84,31 +86,41 @@ r.patch('/v1/orders/:ref', requireClient, async (req, res) => {
   const o = await ownOrder(req, res);
   if (!o) return;
   if (!['held', 'corrected', 'accepted'].includes(o.status)) return res.status(409).json({ error: 'not_editable', message: `Order is ${o.status}` });
-  res.json(apiOrderResult(await (await getContainer()).ingest.reprocess(o.id, req.body || {})));
+  const result = await (await getContainer()).ingest.reprocess(o.id, req.body || {});
+  await refreshDesk();
+  res.json(apiOrderResult(result));
 });
 
 // ---------- Internal: channels and monitoring ----------
 
 r.post('/ingest/email', rawBody, async (req, res) => {
   if (!content(req).trim()) return res.status(400).json({ error: 'Empty email' });
-  res.json(await (await getContainer()).ingest.email(content(req), { filename: req.body?.filename }));
+  const result = await (await getContainer()).ingest.email(content(req), { filename: req.body?.filename });
+  await refreshDesk();
+  res.json(result);
 });
 
 // Email-provider inbound webhook (already parsed): { from, subject, date, text, attachments: [{ filename, content }] }.
 r.post('/ingest/email/inbound', async (req, res) => {
   if (!req.body?.from) return res.status(400).json({ error: 'from is required' });
-  res.json(await (await getContainer()).ingest.parsedEmail(req.body));
+  const result = await (await getContainer()).ingest.parsedEmail(req.body);
+  await refreshDesk();
+  res.json(result);
 });
 
 r.post('/ingest/edi', rawBody, async (req, res) => {
   if (!content(req).trim()) return res.status(400).json({ error: 'Empty EDI file' });
-  res.json(await (await getContainer()).ingest.edi(content(req), { filename: req.body?.filename }));
+  const result = await (await getContainer()).ingest.edi(content(req), { filename: req.body?.filename });
+  await refreshDesk();
+  res.json(result);
 });
 
 r.post('/ingest/file', rawBody, async (req, res) => {
   const filename = req.body?.filename || req.query.filename;
   if (!filename) return res.status(400).json({ error: 'filename is required (e.g. C055_orders.csv)' });
-  res.json(await (await getContainer()).ingest.csvFile(content(req), { filename }));
+  const result = await (await getContainer()).ingest.csvFile(content(req), { filename });
+  await refreshDesk();
+  res.json(result);
 });
 
 r.get('/ingest/messages', async (_req, res) => res.json(await (await getContainer()).ingestRepo.listMessages()));
@@ -122,6 +134,7 @@ r.get('/ingest/messages/:id', async (req, res) => {
 r.patch('/ingest/orders/:id', async (req, res) => {
   const result = await (await getContainer()).ingest.reprocess(Number(req.params.id), req.body || {});
   if (!result) return res.status(404).json({ error: 'Order not found' });
+  await refreshDesk();
   res.json(apiOrderResult(result));
 });
 

@@ -26,8 +26,8 @@ export function clockNow(row, realNow) {
   return fmt(new Date(parse(setTo).getTime() + Math.max(0, realNow - setAt)));
 }
 
-/** The run's id, `desk-<date of set_to>-<run_no>`. */
-export const runIdOf = (row) => `desk-${localTs(row.set_to).slice(0, 10)}-${row.run_no}`;
+/** The run's id, `desk-<date the run started at>-<run_no>`; moving the clock on (even past midnight) keeps it. */
+export const runIdOf = (row) => `desk-${localTs(row.run_from ?? row.set_to).slice(0, 10)}-${row.run_no}`;
 
 /** The next checkpoint (08:00, 13:00, 14:00, 23:59) after `now`, else 08:00 the next day. */
 export function nextEvent(now) {
