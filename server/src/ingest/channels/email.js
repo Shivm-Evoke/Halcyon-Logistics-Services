@@ -88,6 +88,19 @@ function fromCsvRow(row, ctx) {
   };
 }
 
+/**
+ * When the rules found nothing order-like, let the AI read the email. Its order is used only when it is
+ * confident, and then goes through the same normalisation and validation as every other order.
+ * @param extract (text) => Promise<{ order, confidence }>
+ */
+export async function fillUnparseable(records, text, extract, minConfidence) {
+  if (records.length !== 1 || !records[0].unparseable) return records;
+  const { order, confidence } = await extract(text);
+  if (!order || confidence < minConfidence) return records;
+  const { unparseable, ...ctx } = records[0];
+  return [{ ...ctx, ...order, ship_to: { ...order.ship_to }, source_ref: 'body (read by AI)' }];
+}
+
 /** @param email { from, subject, date, text, attachments: [{ filename, content }] } */
 export function emailToRecords(email) {
   const ctx = {

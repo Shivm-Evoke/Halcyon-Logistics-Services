@@ -1,0 +1,12 @@
+**/node_modules
+web/dist
+.git
+.superpowers
+.claude
+e2e-report
+test-results
+inbox
+ingest/test-data/credentials.json
+*.log
+.DS_Store
+**/.env

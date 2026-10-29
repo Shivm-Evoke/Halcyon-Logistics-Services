@@ -1,9 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Target, Compass, Presentation, ListChecks, Workflow, HelpCircle, Database, FlaskConical, CheckCircle2,
   AlertTriangle, Circle, Gauge,
 } from 'lucide-react';
-import { useApi, pct, num, usdK } from '../api.js';
+import { api, useApi, pct, num, usdK } from '../api.js';
 import { PageHead, Card, Badge, Loading } from '../components/ui.jsx';
 import DataTable from '../components/DataTable.jsx';
 
@@ -13,7 +14,7 @@ const PROCESS = [
   { n: 2, step: 'EDI and API orders flow into the WMS automatically', who: 'Integration team', issue: 'I1', breaks: 'Nothing checks them: bad addresses go straight through (5%)', to: '/inbound' },
   { n: 3, step: 'Email orders are typed into the WMS by customer success', who: 'Customer success', issue: 'I1', breaks: '28% arrive with incomplete addresses; 44 staff hours a week of typing', to: '/inbound' },
   { n: 4, step: 'WMS holds orders and stock, makes pick lists', who: 'WMS', issue: null },
-  { n: 5, step: 'Pick list compiled at 8am; later orders go on tomorrow’s list', who: 'Warehouse supervisors', issue: 'I2', breaks: 'Same-day is still promised after 8am: 61% of those arrive late', to: '/diagnosis' },
+  { n: 5, step: 'Pick list compiled at 8am; later orders go on tomorrow’s list', who: 'Warehouse supervisors', issue: 'I2', breaks: 'Same-day is still promised after 8am: 61% of those arrive late', to: '/why-late' },
   { n: 6, step: 'Pick, pack, place on the dock for collection', who: 'Warehouse floor', issue: null },
   { n: 7, step: 'Which warehouse holds a client’s stock: set at onboarding, reviewed quarterly', who: 'Onboarding team', issue: 'I3', breaks: 'Nearest warehouse is out of stock on 14% of orders: 50% late', to: '/inventory' },
   { n: 8, step: 'Carrier chosen from the rate card and a preference spreadsheet', who: 'Warehouse team', issue: 'I4', breaks: 'Cheapest carriers (D, E, F) have no tracking and are 17–34% late on clean orders', to: '/carriers' },
@@ -22,33 +23,29 @@ const PROCESS = [
 ];
 
 const STORY = [
-  { to: '/overview', screen: 'Executive overview', title: 'The situation, checked', show: 'The six KPI tiles, then the flat monthly line and the cause donut.',
-    say: 'The sponsor’s numbers are right: 71% on-time, 34 complaints, $14.2M at risk. But on-time has been flat for six months, and 94% of late deliveries are decided before a truck is loaded.', point: '94% upstream' },
-  { to: '/diagnosis', screen: 'Late-delivery diagnosis', title: 'Why it happens, and why it isn’t routing', show: 'The four “late when true” tiles, then the two routing tests at the bottom.',
-    say: 'Each problem multiplies the late rate: 65% with a bad address, 61% for same-day after 8am. Routing changes nothing: stops per route and detours are the same everywhere.', point: '65% / 61% / 50% / 34%' },
-  { to: '/inbound', screen: 'Inbound gateway', title: 'Fix 1 & 2: catch bad orders at the door', show: 'Process a test email live (e.g. 02-missing-city…), then the live-week card.',
-    say: 'Every order, from email, API, EDI or file, is repaired or held before it reaches the warehouse, and same-day after 8am is re-promised honestly. On a synthetic week of 2,000 orders it caught every injected problem.', point: 'Live week: 100% caught, 0 false alarms' },
-  { to: '/inventory', screen: 'Inventory placement', title: 'Fix 3: stock where the demand is', show: 'The stock-out matrix, then press Plan on one recommendation.',
-    say: 'Stock-outs at the nearest warehouse send orders 600+ miles. Monthly safety stock replaces the quarterly review.', point: '50% late on a miss vs 26%' },
-  { to: '/carriers', screen: 'Carrier scorecard', title: 'Fix 4: choose carriers on cost of lateness, not rate', show: 'The scorecard, then the despatch recommendation for an SLA client.',
-    say: 'Carrier D is cheapest and slowest. Once a late penalty is priced in, D costs $86 per SLA order against $27 for A, B or C. The new preferred-supplier deal (F) locks in a slow carrier.', point: '$85.92 vs $26.90' },
-  { to: '/control-tower', screen: 'Exceptions control tower', title: 'Fix 5: tell clients before they chase', show: 'The risk histogram, then Notify on one order.',
-    say: 'Every order in flight is scored by the AI model; 76% of the orders it flags really were late, so clients hear first.', point: '76% precision' },
-  { to: '/ai-model', screen: 'AI risk model', title: 'How the AI works, and proof it can be trusted', show: 'The scenario chart, calibration dot plot, and the capacity sliders.',
-    say: 'Trained on April–August, tested on September it never saw. Its estimate of today matches reality to 0.1 points, so its projection of 92.7% on-time within real carrier capacity can be trusted.', point: '71.1% → 92.7%' },
-  { to: '/accounts', screen: 'Account health', title: 'The nine accounts at risk', show: 'The revenue-vs-late scatter, then open one at-risk account.',
-    say: 'They are not served worse; they are the biggest and loudest. Each gets a recovery plan from its own failure pattern.', point: '$14.2M, 24 of 34 complaints' },
-  { to: '/what-if', screen: 'What-if & vendor decision', title: 'The decision', show: 'Toggle the routing vendor on alone, then the four fixes.',
-    say: 'The $680K routing engine moves on-time by about 1.7 points. The four upstream fixes move it by about 22–24. Don’t sign as scoped.', point: '72.7% vs 92.7–95%' },
+  { to: '/why-late', screen: 'Why we\'re late', title: 'The problem, and why it isn’t routing', show: 'The five causes table, then the routing chart.',
+    say: 'On-time is 71% against a 94% benchmark. Five causes explain it, all before or at the warehouse. Route length and stops make no difference.', point: '5 causes, 0 from routing' },
+  { to: '/operations-day', screen: 'Operations day', title: 'The solution at work: our worst Friday', show: 'Start the day (Recorded if offline), jump to 08:00, then 13:00 for the second wave; approve one item.',
+    say: 'Five agents run the day: they fix addresses, open a second pick wave, place stock, pick reliable carriers and rescue risky orders. Claude explains each decision; anything over a limit waits for a manager.', point: 'Recorded vs with agents' },
+  { to: '/six-months', screen: 'Six months with agents', title: 'Proof on every order since April', show: 'The weekly lines, then the waterfall; change one assumption and re-run.',
+    say: 'Re-run on all 48,340 deliveries with real capacity limits, the agents lift on-time by about 20 points and save around $1M net. Each agent’s share is visible.', point: '71% → 91%' },
+  { to: '/agents', screen: 'Meet the agents', title: 'What each agent does, and its limits', show: 'One agent card, then its link to the screen under the hood.',
+    say: 'Rules make routine decisions, so the numbers are repeatable; Claude reads, explains and handles exceptions. The server enforces the limits, not the AI.', point: '5 agents + Ops Lead' },
+  { to: '/decision', screen: 'The decision', title: 'What leadership should do', show: 'The two cards, then the rollout.',
+    say: 'Don’t sign the routing contract as scoped. Run the agents, piloting at one warehouse, measured weekly on one number.', point: 'Pilot in 2 weeks' },
+  { to: '/inbound', screen: 'Inbound gateway', title: 'Under the hood: Intake at the door', show: 'Process a test email live, then the live-week card.',
+    say: 'Every order from email, API, EDI or file is checked and repaired before the pick list; emails the parser cannot read go to Claude.', point: '100% of injected errors caught' },
+  { to: '/ai-model', screen: 'AI risk model', title: 'Under the hood: the risk model the Watchtower uses', show: 'Calibration, then the backtest.',
+    say: 'Trained on April–August and tested on a September it never saw; its estimates match reality to within 0.1 points.', point: 'Calibrated on unseen data' },
 ];
 
 const BRIEF = [
   { ask: 'Read the data; generate synthetic data where needed', where: 'Data behind the app (below) · live week on Inbound gateway', to: '/inbound' },
   { ask: 'Map how the work really runs and where it breaks', where: 'Process map (below)', anchor: true },
-  { ask: 'Break it down: known, assumed, why it keeps happening', where: 'Known vs assumed (below) · Late-delivery diagnosis', to: '/diagnosis' },
+  { ask: 'Break it down: known, assumed, why it keeps happening', where: 'Known vs assumed (below) · Late-delivery diagnosis', to: '/why-late' },
   { ask: 'Define one measurable outcome and design a solution', where: 'Outcome (below) · the four Fix screens', to: '/inbound' },
   { ask: 'Build a working slice and show it against the data', where: 'Inbound gateway, Control tower, AI risk model', to: '/ai-model' },
-  { ask: 'Show how you would prove it worked', where: 'AI risk model backtest · What-if · pilot plan (below)', to: '/what-if' },
+  { ask: 'Show how you would prove it worked', where: 'AI risk model backtest · What-if · pilot plan (below)', to: '/six-months' },
   { ask: 'Say honestly what you do not yet know', where: 'Open questions (below)', anchor: true },
 ];
 
@@ -76,13 +73,13 @@ export default function StartHere() {
   const overview = useApi('/overview');
   const datasets = useApi('/datasets');
   const week = useApi('/ingest/live-week');
-  const backtest = useApi('/ml/backtest');
+  const [agents, setAgents] = useState(null);
+  useEffect(() => { api('/agents/replay', { method: 'POST', body: {} }).then((r) => setAgents(r.overall.agents)).catch(() => {}); }, []);
   if (!overview.data || !datasets.data) return <Loading error={overview.error || datasets.error} />;
   const k = overview.data.kpis;
   const causes = overview.data.causes;
   const totalLate = causes.reduce((s, c) => s + c.late, 0);
   const upstream = 1 - (causes.find((c) => c.cause === 'residual')?.late ?? 0) / totalLate;
-  const full = backtest.data?.scenarios?.at(-1)?.on_time;
   const w = week.data;
 
   return (
@@ -106,16 +103,16 @@ export default function StartHere() {
         <Card>
           <div className="row small" style={{ gap: 8, marginBottom: 10, color: 'var(--good-ink)' }}><CheckCircle2 size={15} /> What the data shows</div>
           <div style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.35, }}>
-            {pct(upstream, 0)} of late deliveries go wrong before the truck leaves. Fixing intake, promises, stock and carrier choice reaches
-            {full ? ` ${pct(full)}` : ' ~93%'} on-time; routing alone reaches about 72.7%.
+            {pct(upstream, 0)} of late deliveries go wrong before the truck leaves. Five operations agents that fix those causes reach
+            {agents ? ` ${pct(agents)}` : ' ~91%'} on-time over the same six months; route planning makes no measurable difference.
           </div>
           <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
-            <Badge tone="good">Don’t sign the routing contract as scoped</Badge><Badge tone="brand">Fund the four upstream fixes</Badge>
+            <Badge tone="good">Don’t sign the routing contract as scoped</Badge><Badge tone="brand">Run the operations agents</Badge>
           </div>
         </Card>
       </div>
 
-      <Card title="Present it in nine steps" className="section-gap"
+      <Card title="Present it in seven steps" className="section-gap"
         sub="Follow the sidebar from top to bottom. Each step says what to show, what to say, and the one number to point at.">
         <ol className="list-clean">
           {STORY.map((s, i) => (

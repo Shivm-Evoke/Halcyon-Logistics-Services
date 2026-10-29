@@ -1,13 +1,16 @@
 import { test, expect } from '@playwright/test';
 
 const PAGES = [
-  ['/overview', 'Executive overview', '71.0%'],
-  ['/diagnosis', 'Late-delivery diagnosis', '65%'],
+  ['/why-late', "Why we're late", '71.0%'],
+  ['/operations-day', 'Operations day', 'Start the day'],
+  ['/six-months', 'Six months with agents', 'On time with the agents'],
+  ['/agents', 'Meet the agents', 'Ops Lead'],
+  ['/decision', 'The decision', 'Don\'t sign the routing contract as scoped'],
+  ['/test-data', 'Test data', 'Drop a CSV file here'],
   ['/inventory', 'Inventory placement', 'Safety-stock recommendations'],
   ['/carriers', 'Carrier scorecard', '$85.92'],
   ['/control-tower', 'Exceptions control tower', '1,044'],
   ['/accounts', 'Account health', '$14.2M'],
-  ['/what-if', 'What-if & vendor decision', '95.2%'],
   ['/ai-model', 'AI risk model', 'Full AI operation'],
   ['/data-quality', 'Data quality', 'Rule checks on the ingested data'],
   ['/inbound', 'Inbound gateway', 'Send data through the gateway'],
@@ -20,7 +23,7 @@ for (const [path, title, figure] of PAGES) {
     await page.goto(path);
     await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
     await expect(page.getByText(figure).first()).toBeVisible();
-    if (!['/control-tower', '/accounts'].includes(path)) {
+    if (!['/control-tower', '/accounts', '/operations-day', '/agents', '/decision', '/test-data'].includes(path)) {
       await expect(page.locator('.recharts-surface').first()).toBeVisible();
     }
     expect(errors).toEqual([]);
@@ -57,16 +60,59 @@ test('account drawer shows a recovery plan', async ({ page }) => {
   await expect(page.getByText(/Move off hand-keyed email orders/)).toBeVisible();
 });
 
-test('what-if toggles change the simulated on-time rate', async ({ page }) => {
-  await page.goto('/what-if');
-  const screen = page.locator('#what-if');
-  await expect(screen.getByText('95.2%').first()).toBeVisible();
-  for (const name of ['Validate addresses at intake', 'Cutoff-aware promises', 'Monthly safety-stock placement', 'Performance-based carrier choice']) {
-    await screen.getByText(name).click();
-  }
-  await expect(screen.locator('.big-num').first()).toHaveText('71.0%');
-  await screen.getByText('Routing optimisation vendor').click();
-  await expect(screen.locator('.big-num').first()).toHaveText('72.7%');
+test('six months: the replay lifts on-time and a bad setting is shown beside its field', async ({ page }) => {
+  await page.goto('/six-months');
+  const overall = page.locator('#replay-overall');
+  await expect(overall.getByText('71.0%')).toBeVisible();
+  const agents = Number((await overall.locator('.kpi').nth(1).textContent()).match(/(\d+\.\d)%/)[1]);
+  expect(agents).toBeGreaterThan(88);
+  await expect(page.locator('#replay-waterfall .recharts-surface')).toBeVisible();
+  await page.locator('#replay-settings input[type=time]').fill('07:00');
+  await page.getByRole('button', { name: /Re-run six months/ }).click();
+  await expect(page.locator('#replay-settings .field-error')).toContainText('after 08:00');
+});
+
+test('operations day: the worst Friday runs offline, opens a second wave, and an approval acts once', async ({ page }) => {
+  await page.goto('/operations-day');
+  const screen = page.locator('#operations-day');
+  await screen.locator('#ops-mode').selectOption('recorded');
+  await screen.getByRole('button', { name: /Start the day|Restart the day/ }).click();
+  await expect(screen.locator('#ops-clock')).toHaveText(/00:00/);
+  await screen.getByRole('button', { name: '13:00', exact: true }).click();
+  await expect(screen.locator('#ops-clock')).toHaveText(/13:00/);
+  await expect(screen.locator('.ops-lane[data-agent="wave"]')).toContainText('Second wave, priority');
+  const actual = Number((await screen.locator('#ops-counter-actual').textContent()).replace('%', ''));
+  const agents = Number((await screen.locator('#ops-counter-agents').textContent()).replace('%', ''));
+  expect(agents).toBeGreaterThan(actual + 20);
+  // Approve the first waiting decision; asking again changes nothing.
+  const approve = screen.locator('.ops-approval button[data-approve]').first();
+  const id = await approve.getAttribute('data-approve');
+  await approve.click();
+  await expect(screen.locator(`button[data-approve="${id}"]`)).toHaveCount(0);
+  const again = await page.request.post(`/api/agents/approvals/${id}`, { data: { approval: 'rejected' } });
+  expect((await again.json()).changed).toBe(false);
+});
+
+test('test data: a dropped CSV is checked, saved, and the agents run on it', async ({ page }) => {
+  const sample = await (await page.request.get('/api/agents/datasets/sample.csv')).text();
+  const lines = sample.trim().split('\n');
+  // One good order and one with an unknown client.
+  const csv = [lines[0], lines[1], lines[2].replace(/^([^,]*),C\d{3},/, '$1,C999,')].join('\n');
+  await page.goto('/test-data');
+  const screen = page.locator('#test-data');
+  await page.setInputFiles('[data-testid=dataset-file]', { name: 'two-orders.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
+  await screen.getByRole('button', { name: /Upload and check/ }).click();
+  await expect(screen.locator('.callout.good')).toContainText('1 orders saved as “two-orders”');
+  await expect(screen.locator('.rejected-rows')).toContainText('Line 3: Client C999');
+  await screen.getByRole('button', { name: /See it on Six months/ }).click();
+  const six = page.locator('#six-months');
+  await expect(six.locator('.page-head')).toContainText('Test data · 1 orders');
+  await expect(six.getByText('On time expected without agents')).toBeVisible();
+  // A file without the required columns is refused, naming them.
+  await page.goto('/test-data');
+  await page.setInputFiles('[data-testid=dataset-file]', { name: 'bad.csv', mimeType: 'text/csv', buffer: Buffer.from('client_id\nC001\n') });
+  await screen.getByRole('button', { name: /Upload and check/ }).click();
+  await expect(screen.locator('.callout.bad')).toContainText('Missing required columns');
 });
 
 test('AI risk model shows out-of-time accuracy and the AI-driven backtest', async ({ page }) => {
@@ -147,7 +193,7 @@ test('inbound gateway: a held order is fixed from the message drawer and release
 });
 
 test('theme switch applies dark mode, remembers it, recolours charts, and switches back', async ({ page }) => {
-  await page.goto('/overview');
+  await page.goto('/why-late');
   const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   const lightBg = await bg();
   const tick = page.locator('.recharts-cartesian-axis-tick-value').first();
@@ -172,30 +218,31 @@ test('start here maps the story and links every step to its screen', async ({ pa
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: 'Start here' })).toBeVisible();
-  await expect(page.getByText('Present it in nine steps')).toBeVisible();
+  await expect(page.getByText('Present it in seven steps')).toBeVisible();
   await expect(page.getByText('How the work runs today, and where it breaks')).toBeVisible();
   await expect(page.getByText(/On-time delivery from 71\.0% to 94%/)).toBeVisible();
   await expect(page.getByText('deliveries.csv', { exact: true })).toBeVisible();   // the supplied-data table
   // Each story step opens its screen.
-  await page.getByRole('link', { name: /Carrier scorecard/ }).first().click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Carrier scorecard' })).toBeVisible();
+  await page.locator('#start-here').getByRole('link', { name: /Six months with agents/ }).first().click();
+  await expect(page).toHaveURL(/\/six-months$/);
   expect(errors).toEqual([]);
 });
 
 test('story scroll: scrolling moves the sidebar and URL, choosing a screen scrolls to it', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#overview .page-head h1')).toBeVisible();
-  // Scroll the Executive overview up under the reading line: the sidebar and URL follow.
-  const y = await page.evaluate(() => document.getElementById('overview').offsetTop);
+  await expect(page.locator('#why-late .page-head h1')).toBeVisible();
+  await page.waitForLoadState('networkidle');   // screens above finish loading, so positions are final
+  // Scroll "Why we're late" up under the reading line: the sidebar and URL follow.
+  const y = await page.evaluate(() => document.getElementById('why-late').offsetTop);
   await page.mouse.move(800, 500);
   await page.mouse.wheel(0, y);
-  await expect(page).toHaveURL(/\/overview$/);
-  await expect(page.locator('.nav a.active')).toContainText('Executive overview');
+  await expect(page).toHaveURL(/\/why-late$/);
+  await expect(page.locator('.nav a.active')).toContainText("Why we're late");
   // Choosing a screen in the sidebar brings its top to the top of the page.
   await page.locator('.nav a[href="/carriers"]').click();
   await expect(page).toHaveURL(/\/carriers$/);
   await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('carriers').getBoundingClientRect().top))).toBe(56);
   // Every screen hands over to the next one.
   await page.locator('#carriers .next-up').click();
-  await expect(page).toHaveURL(/\/control-tower$/);
+  await expect(page).toHaveURL(/\/inventory$/);
 });

@@ -1,39 +1,46 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Microscope, Warehouse, Truck, Radar, Users, FlaskConical, Database, BrainCircuit, ShieldCheck, Network, Sun, Moon, Monitor, Compass, ArrowDown,
+  Microscope, Warehouse, Truck, Radar, Users, BrainCircuit, ShieldCheck, Network, Sun, Moon, Monitor, Compass, ArrowDown,
+  PlayCircle, LineChart as LineChartIcon, Bot, Scale, Database, UploadCloud,
 } from 'lucide-react';
-import Overview from './pages/Overview.jsx';
-import Diagnosis from './pages/Diagnosis.jsx';
 import Inventory from './pages/Inventory.jsx';
 import Carriers from './pages/Carriers.jsx';
 import ControlTower from './pages/ControlTower.jsx';
 import Accounts from './pages/Accounts.jsx';
-import WhatIf from './pages/WhatIf.jsx';
 import { applyTheme, savedChoice, onSystemChange, resolve } from './theme.js';
 import AiModel from './pages/AiModel.jsx';
 import DataQuality from './pages/DataQuality.jsx';
 import Inbound from './pages/Inbound.jsx';
 import StartHere from './pages/StartHere.jsx';
+import WhyLate from './pages/WhyLate.jsx';
+import OperationsDay from './pages/OperationsDay.jsx';
+import SixMonths from './pages/SixMonths.jsx';
+import Agents from './pages/Agents.jsx';
+import Decision from './pages/Decision.jsx';
+import TestData from './pages/TestData.jsx';
 import { MOTION, replayCharts, useReveal } from './components/motion.jsx';
 
-// Sidebar in presentation order: the problem, the fixes, the AI behind them, then the decision.
+// Sidebar in presentation order: the problem, the solution at work, the decision, then what is under the hood.
 const NAV = [
   { to: '/', label: 'Start here', icon: Compass, el: <StartHere />, section: 'Guide' },
   { section: '1 · The problem' },
-  { to: '/overview', label: 'Executive overview', icon: LayoutDashboard, el: <Overview /> },
-  { to: '/diagnosis', label: 'Late-delivery diagnosis', icon: Microscope, el: <Diagnosis /> },
-  { section: '2 · The fixes' },
-  { to: '/inbound', label: 'Inbound gateway', icon: Network, tag: 'I1·I2', el: <Inbound /> },
-  { to: '/inventory', label: 'Inventory placement', icon: Warehouse, tag: 'I3', el: <Inventory /> },
-  { to: '/carriers', label: 'Carrier scorecard', icon: Truck, tag: 'I4', el: <Carriers /> },
-  { to: '/control-tower', label: 'Exceptions control tower', icon: Radar, tag: 'I5', el: <ControlTower /> },
-  { section: '3 · The AI behind them' },
+  { to: '/why-late', label: 'Why we\'re late', icon: Microscope, el: <WhyLate /> },
+  { section: '2 · The solution at work' },
+  { to: '/operations-day', label: 'Operations day', icon: PlayCircle, tag: 'LIVE', el: <OperationsDay /> },
+  { to: '/six-months', label: 'Six months with agents', icon: LineChartIcon, el: <SixMonths /> },
+  { to: '/agents', label: 'Meet the agents', icon: Bot, el: <Agents /> },
+  { to: '/test-data', label: 'Test data', icon: UploadCloud, tag: 'TRY', el: <TestData /> },
+  { section: '3 · The decision' },
+  { to: '/decision', label: 'The decision', icon: Scale, el: <Decision /> },
+  { section: '4 · Under the hood' },
+  { to: '/inbound', label: 'Inbound gateway', icon: Network, tag: 'Intake', el: <Inbound /> },
+  { to: '/carriers', label: 'Carrier scorecard', icon: Truck, tag: 'Carrier', el: <Carriers /> },
+  { to: '/inventory', label: 'Inventory placement', icon: Warehouse, tag: 'Stock', el: <Inventory /> },
+  { to: '/control-tower', label: 'Exceptions control tower', icon: Radar, tag: 'Watch', el: <ControlTower /> },
   { to: '/ai-model', label: 'AI risk model', icon: BrainCircuit, tag: 'ML', el: <AiModel /> },
-  { to: '/data-quality', label: 'Data quality', icon: ShieldCheck, tag: 'I10', el: <DataQuality /> },
-  { section: '4 · The decision' },
-  { to: '/accounts', label: 'Account health', icon: Users, tag: 'I9', el: <Accounts /> },
-  { to: '/what-if', label: 'What-if & vendor decision', icon: FlaskConical, tag: 'I6', el: <WhatIf /> },
+  { to: '/data-quality', label: 'Data quality', icon: ShieldCheck, el: <DataQuality /> },
+  { to: '/accounts', label: 'Account health', icon: Users, el: <Accounts /> },
 ];
 let section = '';
 const PAGES = NAV.flatMap((n) => (n.section && !n.to ? ((section = n.section), []) : [{ ...n, section: n.section || section }]));

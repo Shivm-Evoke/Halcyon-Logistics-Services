@@ -17,6 +17,10 @@ services:
         generateValue: true
       - key: SITE_PASSWORD   # asked for in the dashboard when the Blueprint is applied
         sync: false
+      - key: ANTHROPIC_FOUNDRY_API_KEY   # Claude on Azure AI Foundry; without it the agents run on rules only
+        sync: false
+      - key: ANTHROPIC_FOUNDRY_RESOURCE
+        sync: false
       # Optional: add a Secret File named credentials.json (your ingest/test-data/credentials.json)
       # and set API_CREDENTIALS_FILE=/etc/secrets/credentials.json to keep the same client API secrets.
 
