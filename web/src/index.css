@@ -560,7 +560,7 @@ tr.filter-row select.input { padding-right: 24px; background-position: right 8px
 .ops-event-title { font-weight: 500; margin: 4px 0 2px; }
 .ops-briefings li { padding: 8px 0; border-top: 1px solid var(--line); }
 .ops-briefings li:first-child { border-top: 0; padding-top: 0; }
-.ops-briefings p { margin: 4px 0 0; }
+.ops-briefings p { margin: 4px 0 0; white-space: pre-line; }
 .ops-approval { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
 .ops-approval:first-child { border-top: 0; padding-top: 0; }
 @media (max-width: 860px) { .ops-approval { flex-direction: column; } }
