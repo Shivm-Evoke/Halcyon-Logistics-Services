@@ -1,12 +1,13 @@
 // One entry point per inbound channel. Each turns its own format into raw order records,
 // runs them through the shared pipeline, and produces the reply that channel expects.
 import { parseMime } from './channels/mime.js';
-import { emailToRecords, emailTimestamp } from './channels/email.js';
+import { emailToRecords, emailTimestamp, fillUnparseable } from './channels/email.js';
 import { parseX12, ack997 } from './channels/edi.js';
 import { composeEmailReply, apiOrderResult } from './reply.js';
 
 export class IngestService {
-  constructor(pipeline) { this.pipeline = pipeline; }
+  /** @param ai optional { extractEmail(text), minConfidence }: reads emails the rule-based parser cannot */
+  constructor(pipeline, ai = null) { this.pipeline = pipeline; this.ai = ai; }
 
   async #complete(channel, { source, subject, raw, records, fallbackTs }, makeReply) {
     const { message, results } = await this.pipeline.run({ channel, source, subject, raw, records, fallbackTs });
@@ -22,10 +23,12 @@ export class IngestService {
   }
 
   /** Already-parsed email, e.g. from an email provider's inbound webhook. */
-  parsedEmail(email, { raw, filename } = {}) {
+  async parsedEmail(email, { raw, filename } = {}) {
+    let records = emailToRecords({ ...email, text: email.text || '' });
+    if (this.ai) records = await fillUnparseable(records, email.text || '', this.ai.extractEmail, this.ai.minConfidence);
     return this.#complete('Email', {
       source: email.from || filename, subject: email.subject, raw: raw ?? JSON.stringify(email),
-      records: emailToRecords({ ...email, text: email.text || '' }), fallbackTs: emailTimestamp(email.date || ''),
+      records, fallbackTs: emailTimestamp(email.date || ''),
     }, (results) => composeEmailReply({ to: email.from || '(unknown sender)', subject: email.subject, results }));
   }
 

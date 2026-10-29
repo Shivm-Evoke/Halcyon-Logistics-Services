@@ -11,6 +11,8 @@ import { DataQualityScanner } from './quality/DataQualityScanner.js';
 import { ingestRepository } from './ingest/repository.js';
 import { IngestPipeline } from './ingest/pipeline.js';
 import { IngestService } from './ingest/IngestService.js';
+import { createClaude } from './agents/claude.js';
+import { DEFAULT_SETTINGS } from './agents/settings.js';
 
 async function build() {
   const started = performance.now();
@@ -46,6 +48,7 @@ async function build() {
   };
   const anomalies = container.anomalies;
   container.ingestRepo = ingestRepository;
+  container.claude = createClaude();
   container.ingest = new IngestService(new IngestPipeline({
     repo: ingestRepository,
     clients: await ingestRepository.loadClients(),
@@ -58,7 +61,9 @@ async function build() {
       distances,
       stockMiss,
     },
-  }));
+  }), container.claude.available
+    ? { extractEmail: (text) => container.claude.extractEmail(text), minConfidence: DEFAULT_SETTINGS.intakeConfidenceMin }
+    : null);
   console.log(`ML ready in ${Math.round(performance.now() - started)} ms (model ${registry.meta.version})`);
   return container;
 }
