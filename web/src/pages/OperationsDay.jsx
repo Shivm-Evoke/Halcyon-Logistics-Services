@@ -133,7 +133,9 @@ export default function OperationsDay() {
 
       {state && (
         <>
-          {!state.aiAvailable && <div className="callout warn section-gap"><Bot size={15} /> AI offline: rules running. Every decision still happens; reasons show the rule applied.</div>}
+          {(!state.aiAvailable || (state.aiStatus && ['auth', 'not_found', 'timeout', 'error'].includes(state.aiStatus.state))) && (
+            <div className="callout warn section-gap"><Bot size={15} /> AI offline: rules running{state.aiStatus?.reason ? ` (${state.aiStatus.reason})` : ''}. Every decision still happens; reasons show the rule applied.</div>
+          )}
 
           <div className="ops-controls section-gap">
             <div id="ops-clock" className="ops-clock"><Clock size={18} /> {state.simTime}</div>

@@ -81,8 +81,23 @@ function foundryClient() {
 /**
  * @param client  an object with beta.messages.create (tests pass a fake); defaults to Foundry from environment variables
  */
+const NOT_CONFIGURED = 'ANTHROPIC_FOUNDRY_API_KEY and ANTHROPIC_FOUNDRY_RESOURCE (or ANTHROPIC_FOUNDRY_BASE_URL) are not set';
+const PROBE_TTL_MS = 5 * 60 * 1000;
+
+/** Turns a failed call into a state and a reason a person can act on. The key is never included. */
+function classify(e) {
+  const status = e?.status ?? e?.statusCode;
+  if (status === 401 || status === 403) return { state: 'auth', reason: `Foundry rejected the API key (${status})` };
+  if (status === 404) return { state: 'not_found', reason: `deployment "${MODEL}" not found on the Foundry resource (404): set CLAUDE_MODEL to the deployment name` };
+  if (/timed out/i.test(e?.message || '')) return { state: 'timeout', reason: `no answer within ${TIMEOUT_MS / 1000} s` };
+  return { state: 'error', reason: `${status ? `${status} ` : ''}${e?.message || 'unknown error'}`.trim() };
+}
+
 export function createClaude({ client = foundryClient(), timeoutMs = TIMEOUT_MS } = {}) {
   const available = Boolean(client);
+  // Last known health: set by the probe and by every real call, so the screen can say why rules are running.
+  let last = available ? { state: 'unknown', reason: null, checkedAt: null } : { state: 'not_configured', reason: NOT_CONFIGURED, checkedAt: null };
+  const record = (outcome) => { last = { ...outcome, checkedAt: new Date().toISOString() }; };
 
   async function call(params) {
     if (!client) throw new Error('Claude is not configured');
@@ -91,7 +106,11 @@ export function createClaude({ client = foundryClient(), timeoutMs = TIMEOUT_MS 
     try {
       const res = await Promise.race([client.beta.messages.create({ model: MODEL, ...params }, { timeout: timeoutMs }), timeout]);
       if (res.stop_reason === 'refusal') throw new Error('Claude declined');
+      record({ state: 'ok', reason: null });
       return res;
+    } catch (e) {
+      record(classify(e));
+      throw e;
     } finally {
       clearTimeout(timer);
     }
@@ -99,6 +118,18 @@ export function createClaude({ client = foundryClient(), timeoutMs = TIMEOUT_MS 
 
   return {
     available,
+
+    /** Current health without a network call: { configured, model, state, reason, checkedAt }. */
+    status: () => ({ configured: available, model: MODEL, ...last }),
+
+    /** One tiny call to check the connection, cached for five minutes. */
+    async probe({ force = false } = {}) {
+      const fresh = last.checkedAt && Date.now() - Date.parse(last.checkedAt) < PROBE_TTL_MS;
+      if (available && (force || !fresh)) {
+        try { await call({ max_tokens: 16, messages: [{ role: 'user', content: 'ping' }] }); } catch { /* recorded by call() */ }
+      }
+      return this.status();
+    },
 
     async explain(decision, context = {}) {
       try {

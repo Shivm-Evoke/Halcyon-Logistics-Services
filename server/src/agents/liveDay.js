@@ -284,6 +284,7 @@ export class LiveDay {
     return {
       runId: this.runId, day: this.day, mode: this.mode, label: this.label, dataset: this.dataset, simTime: hhmm(this.simMinutes), simMinutes: this.simMinutes,
       aiAvailable: this.mode === 'recorded' ? Object.keys(this.recorded.reasons).length > 0 : Boolean(this.claude?.available),
+      aiStatus: this.mode === 'recorded' ? null : this.claude?.status?.() ?? null,
       counters: this.#counters(this.simMinutes), lanes, totals,
       approvals: this.#pending(), briefings: [...this.briefings].reverse(),
     };

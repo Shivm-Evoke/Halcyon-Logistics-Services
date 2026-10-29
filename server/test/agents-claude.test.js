@@ -105,3 +105,30 @@ test('the committed example settings file never carries a real key', async () =>
   const example = fs.readFileSync(new URL('../.env.example', import.meta.url), 'utf8');
   assert.match(example, /^ANTHROPIC_FOUNDRY_API_KEY=$/m, 'put the key in server/.env, not server/.env.example');
 });
+
+test('status says why Claude is offline when Foundry settings are missing', () => {
+  const s = createClaude({ client: null }).status();
+  assert.equal(s.configured, false);
+  assert.equal(s.state, 'not_configured');
+  assert.match(s.reason, /ANTHROPIC_FOUNDRY_API_KEY/);
+});
+
+test('a probe classifies the failure: wrong deployment, bad key, timeout', async () => {
+  const missing = createClaude({ client: fake(() => { throw Object.assign(new Error('Not found'), { status: 404 }); }) });
+  assert.equal((await missing.probe()).state, 'not_found');
+  assert.match(missing.status().reason, /deployment/);
+  const denied = createClaude({ client: fake(() => { throw Object.assign(new Error('Unauthorized'), { status: 401 }); }) });
+  assert.equal((await denied.probe()).state, 'auth');
+  const slow = createClaude({ client: fake(() => new Promise(() => {})), timeoutMs: 30 });
+  assert.equal((await slow.probe()).state, 'timeout');
+});
+
+test('a working probe reports ok, and a later failed call records its reason', async () => {
+  let fail = false;
+  const claude = createClaude({ client: fake(() => { if (fail) throw Object.assign(new Error('Overloaded'), { status: 529 }); return text('pong'); }) });
+  assert.equal((await claude.probe()).state, 'ok');
+  fail = true;
+  await claude.explain(decision, {});
+  assert.equal(claude.status().state, 'error');
+  assert.match(claude.status().reason, /529|Overloaded/);
+});
