@@ -4,7 +4,7 @@ SET client_min_messages = warning;
 -- the tables under "Solution layer" hold the records the new app creates.
 
 DROP VIEW IF EXISTS v_deliveries CASCADE;
-DROP TABLE IF EXISTS agent_datasets, agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
+DROP TABLE IF EXISTS desk_clock, shipment_events, users, agent_datasets, agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
   cs_time_study, warehouse_region_distance, warehouses, carriers, clients CASCADE;
 
 CREATE TABLE clients (
@@ -167,7 +167,7 @@ CREATE TABLE api_clients (
 -- One row per inbound message: an API call, an email or an EDI file.
 CREATE TABLE inbound_messages (
   id          serial PRIMARY KEY,
-  channel     text NOT NULL,                 -- API | Email | EDI
+  channel     text NOT NULL,                 -- API | Email | EDI | File | Portal form (scored as API)
   source      text,                          -- sender address, API client or file name
   subject     text,
   received_at timestamp NOT NULL DEFAULT now(),
@@ -236,4 +236,40 @@ CREATE TABLE agent_datasets (
   has_outcomes boolean NOT NULL,
   rejected     jsonb NOT NULL DEFAULT '[]',
   orders       jsonb NOT NULL
+);
+
+-- Website accounts: customers (one client each) and Halcyon staff, created with the account tool (npm --prefix server run users).
+CREATE TABLE users (
+  id             serial PRIMARY KEY,
+  email          text NOT NULL UNIQUE,
+  password_hash  text NOT NULL,
+  role           text NOT NULL CHECK (role IN ('customer', 'staff')),
+  client_id      text REFERENCES clients,
+  name           text,
+  created_at     timestamp NOT NULL DEFAULT now(),
+  last_login_at  timestamp,
+  active         boolean NOT NULL DEFAULT true,
+  session_version integer NOT NULL DEFAULT 0,  -- raised on sign-out, password reset or disable: ends existing sessions
+  CHECK (role = 'staff' OR client_id IS NOT NULL)
+);
+
+-- Shipment stages of gateway orders: the gateway's verdict, then each step staff take on the Dispatch board.
+CREATE TABLE shipment_events (
+  id        serial PRIMARY KEY,
+  order_id  integer NOT NULL REFERENCES inbound_orders ON DELETE CASCADE,
+  stage     text NOT NULL,                  -- received | picked | collected | in_transit | delivered | on_hold | cancelled
+  at        timestamp NOT NULL DEFAULT now(),
+  by        text NOT NULL DEFAULT 'system',
+  note      text
+);
+CREATE INDEX ON shipment_events (order_id);
+
+-- The live order desk's ops clock: one row, the simulated time and the run it belongs to.
+CREATE TABLE desk_clock (
+  id             int PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  set_to         timestamp NOT NULL,              -- the simulated time when the clock was last set
+  set_at         timestamptz NOT NULL,            -- the real time it was set; the clock runs on from here
+  run_no         int NOT NULL,
+  run_started_at timestamptz NOT NULL,
+  run_from       timestamp                        -- set_to when the run started; names the run (advancing keeps it)
 );

@@ -59,7 +59,7 @@ export default function Decision() {
       </div>
 
       <div className="callout section-gap">
-        <span>The {pct(overall.agents)} rests on stated assumptions about carrier and warehouse capacity. Change them and re-run on <Link to="/six-months">Six months with agents <ArrowRight size={11} /></Link></span>
+        <span>The {pct(overall.agents)} rests on stated assumptions about carrier and warehouse capacity. Change them and re-run on <Link to="/results">Results <ArrowRight size={11} /></Link></span>
       </div>
     </>
   );

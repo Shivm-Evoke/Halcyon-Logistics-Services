@@ -1,34 +1,59 @@
 import { test, expect } from '@playwright/test';
+import { STAFF, CUSTOMER } from './accounts.js';
+import { SIGNED_OUT, signIn } from './helpers.js';
+
+// The staff side: five sidebar entries, the last a collapsed Evidence group of three screens.
+const SIDEBAR = ['The problem', 'Live operations', 'Operations day', 'Results', 'Evidence'];
+const EVIDENCE = ['Carrier scorecard', 'Inventory placement', 'Test data'];
+const SIDEBAR_TEXT = SIDEBAR.map((l) => new RegExp(`^${l}(LIVE)?$`));   // live screens carry a LIVE tag
 
 const PAGES = [
-  ['/why-late', "Why we're late", '71.0%'],
-  ['/operations-day', 'Operations day', 'Start the day'],
-  ['/six-months', 'Six months with agents', 'On time with the agents'],
-  ['/agents', 'Meet the agents', 'Ops Lead'],
-  ['/decision', 'The decision', 'Don\'t sign the routing contract as scoped'],
-  ['/test-data', 'Test data', 'Drop a CSV file here'],
-  ['/inventory', 'Inventory placement', 'Safety-stock recommendations'],
-  ['/carriers', 'Carrier scorecard', '$85.92'],
-  ['/control-tower', 'Exceptions control tower', '1,044'],
-  ['/accounts', 'Account health', '$14.2M'],
-  ['/ai-model', 'AI risk model', 'Full AI operation'],
-  ['/data-quality', 'Data quality', 'Rule checks on the ingested data'],
-  ['/inbound', 'Inbound gateway', 'Send data through the gateway'],
+  ['/problem', 'The problem', '71.0%', false],
+  ['/live-operations', 'Live operations', 'Approval queue', false],
+  ['/operations-day', 'Operations day', 'Start the day', false],
+  ['/results', 'Six months with agents', 'On time with the agents', true],
+  ['/carriers', 'Carrier scorecard', '$85.92', true],
+  ['/inventory', 'Inventory placement', 'Safety-stock recommendations', true],
+  ['/test-data', 'Test data', 'Drop a CSV file here', false],
 ];
 
-for (const [path, title, figure] of PAGES) {
-  test(`${title} renders its data and charts`, async ({ page }) => {
+for (const [path, title, figure, chart] of PAGES) {
+  test(`${title} renders its data${chart ? ' and charts' : ''}`, async ({ page }) => {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(path);
-    await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
-    await expect(page.getByText(figure).first()).toBeVisible();
-    if (!['/control-tower', '/accounts', '/operations-day', '/agents', '/decision', '/test-data'].includes(path)) {
-      await expect(page.locator('.recharts-surface').first()).toBeVisible();
-    }
+    const screen = page.locator(`#${path.slice(1)}`);
+    await expect(screen.getByRole('heading', { level: 1, name: title })).toBeVisible();
+    await expect(screen.getByText(figure).first()).toBeVisible();
+    if (chart) await expect(screen.locator('.recharts-surface').first()).toBeVisible();
     expect(errors).toEqual([]);
   });
 }
+
+test('staff sidebar has exactly the five entries, with Evidence collapsed', async ({ page }) => {
+  await page.goto('/problem');
+  const nav = page.locator('.nav');
+  await expect(nav.locator(':scope > a, :scope > button')).toHaveText(SIDEBAR_TEXT);
+  const evidence = nav.getByRole('button', { name: 'Evidence' });
+  await expect(evidence).toHaveAttribute('aria-expanded', 'false');
+  await expect(nav.locator('.nav-sub')).toHaveCount(0);
+  await evidence.click();
+  await expect(nav.locator('.nav-sub a')).toHaveText(EVIDENCE);
+});
+
+test('results: the six-month replay lifts on-time, a bad setting is shown beside its field, the decision follows', async ({ page }) => {
+  await page.goto('/results');
+  const screen = page.locator('#results');
+  const overall = screen.locator('#replay-overall');
+  await expect(overall.getByText('71.0%')).toBeVisible();
+  const agents = Number((await overall.locator('.kpi').nth(1).textContent()).match(/(\d+\.\d)%/)[1]);
+  expect(agents).toBeGreaterThan(88);
+  await expect(screen.locator('#replay-waterfall .recharts-surface')).toBeVisible();
+  await expect(screen.getByRole('heading', { level: 1, name: 'The decision' })).toBeVisible();
+  await screen.locator('#replay-settings input[type=time]').fill('07:00');
+  await screen.getByRole('button', { name: /Re-run six months/ }).click();
+  await expect(screen.locator('#replay-settings .field-error')).toContainText('after 08:00');
+});
 
 test('planning safety stock marks the client as planned', async ({ page }) => {
   await page.goto('/inventory');
@@ -42,34 +67,6 @@ test('carrier recommendation excludes non-API carriers for next-day', async ({ p
   const table = page.locator('#carriers table').last();
   await expect(table.getByText('Recommended')).toBeVisible();
   await expect(table.getByText('Excluded')).toHaveCount(3);
-});
-
-test('control tower sends a proactive notice', async ({ page }) => {
-  await page.goto('/control-tower');
-  await expect(page.getByText('Clients notified')).toBeVisible();
-  await page.getByRole('button', { name: 'Notify', exact: true }).first().click();
-  await page.getByRole('button', { name: 'Send notice' }).click();
-  await expect(page.getByText(/Notification sent to/)).toBeVisible();
-  await expect(page.getByText('Notified').first()).toBeVisible();
-});
-
-test('account drawer shows a recovery plan', async ({ page }) => {
-  await page.goto('/accounts');
-  await page.locator('#accounts').getByRole('row', { name: /Client 263/ }).click();
-  await expect(page.getByRole('heading', { name: 'Recovery plan' })).toBeVisible();
-  await expect(page.getByText(/Move off hand-keyed email orders/)).toBeVisible();
-});
-
-test('six months: the replay lifts on-time and a bad setting is shown beside its field', async ({ page }) => {
-  await page.goto('/six-months');
-  const overall = page.locator('#replay-overall');
-  await expect(overall.getByText('71.0%')).toBeVisible();
-  const agents = Number((await overall.locator('.kpi').nth(1).textContent()).match(/(\d+\.\d)%/)[1]);
-  expect(agents).toBeGreaterThan(88);
-  await expect(page.locator('#replay-waterfall .recharts-surface')).toBeVisible();
-  await page.locator('#replay-settings input[type=time]').fill('07:00');
-  await page.getByRole('button', { name: /Re-run six months/ }).click();
-  await expect(page.locator('#replay-settings .field-error')).toContainText('after 08:00');
 });
 
 test('operations day: the worst Friday runs offline, opens a second wave, and an approval acts once', async ({ page }) => {
@@ -117,10 +114,11 @@ test('test data: a dropped CSV is checked, saved, and the agents run on it', asy
   await screen.getByRole('button', { name: /Upload and check/ }).click();
   await expect(screen.locator('.callout.good')).toContainText('1 orders saved as “two-orders”');
   await expect(screen.locator('.rejected-rows')).toContainText('Line 3: Client C999');
-  await screen.getByRole('button', { name: /See it on Six months/ }).click();
-  const six = page.locator('#six-months');
-  await expect(six.locator('.page-head')).toContainText('Test data · 1 orders');
-  await expect(six.getByText('On time expected without agents')).toBeVisible();
+  await screen.getByRole('button', { name: /See it on Results/ }).click();
+  await expect(page).toHaveURL(/\/results$/);
+  const results = page.locator('#results');
+  await expect(results.locator('.page-head').first()).toContainText('Test data · 1 orders');
+  await expect(results.getByText('On time expected without agents')).toBeVisible();
   // A file without the required columns is refused, naming them.
   await page.goto('/test-data');
   await page.setInputFiles('[data-testid=dataset-file]', { name: 'bad.csv', mimeType: 'text/csv', buffer: Buffer.from('client_id\nC001\n') });
@@ -128,94 +126,25 @@ test('test data: a dropped CSV is checked, saved, and the agents run on it', asy
   await expect(screen.locator('.callout.bad')).toContainText('Missing required columns');
 });
 
-test('AI risk model shows out-of-time accuracy and the AI-driven backtest', async ({ page }) => {
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/ai-model');
-  const screen = page.locator('#ai-model');
-  await expect(screen.getByRole('heading', { level: 1, name: 'AI risk model' })).toBeVisible();
-  await expect(screen.getByText(/^0\.8\d{2}$/).first()).toBeVisible();          // AUC
-  await expect(screen.getByText('Full AI operation')).toBeVisible();
-  await expect(screen.locator('.recharts-surface')).toHaveCount(4);
-  // Live scorer: switching to an incomplete address raises the risk.
-  const risk = screen.locator('.big-num').first();
-  const before = await risk.textContent();
-  await screen.getByLabel('Incomplete address').selectOption('1');
-  await expect(risk).not.toHaveText(before);
-  await expect(screen.getByText(/scored in [\d.]+ µs/)).toBeVisible();
-  expect(errors).toEqual([]);
-});
-
-test('data quality lists failing checks and opens the records behind one', async ({ page }) => {
-  await page.goto('/data-quality');
-  await expect(page.getByRole('heading', { level: 1, name: 'Data quality' })).toBeVisible();
-  await expect(page.locator('.kpi .value', { hasText: /of 13$/ })).toBeVisible();
-  await page.getByRole('row', { name: /Events out of order/ }).click();
-  await expect(page.locator('.drawer').getByText(/delivered 2026-/).first()).toBeVisible();
-  await page.locator('.drawer').getByRole('button').first().click();
-  await expect(page.getByText(/Flagged incoming orders/)).toBeVisible();
-});
-
-test('carrier capacity stops the AI sending most orders to one carrier', async ({ page }) => {
-  await page.goto('/ai-model');
-  const card = page.locator('section.card', { has: page.getByRole('heading', { name: 'Carrier capacity' }) });
-  const limited = card.getByRole('row', { name: /AI, within capacity/ });
-  // No carrier above the 40% default share in the capacity-limited plan.
-  const shares = (await limited.locator('td.num').allTextContents()).map((t) => parseFloat(t));
-  expect(Math.max(...shares)).toBeLessThanOrEqual(40);
-  const onTime = card.locator('.step .v').first();
-  const before = await onTime.textContent();
-  await card.getByLabel('Max share per carrier').fill('0.5');
-  await card.getByLabel('Extra capacity').fill('0.75');
-  await expect(onTime).not.toHaveText(before);
-});
-
-test('inbound gateway processes a test email and shows fixes, holds and the reply', async ({ page }) => {
-  await page.goto('/inbound');
-  await page.getByLabel('Test file').selectOption('10-csv-attachment-mixed.eml');
-  await expect(page.getByLabel('Message content')).toHaveValue(/orders\.csv/);
-  await page.getByRole('button', { name: /Process email/ }).click();
-  await expect(page.getByText('needs attention').first()).toBeVisible();
-  await expect(page.getByRole('cell', { name: 'held', exact: true })).toHaveCount(2);
-  await expect(page.locator('s', { hasText: 'Massachusetts' })).toBeVisible();   // the auto-fix "from" value
-  await expect(page.getByText('Reply drafted to the sender')).toBeVisible();
-});
-
 test('inbound test pack: every channel and error pattern behaves as expected', async () => {
-  const { execFileSync } = await import('node:child_process');
-  const out = execFileSync('node', ['ingest/run-test-pack.mjs'], { env: { ...process.env, API_URL: 'http://localhost:4100/api' }, encoding: 'utf8' });
-  expect(out).toMatch(/(\d+)\/\1 checks passed/);
-});
-
-test('inbound gateway: a held order is fixed from the message drawer and released', async ({ page }) => {
-  await page.goto('/inbound');
-  await page.getByLabel('Test file').selectOption('02-missing-city-and-house-number.eml');
-  await expect(page.getByLabel('Message content')).toHaveValue(/Address: Harbor Street/);   // email 02's own line, not email 01's
-  await page.getByRole('button', { name: /Process email/ }).click();
-  await expect(page.getByRole('cell', { name: 'held', exact: true })).toBeVisible();
-  await expect(page.getByText(/Please fix: City is missing/)).toBeVisible();          // reply to the client
-
-  await page.locator('#inbound tbody tr.clickable').first().click();                          // newest message
-  const drawer = page.locator('.drawer');
-  await drawer.getByRole('button', { name: 'Fix', exact: true }).click();
-  await drawer.getByLabel('street').fill('418 Harbor Street');
-  await drawer.getByLabel('city').fill('Hartford');
-  await drawer.getByRole('button', { name: 'Re-validate' }).click();
-  await expect(page.getByText(/is now (accepted|corrected)/)).toBeVisible();
-  await expect(drawer.getByRole('cell', { name: 'held', exact: true })).toHaveCount(0);
+  const { spawnSync } = await import('node:child_process');
+  const run = spawnSync('node', ['ingest/run-test-pack.mjs'], { env: { ...process.env, API_URL: 'http://localhost:4100/api', STAFF_EMAIL: STAFF.email, STAFF_PASSWORD: STAFF.password }, encoding: 'utf8' });
+  const out = `${run.stdout}${run.stderr}`;
+  expect(out, out).toMatch(/(\d+)\/\1 checks passed/);
 });
 
 test('theme switch applies dark mode, remembers it, recolours charts, and switches back', async ({ page }) => {
-  await page.goto('/why-late');
+  await page.goto('/results');
   const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   const lightBg = await bg();
-  const tick = page.locator('.recharts-cartesian-axis-tick-value').first();
+  const tick = page.locator('#results .recharts-cartesian-axis-tick-value').first();
+  await expect(tick).toBeVisible();
   const lightTick = await tick.getAttribute('fill');
 
   await page.getByRole('radio', { name: 'Dark' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   expect(await bg()).not.toBe(lightBg);
-  await expect(page.locator('.recharts-cartesian-axis-tick-value').first()).not.toHaveAttribute('fill', lightTick);
+  await expect(page.locator('#results .recharts-cartesian-axis-tick-value').first()).not.toHaveAttribute('fill', lightTick);
 
   await page.reload();                                         // the choice is remembered
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -226,36 +155,146 @@ test('theme switch applies dark mode, remembers it, recolours charts, and switch
   expect(await bg()).toBe(lightBg);
 });
 
-test('start here maps the story and links every step to its screen', async ({ page }) => {
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1, name: 'Start here' })).toBeVisible();
-  await expect(page.getByText('Present it in seven steps')).toBeVisible();
-  await expect(page.getByText('How the work runs today, and where it breaks')).toBeVisible();
-  await expect(page.getByText(/On-time delivery from 71\.0% to 94%/)).toBeVisible();
-  await expect(page.getByText('deliveries.csv', { exact: true })).toBeVisible();   // the supplied-data table
-  // Each story step opens its screen.
-  await page.locator('#start-here').getByRole('link', { name: /Six months with agents/ }).first().click();
-  await expect(page).toHaveURL(/\/six-months$/);
-  expect(errors).toEqual([]);
-});
-
-test('story scroll: scrolling moves the sidebar and URL, choosing a screen scrolls to it', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.locator('#why-late .page-head h1')).toBeVisible();
-  await page.waitForLoadState('networkidle');   // screens above finish loading, so positions are final
-  // Scroll "Why we're late" up under the reading line: the sidebar and URL follow.
-  const y = await page.evaluate(() => document.getElementById('why-late').offsetTop);
+test('story scroll: scrolling moves the sidebar and URL, choosing a screen scrolls to it, the evidence opens its group', async ({ page }) => {
+  await page.goto('/problem');
+  await expect(page.locator('#problem .page-head h1')).toBeVisible();
+  await page.waitForLoadState('networkidle');   // screens finish loading, so positions are final
+  const evidence = page.locator('.nav').getByRole('button', { name: 'Evidence' });
+  await expect(evidence).toHaveAttribute('aria-expanded', 'false');
+  // Scroll "Live operations" up under the reading line: the sidebar and URL follow.
+  const y = await page.evaluate(() => document.getElementById('live-operations').offsetTop);
   await page.mouse.move(800, 500);
   await page.mouse.wheel(0, y);
-  await expect(page).toHaveURL(/\/why-late$/);
-  await expect(page.locator('.nav a.active')).toContainText("Why we're late");
+  await expect(page).toHaveURL(/\/live-operations$/);
+  await expect(page.locator('.nav a.active')).toContainText('Live operations');
   // Choosing a screen in the sidebar brings its top to the top of the page.
-  await page.locator('.nav a[href="/carriers"]').click();
+  await page.locator('.nav a[href="/results"]').click();
+  await expect(page).toHaveURL(/\/results$/);
+  await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('results').getBoundingClientRect().top))).toBe(56);
+  // Every screen hands over to the next one; following it into the evidence opens the Evidence group.
+  await page.locator('#results .next-up').click();
   await expect(page).toHaveURL(/\/carriers$/);
-  await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('carriers').getBoundingClientRect().top))).toBe(56);
-  // Every screen hands over to the next one.
-  await page.locator('#carriers .next-up').click();
+  await expect(evidence).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('.nav a.active')).toContainText('Carrier scorecard');
+  // Scrolling (not clicking) into the evidence opens the group too.
+  await page.goto('/problem');
+  await expect(page.locator('#problem .page-head h1')).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  await expect(evidence).toHaveAttribute('aria-expanded', 'false');
+  const inv = await page.evaluate(() => document.getElementById('inventory').offsetTop);
+  await page.mouse.move(800, 500);
+  await page.mouse.wheel(0, inv);
   await expect(page).toHaveURL(/\/inventory$/);
+  await expect(evidence).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('portal API key: a new key signs in, a second key stops the first; unknown samples are not found', async ({ playwright, baseURL }) => {
+  const customer = await playwright.request.newContext({ baseURL, storageState: SIGNED_OUT });
+  expect((await customer.post('/api/session/login', { data: CUSTOMER })).status()).toBe(200);
+  const first = await (await customer.post('/api/portal/api-key')).json();
+  expect(first.client_id).toBe('C176');
+  const login = (secret) => customer.post('/api/auth/login', { data: { client_id: first.client_id, client_secret: secret } });
+  const ok = await login(first.secret);
+  expect(ok.status()).toBe(200);
+  expect((await ok.json()).access_token).toBeTruthy();
+  const second = await (await customer.post('/api/portal/api-key')).json();
+  expect(second.secret).not.toBe(first.secret);
+  expect((await login(first.secret)).status()).toBe(401);
+  expect((await login(second.secret)).status()).toBe(200);
+  expect((await customer.post('/api/portal/samples/9')).status()).toBe(404);
+  await customer.dispose();
+});
+
+// The whole order journey: a customer sends the five sample orders through four channels, each showing one cause of
+// late deliveries; staff see the agents' decisions on Live operations, approve what waits, and run the day to its end;
+// the customer's tracking shows what the agents did and the delivery.
+test('end to end: five channels, five causes, approval, delivered', async ({ browser, baseURL }) => {
+  test.setTimeout(120000);
+  const SAMPLE_AGENT = { 1: 'Intake', 2: 'Wave Planner', 3: 'Stock', 4: 'Carrier', 5: 'Watchtower' };
+
+  // Staff sign in, land on the problem, and start a clean desk run at 09:15 on Friday 25 September.
+  const staffCtx = await browser.newContext({ baseURL, storageState: SIGNED_OUT });
+  const staff = await staffCtx.newPage();
+  await signIn(staff, STAFF);
+  await expect(staff).toHaveURL(/\/problem$/);
+  await expect(staff.locator('.nav').locator(':scope > a, :scope > button')).toHaveText(SIDEBAR_TEXT);
+  await staff.locator('.nav a[href="/live-operations"]').click();
+  const desk = staff.locator('#live-operations');
+  await desk.getByLabel('Ops clock, date and time').fill('2026-09-25 09:15');
+  await desk.getByRole('button', { name: 'Set clock' }).click();
+  await expect(desk.locator('#live-clock')).toContainText('2026-09-25 09:1');
+  await expect(desk.getByText('No live orders in this run yet')).toBeVisible();
+
+  // The customer sends the five samples: email, EDI, API (two) and the form.
+  const custCtx = await browser.newContext({ baseURL, storageState: SIGNED_OUT });
+  const cust = await custCtx.newPage();
+  await signIn(cust, CUSTOMER);
+  await expect(cust).toHaveURL(/\/portal$/);
+  await cust.getByRole('link', { name: 'Place orders' }).click();
+  await expect(cust.getByRole('heading', { level: 1, name: 'Place orders' })).toBeVisible();
+  const sendSample = async (tab) => {
+    await cust.getByRole('tab', { name: tab }).click();
+    await cust.getByRole('button', { name: 'Send a sample' }).click();
+    const sent = cust.getByRole('status').filter({ hasText: 'We received' });
+    await expect(sent).toBeVisible();
+    return sent.getByRole('link').allTextContents();
+  };
+  const [r1] = await sendSample('Send email');
+  const [r2] = await sendSample('Upload EDI');
+  const [r3, r5] = await sendSample('API');
+  const [r4] = await sendSample('Form');
+  const refs = { 1: r1, 2: r2, 3: r3, 4: r4, 5: r5 };
+  expect(new Set(Object.values(refs)).size).toBe(5);
+  for (const ref of Object.values(refs)) expect(ref).toMatch(/^IN-\d{6}$/);
+
+  // Staff see the five orders, each with the decision of the agent for its cause.
+  await staff.reload();
+  const rows = desk.locator('#live-orders tbody tr[data-ref]');
+  await expect(rows).toHaveCount(5);
+  for (const [n, ref] of Object.entries(refs)) {
+    await desk.getByRole('button', { name: `Details for ${ref}` }).click();
+    const detail = desk.locator(`#live-orders tr[data-ref="${ref}"] + tr.live-detail-row`);
+    await expect(detail.locator('.ops-event b', { hasText: SAMPLE_AGENT[n] }).first(), `sample ${n} (${ref})`).toBeVisible();
+  }
+  for (const agent of ['intake', 'wave', 'stock', 'carrier', 'watchtower']) {
+    await expect(desk.locator(`.ops-lanes [data-agent="${agent}"] .value`), agent).not.toHaveText('0');
+  }
+  await expect(desk.locator(`#live-orders tr[data-ref="${r2}"] + tr.live-detail-row`)).toContainText('Wave Planner');
+  // The form sample is labelled as such; the API samples stay API. Newest first: the form, sent last, is on top.
+  await expect(desk.locator(`#live-orders tr[data-ref="${r4}"] td`).nth(2)).toHaveText('Portal form');
+  await expect(desk.locator(`#live-orders tr[data-ref="${r3}"] td`).nth(2)).toHaveText('API');
+  await expect(rows.first()).toHaveAttribute('data-ref', r4);
+
+  // What waits for a manager (the intake fix and/or the watchtower client flag) is approved on the desk.
+  const queue = desk.locator('.ops-approvals .ops-approval');
+  await expect(queue.first()).toBeVisible();
+  await expect(desk.locator('.ops-approvals')).toContainText(r5);
+  for (let i = 0; i < 10 && (await queue.count()) > 0; i++) {
+    const approve = queue.first().locator('button[data-approve]');
+    const id = await approve.getAttribute('data-approve');
+    await approve.click();
+    await expect(desk.locator(`button[data-approve="${id}"]`)).toHaveCount(0);
+  }
+  await expect(desk.getByText('Nothing waiting.')).toBeVisible();
+  await expect(desk.locator(`#live-orders tr[data-ref="${r5}"] + tr.live-detail-row`)).toContainText('approved');
+
+  // Advance through the day: the second pick wave at 13:00, collection at 14:00, then the end of the day.
+  const clock = desk.locator('#live-clock');
+  const advance = desk.getByRole('button', { name: 'Advance to next event' });
+  for (const at of ['13:0', '14:0', '23:5']) {
+    await advance.click();
+    await expect(clock).toContainText(`2026-09-25 ${at}`);
+  }
+  await expect(desk.locator(`#live-orders tr[data-ref="${r2}"]`)).toContainText('Delivered');
+
+  // The customer's tracking of sample 2 (same-day, sent after 08:00) shows the second wave and the delivery.
+  await cust.goto(`/portal/shipments/${r2}`);
+  await expect(cust.getByRole('heading', { level: 1, name: `Shipment ${r2}` })).toBeVisible();
+  const did = cust.getByRole('region', { name: 'What we did' });
+  await expect(did).toContainText('Second pick wave at 13:00: still same-day');
+  await expect(cust.locator('.timeline li.done')).toHaveCount(5);
+  await expect(cust.locator('.timeline li.done').last()).toContainText('Delivered');
+
+  await staffCtx.close();
+  await custCtx.close();
 });

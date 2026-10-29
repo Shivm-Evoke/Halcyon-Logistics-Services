@@ -22,6 +22,12 @@ export const RISK_FEATURES = [
   { name: 'noapi_clean', type: 'binary' },
 ];
 
+// The order channels the history (deliveries.order_channel) knows. A channel it has no rows for is scored as the
+// one it behaves like: the portal form is an order placed through Halcyon's own system, as an API order is.
+const MODEL_CHANNEL = Object.freeze({ 'Portal form': 'API' });
+/** The channel the model and the anomaly screen see for a gateway channel label ('Portal form' -> 'API'). */
+export const modelChannel = (channel) => MODEL_CHANNEL[channel] ?? channel;
+
 // Adds the derived interaction features. Run on every row before training or scoring.
 export const makePrepare = (noApiCarriers) => (row) => {
   const failures = (row.address_incomplete || 0) + (row.stock_miss || 0) + (row.cutoff_breach || 0);

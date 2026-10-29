@@ -5,7 +5,7 @@
 import { normalizeOrder } from './normalize.js';
 import { validateOrder } from './validate.js';
 import { validateAddress, promiseDelivery } from '../rules.js';
-import { orderFeatures } from '../ml/features.js';
+import { orderFeatures, modelChannel } from '../ml/features.js';
 import { RISK_THRESHOLD } from '../ml/ModelRegistry.js';
 
 // Anomaly codes the validator already covers, so they are not reported twice.
@@ -21,10 +21,11 @@ export class IngestPipeline {
   /**
    * @param repo     ingest repository
    * @param clients  Map of client_id -> client
+   * @param deferCutoff  true: a same-day order after 08:00 stays same-day and the Wave Planner decides
    * @param ai       { scorer, anomalies, nextBestAction, capacity, avgDailyOrders, distances, stockMiss(client, region) }
    */
-  constructor({ repo, clients, ai }) {
-    Object.assign(this, { repo, clients, ai });
+  constructor({ repo, clients, ai, deferCutoff = false }) {
+    Object.assign(this, { repo, clients, ai, deferCutoff });
     // Nearest warehouse per region, from the distance table.
     this.nearest = {};
     for (const [wh, regions] of Object.entries(ai.distances)) {
@@ -99,7 +100,9 @@ export class IngestPipeline {
   }
 
   // AI layer: promise, anomaly screen, risk score and the carrier decision within capacity.
-  async decide(order, { channel, held, ledgers }) {
+  async decide(order, { channel: label, held, ledgers }) {
+    // The label (e.g. 'Portal form') stays on the message and the order; the model sees a channel its history knows.
+    const channel = modelChannel(label);
     const corrections = [];
     const issues = [];
     const client = this.clients.get(order.client_id);
@@ -108,12 +111,18 @@ export class IngestPipeline {
     if (!order.commitment_type) order.commitment_type = 'standard';
 
     const promise = promiseDelivery({ receivedTs: order.received_ts, commitmentType: requested });
-    if (promise.offeredCommitment !== requested) {
+    // Deferred: keep same-day and let the Wave Planner decide; the promise stays on the received date.
+    const deferred = this.deferCutoff && promise.afterCutoff && requested === 'same_day';
+    if (deferred) {
+      issues.push({ code: 'same_day_after_cutoff', severity: 'info', field: 'commitment_type',
+        message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 pick-list cutoff: the Wave Planner decides` });
+      promise.promisedDate = order.received_ts.slice(0, 10);
+    } else if (promise.offeredCommitment !== requested) {
       corrections.push({ field: 'commitment_type', from: requested, to: promise.offeredCommitment, rule: 'same-day after 8am cutoff re-promised' });
       issues.push({ code: 'same_day_after_cutoff', severity: 'warning', field: 'commitment_type',
         message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 pick-list cutoff: promised next-day ${promise.promisedDate} instead of same-day` });
     }
-    order.commitment_type = promise.offeredCommitment;
+    order.commitment_type = deferred ? requested : promise.offeredCommitment;
     order.pick_list_date = promise.pickListDate;
 
     const hour = Number(order.received_ts.slice(11, 13));
@@ -137,6 +146,8 @@ export class IngestPipeline {
     const ledger = ledgers.get(promise.pickListDate);
     const best = this.ai.nextBestAction.decide({ ...features, address_incomplete: 0 }, { capacity: ledger }).best;
     if (!held) ledger.reserve(best.carrier_id);
+    // Kept on the order: the desk may give it another carrier, and says so against this one.
+    order.gateway_carrier_id = best.carrier_id;
     const scored = this.ai.scorer.score({ ...features, carrier_id: best.carrier_id });
     if (!held && scored.risk >= RISK_THRESHOLD) {
       issues.push({ code: 'high_late_risk', severity: 'warning', field: null,

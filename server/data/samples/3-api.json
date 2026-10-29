@@ -1,0 +1,11 @@
+{
+  "orders": [
+    {
+      "client_order_ref": "SAMPLE-3",
+      "sku": "HX-905",
+      "quantity": 30,
+      "service": "standard",
+      "ship_to": { "name": "Grace Kim", "street": "1550 Wynkoop Street", "city": "Denver", "state": "CO", "zip": "80202" }
+    }
+  ]
+}

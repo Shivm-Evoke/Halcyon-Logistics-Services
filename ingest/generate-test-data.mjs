@@ -54,6 +54,8 @@ write('email', '05-zip-plus4-and-service-synonym.eml', eml({ from: 'purchasing@c
 
 write('email', '06-same-day-after-cutoff.eml', eml({ from: 'purchasing@client190.example', subject: 'Urgent PO TP-E06', time: '10:20',
   body: `Account: C190\nPO: TP-E06\nSKU: HX-4410  Qty: 30\nService: same day please\n${addr(ATLANTA)}` }),
+// With the desk on, same-day stands after 08:00 (an info issue; the Wave Planner decides); "same day please" is still
+// corrected to the service code.
 [{ status: 'corrected', codes: ['same_day_after_cutoff'], corrected: ['commitment_type'] }]);
 
 write('email', '07-unknown-sender.eml', eml({ from: 'someone@randomco.example', subject: 'Order',
@@ -138,7 +140,7 @@ write('api', '02-batch-every-error-type.json', JSON.stringify({ orders: [
 ] }, null, 2), [
   { status: 'accepted' }, { status: 'corrected', corrected: ['sku', 'commitment_type', 'ship_to.state', 'ship_to.zip'] },
   { status: 'held', codes: ['missing_street'] }, { status: 'held', codes: ['invalid_quantity'] },
-  { status: 'corrected', codes: ['same_day_after_cutoff'] }, { status: 'accepted', codes: ['unusual_quantity'] },
+  { status: 'accepted', codes: ['same_day_after_cutoff'] }, { status: 'accepted', codes: ['unusual_quantity'] },
   { status: 'held', codes: ['missing_sku', 'invalid_state'] }, { status: 'duplicate', codes: ['duplicate_order'] },
 ]);
 write('api', '03-order-for-another-client.json', JSON.stringify({ client_id: 'C190', client_order_ref: 'TP-A09', sku: 'HX-1', quantity: 1, ship_to: apiAddr }, null, 2),

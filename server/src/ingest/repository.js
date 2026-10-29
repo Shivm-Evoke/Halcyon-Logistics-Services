@@ -1,5 +1,23 @@
 // Data access for the inbound gateway.
 import { q, one } from '../db.js';
+import { shipmentStore } from '../shipments/store.js';
+import { deskClock } from '../desk/instance.js';
+
+/**
+ * When a new order's first shipment event happened: with the desk on, the order's own received time (the Received
+ * column on Live operations), else the ops clock; with the desk off (opsClock null), null, so the database's now().
+ */
+export const verdictAt = (row, opsClock) =>
+  (opsClock ? String(row.normalized?.received_ts ?? '').replace('T', ' ').slice(0, 16) || opsClock : null);
+
+// Every saved order gets its shipment stage from the gateway's verdict at its received time; a re-checked (fixed)
+// order is released at the ops clock now. With the desk off, both are the database's now().
+const recorded = async (row, { fixed = false } = {}) => {
+  if (!row) return row;
+  const clock = await deskClock();
+  await shipmentStore.recordVerdict(row, fixed ? clock : verdictAt(row, clock));
+  return row;
+};
 
 export const ingestRepository = {
   loadClients: async () => new Map((await q('SELECT * FROM clients')).map((c) => [c.client_id, c])),
@@ -12,19 +30,19 @@ export const ingestRepository = {
     'UPDATE inbound_messages SET status = $2, summary = $3, reply = $4 WHERE id = $1 RETURNING *',
     [id, status, summary, reply]),
 
-  saveOrder: (o) => one(`
+  saveOrder: async (o) => recorded(await one(`
     INSERT INTO inbound_orders (message_id, source_ref, client_id, client_order_ref, status, normalized, corrections, issues,
       risk, drivers, commitment_type, promised_date, warehouse_id, carrier_id)
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
   [o.message_id, o.source_ref, o.client_id, o.client_order_ref, o.status, o.normalized, JSON.stringify(o.corrections),
-    JSON.stringify(o.issues), o.risk, JSON.stringify(o.drivers), o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id]),
+    JSON.stringify(o.issues), o.risk, JSON.stringify(o.drivers), o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id])),
 
-  updateOrder: (id, o) => one(`
+  updateOrder: async (id, o) => recorded(await one(`
     UPDATE inbound_orders SET status = $2, normalized = $3, corrections = $4, issues = $5, risk = $6, drivers = $7,
       commitment_type = $8, promised_date = $9, warehouse_id = $10, carrier_id = $11, updated_at = now()
     WHERE id = $1 RETURNING *`,
   [id, o.status, o.normalized, JSON.stringify(o.corrections), JSON.stringify(o.issues), o.risk, JSON.stringify(o.drivers),
-    o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id]),
+    o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id]), { fixed: true }),
 
   getOrder: (id) => one('SELECT * FROM inbound_orders WHERE id = $1', [id]),
 
@@ -46,6 +64,9 @@ export const ingestRepository = {
     .map((r) => [r.carrier_id, r.n])),
 
   getApiClient: (id) => one('SELECT * FROM api_clients WHERE client_id = $1', [id]),
+  // A client's new API secret (hashed) replaces any earlier one, which stops working at once.
+  setApiSecret: (id, secretHash) => q(`INSERT INTO api_clients (client_id, secret_hash) VALUES ($1, $2)
+    ON CONFLICT (client_id) DO UPDATE SET secret_hash = EXCLUDED.secret_hash, created_at = now(), last_login_at = NULL`, [id, secretHash]),
   touchLogin: (id) => q('UPDATE api_clients SET last_login_at = now() WHERE client_id = $1', [id]),
   getIdempotent: (clientId, key) => one('SELECT response FROM api_idempotency WHERE client_id = $1 AND key = $2', [clientId, key]),
   saveIdempotent: (clientId, key, response) => q(

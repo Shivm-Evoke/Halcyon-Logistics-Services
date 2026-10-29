@@ -7,9 +7,16 @@ import { composeEmailReply, apiOrderResult } from './reply.js';
 
 export class IngestService {
   /** @param ai optional { extractEmail(text), minConfidence }: reads emails the rule-based parser cannot */
-  constructor(pipeline, ai = null) { this.pipeline = pipeline; this.ai = ai; }
+  constructor(pipeline, ai = null, { clock = null } = {}) { this.pipeline = pipeline; this.ai = ai; this.clock = clock; }
 
-  async #complete(channel, { source, subject, raw, records, fallbackTs }, makeReply) {
+  // Portal orders: the client and time come from the session, not the message.
+  static #forced(records, force) {
+    return force ? records.map((r) => ({ ...r, client_hint: force.client_id, received_ts: force.received_ts })) : records;
+  }
+
+  async #complete(channel, { source, subject, raw, records, fallbackTs }, makeReply, force = null) {
+    records = IngestService.#forced(records, force);
+    fallbackTs ||= (await this.clock?.()) || undefined; // the clock may be async (the desk built on first use)
     const { message, results } = await this.pipeline.run({ channel, source, subject, raw, records, fallbackTs });
     const reply = makeReply(results);
     await this.pipeline.finish(message.id, { status: message.status, summary: message.summary, reply });
@@ -17,34 +24,39 @@ export class IngestService {
   }
 
   /** Raw RFC 822 email (.eml), as uploaded or dropped into the inbox folder. */
-  email(raw, { filename } = {}) {
+  email(raw, { filename } = {}, force = null) {
     const m = parseMime(raw);
-    return this.parsedEmail({ from: m.from, subject: m.subject, date: m.date, text: m.text, attachments: m.attachments }, { raw, filename });
+    return this.parsedEmail({ from: m.from, subject: m.subject, date: m.date, text: m.text, attachments: m.attachments }, { raw, filename }, force);
   }
 
   /** Already-parsed email, e.g. from an email provider's inbound webhook. */
-  async parsedEmail(email, { raw, filename } = {}) {
+  async parsedEmail(email, { raw, filename } = {}, force = null) {
     let records = emailToRecords({ ...email, text: email.text || '' });
     if (this.ai) records = await fillUnparseable(records, email.text || '', this.ai.extractEmail, this.ai.minConfidence);
     return this.#complete('Email', {
       source: email.from || filename, subject: email.subject, raw: raw ?? JSON.stringify(email),
       records, fallbackTs: emailTimestamp(email.date || ''),
-    }, (results) => composeEmailReply({ to: email.from || '(unknown sender)', subject: email.subject, results }));
+    }, (results) => composeEmailReply({ to: email.from || '(unknown sender)', subject: email.subject, results }), force);
   }
 
   /** ANSI X12 850 file. */
-  async edi(raw, { filename } = {}) {
+  async edi(raw, { filename } = {}, force = null) {
     const parsed = parseX12(raw);
     if (!parsed.orders.length) {
       // Nothing usable in the envelope: one rejected placeholder so the file is answered with a 997 R.
       parsed.orders.push({ client_hint: parsed.sender, unparseable: true, structural_errors: parsed.envelope_errors, ship_to: {}, txn: '0001', source_ref: 'envelope' });
     }
     return this.#complete('EDI', { source: parsed.sender || filename, subject: filename, raw, records: parsed.orders },
-      (results) => ack997(parsed, results.map((r, i) => ({ ...r, txn: parsed.orders[i].txn }))));
+      (results) => ack997(parsed, results.map((r, i) => ({ ...r, txn: parsed.orders[i].txn }))), force);
   }
 
   /** Orders posted by an authenticated API client. The client comes from the token, never the payload. */
-  api(clientId, orders) {
+  api(clientId, orders, force = null) { return this.#orders('API', clientId, orders, force); }
+
+  /** One order from the customer portal's form: as an API order, but labelled 'Portal form' wherever staff see it. */
+  form(clientId, order, force = null) { return this.#orders('Portal form', clientId, [order], force); }
+
+  #orders(channel, clientId, orders, force) {
     const records = orders.map((o, i) => ({
       client_hint: clientId,
       client_order_ref: o.client_order_ref ?? o.po_number,
@@ -56,7 +68,7 @@ export class IngestService {
       ship_to: o.ship_to || {},
       source_ref: `orders[${i}]`,
     }));
-    return this.#complete('API', { source: clientId, subject: `${orders.length} order(s)`, raw: JSON.stringify(orders), records }, () => null);
+    return this.#complete(channel, { source: clientId, subject: `${orders.length} order(s)`, raw: JSON.stringify(orders), records }, () => null, force);
   }
 
   /** CSV batch file dropped by a client (file name must start with its client id, e.g. C055_orders.csv). */

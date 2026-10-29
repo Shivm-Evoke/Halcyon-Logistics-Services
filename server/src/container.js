@@ -13,6 +13,7 @@ import { IngestPipeline } from './ingest/pipeline.js';
 import { IngestService } from './ingest/IngestService.js';
 import { createClaude } from './agents/claude.js';
 import { DEFAULT_SETTINGS } from './agents/settings.js';
+import { deskClock } from './desk/instance.js';
 
 async function build() {
   const started = performance.now();
@@ -34,6 +35,7 @@ async function build() {
   const days = new Set(rows.map((r) => String(r.order_received_ts).slice(0, 10)));
   const container = {
     carriers,
+    stockMiss,
     distances,
     registry,
     avgDailyOrders: Math.round(rows.length / days.size),
@@ -51,6 +53,7 @@ async function build() {
   container.claude = createClaude();
   container.ingest = new IngestService(new IngestPipeline({
     repo: ingestRepository,
+    deferCutoff: process.env.DESK !== '0',
     clients: await ingestRepository.loadClients(),
     ai: {
       get scorer() { return registry.scorer(); },
@@ -63,7 +66,7 @@ async function build() {
     },
   }), container.claude.available
     ? { extractEmail: (text) => container.claude.extractEmail(text), minConfidence: DEFAULT_SETTINGS.intakeConfidenceMin }
-    : null);
+    : null, { clock: deskClock }); // orders without a time of their own are received at the desk's ops clock
   console.log(`ML ready in ${Math.round(performance.now() - started)} ms (model ${registry.meta.version})`);
   return container;
 }

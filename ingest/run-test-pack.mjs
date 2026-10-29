@@ -1,12 +1,20 @@
 // Sends the whole test pack through the live gateway and checks every outcome against expected.json.
 //   node ingest/run-test-pack.mjs            (API_URL defaults to http://localhost:4000/api)
 //   SITE_PASSWORD=... when the deployment is password-protected
+//   STAFF_EMAIL=... STAFF_PASSWORD=... to sign in as staff when the internal gateway routes need it
 // PO numbers get a per-run prefix so the pack can be run repeatedly without tripping duplicate detection.
 import fs from 'node:fs';
 import path from 'node:path';
 
 const API = process.env.API_URL || 'http://localhost:4000/api';
 const SITE = process.env.SITE_PASSWORD && { authorization: `Basic ${Buffer.from(`halcyon:${process.env.SITE_PASSWORD}`).toString('base64')}` };
+// A staff session cookie for the internal routes (/api/ingest/*) when the site requires sign-in.
+const STAFF = process.env.STAFF_EMAIL && await (async () => {
+  const res = await fetch(`${API}/session/login`, { method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: process.env.STAFF_EMAIL, password: process.env.STAFF_PASSWORD }) });
+  if (!res.ok) throw new Error(`Staff sign-in failed: ${res.status}`);
+  return { cookie: res.headers.get('set-cookie').split(';')[0] };
+})();
 const DIR = path.join(import.meta.dirname, 'test-data');
 const expected = JSON.parse(fs.readFileSync(path.join(DIR, 'expected.json'), 'utf8'));
 const creds = JSON.parse(fs.readFileSync(path.join(DIR, 'credentials.json'), 'utf8'));
@@ -16,7 +24,7 @@ const read = (f) => tag(fs.readFileSync(path.join(DIR, f), 'utf8'));
 
 async function call(method, url, { body, token, headers = {} } = {}) {
   const res = await fetch(`${API}${url}`, {
-    method, headers: { 'content-type': 'application/json', ...SITE, ...(token && { authorization: `Bearer ${token}` }), ...headers },
+    method, headers: { 'content-type': 'application/json', ...SITE, ...STAFF, ...(token && { authorization: `Bearer ${token}` }), ...headers },
     body: body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body),
   });
   return { status: res.status, headers: res.headers, json: await res.json().catch(() => null) };

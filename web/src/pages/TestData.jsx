@@ -48,7 +48,7 @@ export default function TestData() {
       <PageHead title="Test data" eyebrow="Try it · run the agents on your own orders">
         Drop a CSV of orders here and the agents run on it exactly as they do on the history: the same rules, limits and
         explanations. Test data is stored on its own and never changes the real numbers. Then choose it in the Data selector on
-        Operations day or Six months with agents.
+        Operations day or Results.
       </PageHead>
 
       <div className="grid g3 section-gap">
@@ -84,7 +84,7 @@ export default function TestData() {
                 {result.rejectedCount > 0 ? `; ${num(result.rejectedCount)} rows rejected (below).` : ', every row passed.'}
                 {!result.has_outcomes && <div className="small">No on_time column: the agents are compared with the expected on-time rate without them.</div>}
                 <div className="row" style={{ gap: 8, marginTop: 8 }}>
-                  <button className="btn" onClick={() => use(result.id, '/six-months')}><LineChartIcon size={14} /> See it on Six months</button>
+                  <button className="btn" onClick={() => use(result.id, '/results')}><LineChartIcon size={14} /> See it on Results</button>
                   <button className="btn" onClick={() => use(result.id, '/operations-day')}><PlayCircle size={14} /> Play a day</button>
                 </div>
                 {result.rejected?.length > 0 && <RejectedRows rows={result.rejected} total={result.rejectedCount} />}
@@ -115,7 +115,7 @@ export default function TestData() {
                     <td>{d.has_outcomes ? 'Yes' : 'No'}</td>
                     <td className="num-tab">{num(d.rejected)}</td>
                     <td className="num-tab">{String(d.created_at).slice(0, 16).replace('T', ' ')}</td>
-                    <td><button className="btn sm" onClick={() => use(d.id, '/six-months')}>Use</button></td>
+                    <td><button className="btn sm" onClick={() => use(d.id, '/results')}>Use</button></td>
                   </tr>
                 ))}
               </tbody>

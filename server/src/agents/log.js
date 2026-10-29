@@ -81,6 +81,12 @@ export function createMemoryLog() {
       const row = rows.find((r) => r.id === Number(id));
       if (row) Object.assign(row, { reason, reason_source: source });
     },
+    /** Memory only: changes a row's columns in place (stands in for the desk repository's updateDecision in tests). */
+    async update(id, fields) {
+      const row = rows.find((r) => r.id === Number(id));
+      if (row) Object.assign(row, fields);
+      return row ? { ...row } : null;
+    },
     async expire(runId, ids) {
       const hit = rows.filter((r) => r.run_id === runId && ids.includes(r.id) && r.approval === 'pending');
       for (const r of hit) r.approval = 'expired';

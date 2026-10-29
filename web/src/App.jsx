@@ -1,52 +1,38 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Microscope, Warehouse, Truck, Radar, Users, BrainCircuit, ShieldCheck, Network, Sun, Moon, Monitor, Compass, ArrowDown,
-  PlayCircle, LineChart as LineChartIcon, Bot, Scale, Database, UploadCloud,
+  Microscope, Radio, PlayCircle, Scale, FolderSearch, Truck, Warehouse, UploadCloud, ChevronRight, ChevronDown,
+  Sun, Moon, Monitor, ArrowDown, Database, LogOut,
 } from 'lucide-react';
-import Inventory from './pages/Inventory.jsx';
-import Carriers from './pages/Carriers.jsx';
-import ControlTower from './pages/ControlTower.jsx';
-import Accounts from './pages/Accounts.jsx';
-import { applyTheme, savedChoice, onSystemChange, resolve } from './theme.js';
-import AiModel from './pages/AiModel.jsx';
-import DataQuality from './pages/DataQuality.jsx';
-import Inbound from './pages/Inbound.jsx';
-import StartHere from './pages/StartHere.jsx';
-import WhyLate from './pages/WhyLate.jsx';
+import Problem from './pages/Problem.jsx';
+import LiveOps from './pages/LiveOps.jsx';
 import OperationsDay from './pages/OperationsDay.jsx';
-import SixMonths from './pages/SixMonths.jsx';
-import Agents from './pages/Agents.jsx';
-import Decision from './pages/Decision.jsx';
+import Results from './pages/Results.jsx';
+import Carriers from './pages/Carriers.jsx';
+import Inventory from './pages/Inventory.jsx';
 import TestData from './pages/TestData.jsx';
+import { applyTheme, savedChoice, onSystemChange, resolve } from './theme.js';
+import { useSession } from './components/session.jsx';
 import { MOTION, replayCharts, useReveal } from './components/motion.jsx';
 
-// Sidebar in presentation order: the problem, the solution at work, the decision, then what is under the hood.
+// Sidebar in presentation order: the problem, the live desk, the operations day, the results, then the evidence for Q&A.
+// A `group` entry is a collapsed header whose `items` are screens in the story like any other.
 const NAV = [
-  { to: '/', label: 'Start here', icon: Compass, el: <StartHere />, section: 'Guide' },
-  { section: '1 · The problem' },
-  { to: '/why-late', label: 'Why we\'re late', icon: Microscope, el: <WhyLate /> },
-  { section: '2 · The solution at work' },
-  { to: '/operations-day', label: 'Operations day', icon: PlayCircle, tag: 'LIVE', el: <OperationsDay /> },
-  { to: '/six-months', label: 'Six months with agents', icon: LineChartIcon, el: <SixMonths /> },
-  { to: '/agents', label: 'Meet the agents', icon: Bot, el: <Agents /> },
-  { to: '/test-data', label: 'Test data', icon: UploadCloud, tag: 'TRY', el: <TestData /> },
-  { section: '3 · The decision' },
-  { to: '/decision', label: 'The decision', icon: Scale, el: <Decision /> },
-  { section: '4 · Under the hood' },
-  { to: '/inbound', label: 'Inbound gateway', icon: Network, tag: 'Intake', el: <Inbound /> },
-  { to: '/carriers', label: 'Carrier scorecard', icon: Truck, tag: 'Carrier', el: <Carriers /> },
-  { to: '/inventory', label: 'Inventory placement', icon: Warehouse, tag: 'Stock', el: <Inventory /> },
-  { to: '/control-tower', label: 'Exceptions control tower', icon: Radar, tag: 'Watch', el: <ControlTower /> },
-  { to: '/ai-model', label: 'AI risk model', icon: BrainCircuit, tag: 'ML', el: <AiModel /> },
-  { to: '/data-quality', label: 'Data quality', icon: ShieldCheck, el: <DataQuality /> },
-  { to: '/accounts', label: 'Account health', icon: Users, el: <Accounts /> },
+  { to: '/problem', label: 'The problem', icon: Microscope, el: <Problem />, section: 'The problem' },
+  { to: '/live-operations', label: 'Live operations', icon: Radio, tag: 'LIVE', el: <LiveOps />, section: 'The solution at work' },
+  { to: '/operations-day', label: 'Operations day', icon: PlayCircle, tag: 'LIVE', el: <OperationsDay />, section: 'The solution at work' },
+  { to: '/results', label: 'Results', icon: Scale, el: <Results />, section: 'The decision' },
+  { group: 'Evidence', icon: FolderSearch, items: [
+    { to: '/carriers', label: 'Carrier scorecard', icon: Truck, el: <Carriers />, section: 'Evidence' },
+    { to: '/inventory', label: 'Inventory placement', icon: Warehouse, el: <Inventory />, section: 'Evidence' },
+    { to: '/test-data', label: 'Test data', icon: UploadCloud, el: <TestData />, section: 'Evidence' },
+  ] },
 ];
-let section = '';
-const PAGES = NAV.flatMap((n) => (n.section && !n.to ? ((section = n.section), []) : [{ ...n, section: n.section || section }]));
+const PAGES = NAV.flatMap((n) => n.items ?? [n]);
+const EVIDENCE = new Set(NAV.find((n) => n.group).items.map((p) => p.to));
 
 const TOPBAR = 56;
-const idOf = (to) => (to === '/' ? 'start-here' : to.slice(1));
+const idOf = (to) => to.slice(1);
 const top = (to) => {
   const el = document.getElementById(idOf(to));
   return el ? el.getBoundingClientRect().top + window.scrollY - TOPBAR : null;
@@ -112,10 +98,13 @@ function useStoryScroll() {
 
 const THEMES = [['light', Sun, 'Light'], ['dark', Moon, 'Dark'], ['system', Monitor, 'Match system']];
 
+/** The staff area: the operations story over five sidebar entries. */
 export default function App() {
   const { pathname } = useLocation();
+  const { user, signOut } = useSession();
   const [choice, setChoice] = useState(savedChoice);
   const [mode, setMode] = useState(() => resolve(savedChoice()));
+  const [evidenceOpen, setEvidenceOpen] = useState(false);   // the Evidence group starts collapsed
   const savedY = useRef(null);
   const chooseTheme = (value) => { savedY.current = window.scrollY; setChoice(value); setMode(applyTheme(value)); };
   const story = useRef(null);
@@ -128,6 +117,8 @@ export default function App() {
   }, [mode]);
   // While following the system, track OS light/dark changes.
   useEffect(() => (choice === 'system' ? onSystemChange(() => setMode(applyTheme('system'))) : undefined), [choice]);
+  // Scrolling or following a link into the evidence opens its group.
+  useEffect(() => { if (EVIDENCE.has(pathname)) setEvidenceOpen(true); }, [pathname]);
   const current = PAGES.find((p) => p.to === pathname) || PAGES[0];
   return (
     <div className="app">
@@ -137,17 +128,26 @@ export default function App() {
           <div>Halcyon<small>Operations console</small></div>
         </div>
         <nav className="nav">
-          {NAV.map((n, i) => (n.section && !n.to)
-            ? <div key={i} className="nav-section">{n.section}</div>
-            : (
-              <NavLink key={n.to} to={n.to} end>
-                <n.icon size={16} strokeWidth={1.9} />{n.label}{n.tag && <span className="tag">{n.tag}</span>}
+          {NAV.map((n) => {
+            const link = (p) => (
+              <NavLink key={p.to} to={p.to} end>
+                <p.icon size={16} strokeWidth={1.9} />{p.label}{p.tag && <span className="tag">{p.tag}</span>}
               </NavLink>
-            ))}
+            );
+            if (!n.group) return link(n);
+            return (
+              <Fragment key={n.group}>
+                <button type="button" className="nav-group" aria-expanded={evidenceOpen} onClick={() => setEvidenceOpen((o) => !o)}>
+                  <n.icon size={16} strokeWidth={1.9} />{n.group}
+                  {evidenceOpen ? <ChevronDown className="chev" size={14} /> : <ChevronRight className="chev" size={14} />}
+                </button>
+                {evidenceOpen && <div className="nav-sub">{n.items.map(link)}</div>}
+              </Fragment>
+            );
+          })}
         </nav>
         <div className="sidebar-foot">
           280 clients · 5 warehouses · 6 carriers
-          <div style={{ marginTop: 4 }}>Tags refer to the issue register (I1–I10).</div>
         </div>
       </aside>
       <div className="main">
@@ -156,6 +156,11 @@ export default function App() {
           <div className="row">
             <span className="pill"><Database size={13} /> 48,340 deliveries · Apr–Sep 2026</span>
             <span className="pill"><span className="live" /> Data through 25 Sep</span>
+            {user && (
+              <button className="pill pill-button" onClick={() => signOut().then(() => window.location.assign('/'))} title={`Signed in as ${user.email}`}>
+                <LogOut size={13} /> Sign out
+              </button>
+            )}
             <div className="seg" role="radiogroup" aria-label="Colour theme">
               {THEMES.map(([value, Icon, label]) => (
                 <button key={value} role="radio" aria-checked={choice === value} aria-label={label} title={label}

@@ -1,0 +1,7 @@
+{
+  "client_order_ref": "SAMPLE-4",
+  "sku": "HX-6630",
+  "quantity": 8,
+  "service": "next_day",
+  "ship_to": { "name": "Omar Haddad", "street": "220 Wacker Drive", "city": "Chicago", "state": "IL", "zip": "60606" }
+}
