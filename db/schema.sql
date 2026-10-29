@@ -250,3 +250,14 @@ CREATE TABLE users (
   last_login_at  timestamp,
   CHECK (role = 'staff' OR client_id IS NOT NULL)
 );
+
+-- Shipment stages of gateway orders: the gateway's verdict, then each step staff take on the Dispatch board.
+CREATE TABLE shipment_events (
+  id        serial PRIMARY KEY,
+  order_id  integer NOT NULL REFERENCES inbound_orders ON DELETE CASCADE,
+  stage     text NOT NULL,                  -- received | picked | collected | in_transit | delivered | on_hold | cancelled
+  at        timestamp NOT NULL DEFAULT now(),
+  by        text NOT NULL DEFAULT 'system',
+  note      text
+);
+CREATE INDEX ON shipment_events (order_id);

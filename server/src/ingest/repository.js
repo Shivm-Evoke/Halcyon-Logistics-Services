@@ -1,5 +1,9 @@
 // Data access for the inbound gateway.
 import { q, one } from '../db.js';
+import { shipmentStore } from '../shipments/store.js';
+
+// Every saved or re-checked order gets its shipment stage from the gateway's verdict.
+const recorded = async (row) => { if (row) await shipmentStore.recordVerdict(row); return row; };
 
 export const ingestRepository = {
   loadClients: async () => new Map((await q('SELECT * FROM clients')).map((c) => [c.client_id, c])),
@@ -12,19 +16,19 @@ export const ingestRepository = {
     'UPDATE inbound_messages SET status = $2, summary = $3, reply = $4 WHERE id = $1 RETURNING *',
     [id, status, summary, reply]),
 
-  saveOrder: (o) => one(`
+  saveOrder: async (o) => recorded(await one(`
     INSERT INTO inbound_orders (message_id, source_ref, client_id, client_order_ref, status, normalized, corrections, issues,
       risk, drivers, commitment_type, promised_date, warehouse_id, carrier_id)
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
   [o.message_id, o.source_ref, o.client_id, o.client_order_ref, o.status, o.normalized, JSON.stringify(o.corrections),
-    JSON.stringify(o.issues), o.risk, JSON.stringify(o.drivers), o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id]),
+    JSON.stringify(o.issues), o.risk, JSON.stringify(o.drivers), o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id])),
 
-  updateOrder: (id, o) => one(`
+  updateOrder: async (id, o) => recorded(await one(`
     UPDATE inbound_orders SET status = $2, normalized = $3, corrections = $4, issues = $5, risk = $6, drivers = $7,
       commitment_type = $8, promised_date = $9, warehouse_id = $10, carrier_id = $11, updated_at = now()
     WHERE id = $1 RETURNING *`,
   [id, o.status, o.normalized, JSON.stringify(o.corrections), JSON.stringify(o.issues), o.risk, JSON.stringify(o.drivers),
-    o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id]),
+    o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id])),
 
   getOrder: (id) => one('SELECT * FROM inbound_orders WHERE id = $1', [id]),
 

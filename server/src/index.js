@@ -19,6 +19,7 @@ import { gate } from './auth/access.js';
 import { SIGNING_KEY } from './auth/key.js';
 import { ensureUserTable, userStore, clientExists } from './auth/users.js';
 import { seedDemoUsers } from './auth/seed.js';
+import { ensureShipmentTable } from './shipments/store.js';
 
 const app = express();
 app.use(cors());
@@ -65,6 +66,7 @@ const port = Number(process.env.PORT || 4000);
 await ensureDecisionTable();
 await ensureDatasetTable();
 await ensureUserTable();
+await ensureShipmentTable();
 const seeded = await seedDemoUsers(process.env, { store: userStore, clientExists });
 if (seeded.length) console.log(`Demo accounts ready: ${seeded.join(', ')}`);
 const container = await getContainer();
