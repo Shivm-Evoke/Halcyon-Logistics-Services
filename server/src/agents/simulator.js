@@ -124,8 +124,9 @@ export function groupDays(orders) {
 /**
  * Runs all orders day by day under the settings and reports actual against with-agents.
  * @param csComplaintHoursPerWeek customer success hours spent on complaints in the time-study week (461)
+ * @param penaltyUsdPerLateSla     penalties actually paid divided by late SLA deliveries (not every late SLA order is charged)
  */
-export function runReplay(orders, { settings, distances, rates, csComplaintHoursPerWeek = 461 }) {
+export function runReplay(orders, { settings, distances, rates, csComplaintHoursPerWeek = 461, penaltyUsdPerLateSla = PENALTY_USD }) {
   if (!orders.length) {
     return { overall: { actual: null, agents: null }, weekly: [], waterfall: [], money: { extraCarrierUsd: 0, penaltiesSavedUsd: 0, redeliverySavedUsd: 0, csHoursSavedPerWeek: 0, netUsd: 0 }, accounts: [] };
   }
@@ -176,7 +177,7 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
   }
   const weekly = [...weeks].sort(([a], [b]) => a.localeCompare(b)).map(([week, xs]) => ({ week, actual: actualOf(xs), agents: agentsOf(xs) }));
 
-  // Money: a late delivery avoided saves a penalty on SLA contracts and a redelivery; customer success hours scale
+  // Money: a late delivery avoided saves, on SLA contracts, the penalty paid per late order on average, and a redelivery; customer success hours scale
   // with the number of late deliveries (461 complaint hours in the time-study week against that period's weekly lates).
   const lateActual = orders.reduce((s, o) => s + (o.late ? 1 : 0), 0);
   const avoided = (xs) => xs.reduce((s, o) => s + (o.late ? 1 : 0) - (1 - pAgents(o)), 0);
@@ -185,7 +186,7 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
   const csHoursPerLate = lateActual ? csComplaintHoursPerWeek / (lateActual / weeksCount) : 0;
   const rateOf = (c, o) => rates[c] ?? o.carrier_rate_usd ?? 0;
   const extraCarrierUsd = orders.reduce((s, o) => s + rateOf(byId.get(o.delivery_id).carrier_id, o) - rateOf(o.carrier_id, o), 0);
-  const penaltiesSavedUsd = avoided(orders.filter((o) => o.sla)) * PENALTY_USD;
+  const penaltiesSavedUsd = avoided(orders.filter((o) => o.sla)) * penaltyUsdPerLateSla;
   const redeliverySavedUsd = lateAvoided * REDELIVERY_USD;
 
   const atRisk = new Map();

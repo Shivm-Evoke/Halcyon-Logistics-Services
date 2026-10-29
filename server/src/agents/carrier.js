@@ -5,7 +5,8 @@ import { PENALTY_USD, REDELIVERY_USD } from '../rules.js';
 
 export const PREMIUM = ['A', 'B', 'C'];
 
-const restricted = (o) => o.commitment_type === 'same_day' || o.account_tier === 'Tier 1';
+/** Same-day and Tier 1 orders only travel with A, B or C. */
+export const restricted = (o) => o.commitment_type === 'same_day' || o.account_tier === 'Tier 1';
 
 /** Today's carrier limits, with A-C raised by the capacity pre-booked for Fridays. */
 export function dayLimits(limits, settings, isFriday) {

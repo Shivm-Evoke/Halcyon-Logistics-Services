@@ -66,6 +66,21 @@ test('an extra cost above the cap needs approval and carries a fallback within t
   assert.ok(pricey[a.fallbackCarrierId] - Math.min(...Object.values(pricey)) <= S.costCapUsd);
 });
 
+test('watchtower only moves an order when that cuts its risk by at least 5 points', () => {
+  const m = { pOnTime: (o) => ({ A: 0.5, B: 0.53, C: 0.5, D: 0.5, E: 0.5, F: 0.5 }[o.carrier_id]) };
+  const o = order();
+  const w = watch([o], new Map([[o.delivery_id, { carrier_id: 'A' }]]), { model: m, limits: roomy, usage: { A: 1 }, settings: S });
+  assert.equal(w.get(o.delivery_id).action, 'none');
+});
+
+test('watchtower keeps same-day and Tier 1 orders on carriers A, B or C', () => {
+  // For this order F looks safest, but a same-day order may only move between A, B and C.
+  const m = { pOnTime: (o) => ({ A: 0.36, B: 0.45, C: 0.38, D: 0.3, E: 0.3, F: 0.55 }[o.carrier_id]) };
+  const o = order({ commitment_type: 'same_day' });
+  const w = watch([o], new Map([[o.delivery_id, { carrier_id: 'A' }]]), { model: m, limits: roomy, usage: { A: 1 }, settings: S });
+  assert.equal(w.get(o.delivery_id).carrier_id, 'B');
+});
+
 test('watchtower upgrades risky orders to the safest carrier with room and flags key clients for a message', () => {
   const risky = order({ address_incomplete: 1, account_tier: 'Tier 1' });
   const fine = order();

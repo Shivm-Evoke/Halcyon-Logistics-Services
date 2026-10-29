@@ -35,7 +35,7 @@ function Waterfall({ steps }) {
         <XAxis dataKey="name" {...axisX} interval={0} />
         <YAxis {...axisY} domain={[0.6, 1]} tickFormatter={(v) => pct(v, 0)} allowDataOverflow />
         {tip((v, n, p) => pct(p.total))}
-        <ReferenceLine y={BENCHMARK} stroke={PAL.muted} strokeDasharray="4 4" label={{ value: 'Industry 94%', fill: PAL.muted, fontSize: 12, position: 'insideTopRight' }} />
+        <ReferenceLine y={BENCHMARK} stroke={PAL.muted} strokeDasharray="4 4" label={{ value: 'Industry 94%', fill: PAL.muted, fontSize: 12, position: 'insideTopLeft' }} />
         <Bar dataKey="base" stackId="w" fill="transparent" tooltipType="none" {...barProps} isAnimationActive={false} />
         <Bar dataKey="delta" name="On time" stackId="w" {...barProps}>
           {data.map((d) => <Cell key={d.name} fill={d.first ? PAL.series[0] : PAL.series[2]} />)}

@@ -174,8 +174,9 @@ export class LiveDay {
     const s = this.#summary(at);
     const waved = [...this.events.values()].filter((e) => e.agent === 'wave' && e.decision.wave === 2).length;
     const pct = (v) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
-    return `${hhmm(at)}: ${s.orders} orders in. Expected on time ${pct(s.onTimeAgents)} with the agents (recorded ${pct(s.onTimeActual)}). `
-      + `${waved} same-day orders in the second wave; ${s.decisions.watchtower} watchtower actions; ${s.pendingApprovals} decisions awaiting approval.`;
+    const n = (k, one, many) => `${k} ${k === 1 ? one : many}`;
+    return `${hhmm(at)}: ${n(s.orders, 'order', 'orders')} in. Expected on time ${pct(s.onTimeAgents)} with the agents (recorded ${pct(s.onTimeActual)}). `
+      + `${n(waved, 'same-day order', 'same-day orders')} in the second wave; ${n(s.decisions.watchtower, 'watchtower action', 'watchtower actions')}; ${n(s.pendingApprovals, 'decision', 'decisions')} awaiting approval.`;
   }
 
   async #expire(now) {

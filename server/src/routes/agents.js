@@ -3,7 +3,7 @@ import { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { getContainer } from '../container.js';
-import { one } from '../db.js';
+import { one, q } from '../db.js';
 import { carrierStats } from '../stats.js';
 import { mlRepository } from '../ml/repository.js';
 import { agentsRepository } from '../agents/repository.js';
@@ -19,17 +19,20 @@ const r = Router();
 // History the agents run on: loaded once, then shared by every replay and live day.
 let worldPromise;
 export const world = () => (worldPromise ??= (async () => {
-  const [orders, distances, carriers, cs] = await Promise.all([
+  const [orders, distances, carriers, cs, penalty] = await Promise.all([
     agentsRepository.loadOrders(),
     mlRepository.loadDistances(),
     carrierStats(),
     one('SELECT sum(hours_on_delivery_complaints) AS hours FROM cs_time_study'),
+    one(`SELECT (SELECT sum(penalty_usd) FROM sla_penalties) / NULLIF(count(*), 0) AS per_late_sla
+         FROM deliveries d JOIN clients c USING (client_id) WHERE d.on_time = 'N' AND c.sla_penalty_clause = 'Y'`),
   ]);
   return {
     orders,
     distances,
     rates: Object.fromEntries(carriers.map((c) => [c.carrier_id, Number(c.avg_rate)])),
     csComplaintHoursPerWeek: Number(cs?.hours) || 461,
+    penaltyUsdPerLateSla: Number(penalty?.per_late_sla) || undefined,
   };
 })().catch((e) => { worldPromise = undefined; throw e; }));
 
@@ -44,13 +47,13 @@ r.post('/agents/replay', async (req, res) => {
   if (!replays.has(key)) {
     const w = await world();
     if (replays.size >= 20) replays.delete(replays.keys().next().value);
-    replays.set(key, { settings: v.settings, ...runReplay(w.orders, { settings: v.settings, distances: w.distances, rates: w.rates, csComplaintHoursPerWeek: w.csComplaintHoursPerWeek }) });
+    replays.set(key, { settings: v.settings, ...runReplay(w.orders, { settings: v.settings, distances: w.distances, rates: w.rates, csComplaintHoursPerWeek: w.csComplaintHoursPerWeek, penaltyUsdPerLateSla: w.penaltyUsdPerLateSla }) });
   }
   res.json(replays.get(key));
 });
 
 r.get('/agents/approvals', async (req, res) => {
-  res.json(await decisionLog.list({ runId: req.query.runId, approval: req.query.approval }));
+  res.json(await decisionLog.list({ runId: req.query.runId, approval: req.query.approval, agent: req.query.agent, limit: Math.min(500, Number(req.query.limit) || 500) }));
 });
 
 r.post('/agents/approvals/:id', async (req, res) => {
@@ -59,6 +62,37 @@ r.post('/agents/approvals/:id', async (req, res) => {
   const result = await decisionLog.setApproval(Number(req.params.id), approval, 'manager');
   if (!result.row) return res.status(404).json({ error: 'No such decision' });
   res.json(result);
+});
+
+// The five measured causes of lateness and the evidence against routing, for the "Why we're late" screen.
+let causes;
+r.get('/agents/causes', async (_req, res) => {
+  causes ??= (async () => {
+    const [base, cutoff, carriers, friday, address, stock, routing, money] = await Promise.all([
+      one(`SELECT count(*) AS orders, avg((on_time = 'Y')::int) AS on_time FROM deliveries`),
+      q(`SELECT (extract(hour FROM order_received_ts) >= 8) AS after_cutoff, count(*) AS orders, avg((on_time = 'Y')::int) AS on_time
+         FROM deliveries WHERE commitment_type = 'same_day' GROUP BY 1 ORDER BY 1`),
+      q(`SELECT carrier_id, count(*) AS orders, avg((on_time = 'Y')::int) AS on_time FROM deliveries
+         WHERE address_status = 'complete' AND nearest_warehouse_had_stock = 'Y' AND distance_miles < 300
+           AND NOT (commitment_type = 'same_day' AND extract(hour FROM order_received_ts) >= 8) GROUP BY 1 ORDER BY 1`),
+      q(`SELECT (extract(isodow FROM order_received_ts) = 5) AS friday, count(*) AS orders, avg((carrier_id = 'D')::int) AS share_d, avg((on_time = 'Y')::int) AS on_time
+         FROM deliveries GROUP BY 1 ORDER BY 1`),
+      q(`SELECT order_channel, count(*) AS orders, avg((address_status = 'incomplete')::int) AS incomplete_share,
+              avg((on_time = 'Y')::int) FILTER (WHERE address_status = 'incomplete') AS on_time_incomplete FROM deliveries GROUP BY 1 ORDER BY 1`),
+      q(`SELECT nearest_warehouse_had_stock AS had_stock, count(*) AS orders, avg(distance_miles) AS miles, avg((on_time = 'Y')::int) AS on_time
+         FROM deliveries GROUP BY 1 ORDER BY 1`),
+      q(`SELECT width_bucket(stops_on_route, 0, 40, 4) AS band, min(stops_on_route) AS min_stops, max(stops_on_route) AS max_stops,
+              avg((on_time = 'Y')::int) AS on_time, avg(actual_route_km / NULLIF(planned_route_km, 0)) AS actual_vs_planned
+         FROM deliveries WHERE address_status = 'complete' AND nearest_warehouse_had_stock = 'Y'
+           AND NOT (commitment_type = 'same_day' AND extract(hour FROM order_received_ts) >= 8) GROUP BY 1 ORDER BY 1`),
+      one(`SELECT (SELECT sum(penalty_usd) FROM sla_penalties) AS penalties, (SELECT sum(redelivery_cost_usd) FROM deliveries) AS redelivery,
+              (SELECT count(*) FROM clients WHERE account_status = 'threatening_to_leave') AS at_risk_clients,
+              (SELECT sum(annual_revenue_usd) FROM clients WHERE account_status = 'threatening_to_leave') AS at_risk_revenue,
+              (SELECT sum(hours_on_delivery_complaints) FROM cs_time_study) AS complaint_hours, (SELECT sum(hours_total) FROM cs_time_study) AS cs_hours`),
+    ]);
+    return { base, cutoff, carriers, friday, address, stock, routing, money };
+  })().catch((e) => { causes = undefined; throw e; });
+  res.json(await causes);
 });
 
 // ---------- Live operations day: one run at a time, kept on the server so a refresh or a second tab resumes it ----------

@@ -63,6 +63,17 @@ test('money, weekly and at-risk accounts are reported', () => {
   assert.ok(r.accounts.length > 0 && r.accounts.every((a) => a.agents >= 0 && a.agents <= 1));
 });
 
+test('penalties saved use the penalty actually paid per late SLA order, never more than was paid', () => {
+  const rows = fixture();
+  const lateSla = rows.filter((o) => o.late && o.sla).length;
+  const paid = lateSla * 100; // in this history every late SLA order cost $100 on average
+  const r = runReplay(rows, { ...opts(), penaltyUsdPerLateSla: 100 });
+  assert.ok(r.money.penaltiesSavedUsd > 0);
+  assert.ok(r.money.penaltiesSavedUsd <= paid, `${r.money.penaltiesSavedUsd} > ${paid}`);
+  const at180 = runReplay(rows, opts()).money.penaltiesSavedUsd;
+  assert.ok(Math.abs(r.money.penaltiesSavedUsd - at180 * (100 / 180)) < 1e-6);
+});
+
 test('no orders gives nulls, never NaN', () => {
   const r = runReplay([], opts());
   assert.equal(r.overall.actual, null);
