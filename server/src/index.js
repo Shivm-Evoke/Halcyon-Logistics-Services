@@ -9,6 +9,7 @@ import operations from './routes/operations.js';
 import accounts from './routes/accounts.js';
 import ml from './routes/ml.js';
 import ingest from './routes/ingest.js';
+import agents from './routes/agents.js';
 import { watchInbox } from './ingest/inboxWatcher.js';
 import { getContainer } from './container.js';
 
@@ -35,7 +36,7 @@ app.get('/api/health', async (_req, res) => {
   await pool.query('SELECT 1');
   res.json({ ok: true });
 });
-app.use('/api', overview, operations, accounts, ml, ingest);
+app.use('/api', overview, operations, accounts, ml, ingest, agents);
 
 // In production the API also serves the built website; every screen's path returns the app so deep links work.
 const SITE = path.resolve(import.meta.dirname, '../../web/dist');

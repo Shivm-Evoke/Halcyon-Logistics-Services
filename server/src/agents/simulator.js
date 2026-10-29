@@ -51,7 +51,7 @@ export function simulateDay(dayOrders, ctx) {
   const { settings, model, distances, rates, limits, stockPairs = new Set(), rand } = ctx;
   const on = settings.agents;
   const decisions = [];
-  const ok = (d) => !d.needsApproval || ctx.approvals?.get(approvalKey(d)) === 'approved' || (ctx.autoApprove && d.agent !== 'wave');
+  const ok = (d, id) => !d.needsApproval || ctx.approvals?.get(approvalKey({ ...d, delivery_id: id })) === 'approved' || (ctx.autoApprove && d.agent !== 'wave');
   const orders = dayOrders.map((o) => ({ ...o }));
 
   if (on.intake) {
@@ -59,7 +59,7 @@ export function simulateDay(dayOrders, ctx) {
       const d = intakeDecide(o, settings, rand);
       if (!o.address_incomplete) continue;
       decisions.push({ ...d, delivery_id: o.delivery_id });
-      if (d.fixAddress && ok(d)) o.address_incomplete = 0;
+      if (d.fixAddress && ok(d, o.delivery_id)) o.address_incomplete = 0;
     }
   }
   if (on.stock) {
@@ -75,7 +75,7 @@ export function simulateDay(dayOrders, ctx) {
     const plan = planWaves(orders, settings);
     for (const o of orders) {
       const p = plan.get(o.delivery_id);
-      const joins = p.wave === 2 || (p.needsApproval && ok(p));
+      const joins = p.wave === 2 || (p.needsApproval && ok(p, o.delivery_id));
       if (joins && o.commitment_type === 'same_day') o.cutoff_breach = 0;
       if (p.wave === 2 || p.needsApproval) decisions.push({ ...p, delivery_id: o.delivery_id });
     }
@@ -85,7 +85,7 @@ export function simulateDay(dayOrders, ctx) {
     const { assignments } = allocateCarriers(orders, { model, limits, rates, settings, isFriday: ctx.isFriday });
     for (const o of orders) {
       const a = assignments.get(o.delivery_id);
-      o.carrier_id = ok(a) ? a.carrier_id : (a.fallbackCarrierId ?? a.carrier_id);
+      o.carrier_id = ok(a, o.delivery_id) ? a.carrier_id : (a.fallbackCarrierId ?? a.carrier_id);
       decisions.push({ ...a, delivery_id: o.delivery_id });
     }
   }

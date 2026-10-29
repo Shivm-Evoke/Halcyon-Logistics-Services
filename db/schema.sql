@@ -4,7 +4,7 @@ SET client_min_messages = warning;
 -- the tables under "Solution layer" hold the records the new app creates.
 
 DROP VIEW IF EXISTS v_deliveries CASCADE;
-DROP TABLE IF EXISTS api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
+DROP TABLE IF EXISTS agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
   cs_time_study, warehouse_region_distance, warehouses, carriers, clients CASCADE;
 
 CREATE TABLE clients (
@@ -208,3 +208,20 @@ CREATE TABLE api_idempotency (
   created_at timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (client_id, key)
 );
+
+-- Every decision the operations agents take, with its rule, Claude's reason and its approval state.
+CREATE TABLE agent_decisions (
+  id            serial PRIMARY KEY,
+  run_id        text NOT NULL,
+  sim_ts        text NOT NULL,
+  agent         text NOT NULL,
+  delivery_id   text,
+  decision      jsonb NOT NULL DEFAULT '{}',
+  rule          text,
+  reason        text,
+  reason_source text NOT NULL DEFAULT 'rules only' CHECK (reason_source IN ('claude', 'rules only')),
+  approval      text NOT NULL CHECK (approval IN ('auto', 'pending', 'approved', 'rejected', 'expired')),
+  actor         text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX agent_decisions_run ON agent_decisions (run_id, approval);
