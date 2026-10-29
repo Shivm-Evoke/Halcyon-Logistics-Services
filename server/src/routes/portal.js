@@ -7,6 +7,7 @@ import { asShipments, idFromRef } from '../shipments/views.js';
 import { shipmentStore } from '../shipments/store.js';
 import { customerCanEdit, initialStage } from '../shipments/stages.js';
 import { getDesk, refreshDesk, deskClockNow } from '../desk/instance.js';
+import { deskRepo } from '../desk/repository.js';
 import { forceFor, formOrder, sendSample, rotateApiKey, customerDecisions } from '../portal/channels.js';
 
 const r = Router();
@@ -24,10 +25,15 @@ async function shipmentsOf(results) {
   }));
 }
 
-// What the agents decided about an order in the desk's current run; an order outside it, or a desk that is off or failing, has none.
-async function decisionsFor(ref) {
+// What the agents did to an order in the desk's current run, in the customer's words; an order outside the run,
+// or a desk that is off or failing, has none.
+async function decisionsFor(shipment, gatewayCarrierId) {
   try {
-    return customerDecisions((await (await getDesk()).state()).orders.find((o) => o.ref === ref));
+    const state = await (await getDesk()).state();
+    const order = state.orders.find((o) => o.ref === shipment.ref);
+    if (!order) return [];
+    const rows = (await deskRepo.decisions(state.clock.runId)).filter((d) => d.delivery_id === shipment.ref);
+    return customerDecisions(rows, order, shipment.events, gatewayCarrierId ?? undefined);
   } catch {
     return [];
   }
@@ -62,7 +68,7 @@ r.get('/portal/orders/:ref', async (req, res) => {
   const o = await own(req, res);
   if (!o) return;
   const [shipment] = await asShipments([o], { withEvents: true });
-  res.json({ ...shipment, decisions: await decisionsFor(shipment.ref) });
+  res.json({ ...shipment, decisions: await decisionsFor(shipment, o.normalized?.gateway_carrier_id) });
 });
 
 // One order from the portal form, through the same gateway pipeline as API, email and EDI orders.

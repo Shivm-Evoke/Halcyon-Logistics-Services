@@ -104,15 +104,41 @@ test('portal: an API key is a secret the login accepts, and a new key invalidate
   assert.equal(checkSecret(first.secret, hashes.get('C055')), false);
 });
 
-test('portal: decisions show the plain reason, without ids, costs or approval state', () => {
-  const order = { decisions: [
-    { id: 7, agent: 'carrier', rule: 'Lowest expected cost among A, B and C (same-day or Tier 1); 7.20 above the cheapest carrier it may use, over the 6 cap',
-      reason: 'Lowest expected cost among A, B and C (same-day or Tier 1); 7.20 above …', reason_source: 'rules only', approval: 'pending', at: '2026-09-25 09:15' },
-    { id: 8, agent: 'watchtower', rule: 'Risk of being late 48%', reason: 'Claude says the stock is late, so we called you.', reason_source: 'claude', approval: 'pending', at: '2026-09-25 09:15' },
-  ] };
-  assert.deepEqual(customerDecisions(order), [
-    { agent: 'carrier', text: 'Lowest expected cost among A, B and C (same-day or Tier 1)', at: '2026-09-25 09:15' },
-    { agent: 'watchtower', text: 'Claude says the stock is late, so we called you.', at: '2026-09-25 09:15' },
-  ]);
-  assert.deepEqual(customerDecisions(undefined), []);
+// A desk order (as the desk's state shows it), its decision rows and the notes the desk wrote on its shipment.
+const deskOrder = { ref: 'IN-000042', received_ts: '2026-09-25 09:15', commitment_type: 'standard', warehouse_id: 'W5', carrier_id: 'A',
+  client: { client_id: 'C176', account_tier: 'Tier 1' } };
+const claudeReason = 'The carrier agent assigned delivery IN-000042 for Client 176 (Tier 1) to carrier A at 09:15 because it had the lowest '
+  + 'expected cost among A, B and C, at about $18.25, with an extra cost of about 0.62. No approval was needed.';
+const rows = [
+  { id: 1, agent: 'stock', delivery_id: 'IN-000042', approval: 'auto', sim_ts: '2026-09-25 09:15', rule: 'Stock moved to the nearest warehouse overnight',
+    reason: 'Stock was moved at a cost of $40; needs your approval next time', reason_source: 'claude', decision: { agent: 'stock', needsApproval: false } },
+  { id: 2, agent: 'carrier', delivery_id: 'IN-000042', approval: 'auto', sim_ts: '2026-09-25 09:15', rule: 'Lowest expected cost among A, B and C (same-day or Tier 1)',
+    reason: claudeReason, reason_source: 'claude', decision: { agent: 'carrier', carrier_id: 'A', needsApproval: false, extraCost: 0.62 } },
+  { id: 3, agent: 'watchtower', delivery_id: 'IN-000042', approval: 'pending', sim_ts: '2026-09-25 09:16', rule: 'Risk of being late 48%',
+    reason: 'It needs your approval before the client is told.', reason_source: 'claude', decision: { agent: 'watchtower', action: 'none', notifyClient: true, needsApproval: true } },
+];
+const events = [
+  { stage: 'received', by: 'system', note: null },
+  { stage: 'received', by: 'agents', note: 'Stock moved to the nearest warehouse (W5)' },
+  { stage: 'received', by: 'agents', note: 'Carrier A chosen: more reliable on this lane' },
+];
+
+test('portal: customers see the effect notes the desk wrote, never Claude\'s or the rule\'s text', () => {
+  const shown = customerDecisions(rows, deskOrder, events, 'B');
+  assert.deepEqual(shown, [
+    { agent: 'stock', text: 'Stock moved to the nearest warehouse (W5)', at: '2026-09-25 09:15' },
+    { agent: 'carrier', text: 'Carrier A chosen: more reliable on this lane', at: '2026-09-25 09:15' },
+  ]);   // the pending watchtower flag has no effect yet, so it is left out
+  for (const d of shown) {
+    assert.doesNotMatch(d.text, /\$|\d+\.\d{2}|cost|approv|Client 176/i);
+    assert.deepEqual(Object.keys(d), ['agent', 'text', 'at']);
+  }
+});
+
+test('portal: a carrier kept on a Tier 1 order shows its confirmation note; without a desk order nothing is shown', () => {
+  const kept = [{ ...rows[1], decision: { agent: 'carrier', carrier_id: 'A', needsApproval: false } }];
+  const note = 'Carrier A confirmed: the most reliable within capacity on this lane';
+  assert.deepEqual(customerDecisions(kept, deskOrder, [{ by: 'agents', note }]), [{ agent: 'carrier', text: note, at: '2026-09-25 09:15' }]);
+  assert.deepEqual(customerDecisions(kept, undefined, events), []);
+  assert.deepEqual(customerDecisions([], deskOrder, events), []);
 });

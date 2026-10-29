@@ -195,6 +195,13 @@ test('gateway: deferCutoff keeps a late same-day order same-day and notes it for
   assert.equal(o.promised_date, '2026-09-25');
 });
 
+test('gateway: the carrier it chose is kept on the order as gateway_carrier_id', async () => {
+  const { service, saved } = makeGateway();
+  await service.api('C001', [apiOrder]);
+  assert.equal(saved[0].carrier_id, 'K1');
+  assert.equal(saved[0].normalized.gateway_carrier_id, 'K1');
+});
+
 test('gateway: without deferCutoff a late same-day order is re-promised next-day', async () => {
   const { service } = makeGateway({ deferCutoff: false });
   const [o] = (await service.api('C001', [apiOrder])).orders;

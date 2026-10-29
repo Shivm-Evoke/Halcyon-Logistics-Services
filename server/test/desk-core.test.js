@@ -51,6 +51,13 @@ test('a corrected same-day EDI order at 09:15 maps with a cutoff breach', () => 
   assert.equal(o.client_name, 'Acme');
 });
 
+test('the gateway carrier is the one the gateway chose, not the carrier the desk wrote over it later', () => {
+  const changed = row(9, { carrier_id: 'A', normalized: { ...row(9).normalized, gateway_carrier_id: 'B' } });
+  assert.equal(toAgentOrder(changed, opts).gateway_carrier_id, 'B');
+  assert.equal(toAgentOrder(changed, opts).carrier_id, 'A');
+  assert.equal(toAgentOrder(row(10), opts).gateway_carrier_id, 'D');   // orders from before it was kept
+});
+
 test('held orders are flagged incomplete, T timestamps are normalised, and stock misses follow the threshold', () => {
   const o = toAgentOrder(row(8, { status: 'held', normalized: { ship_to, commitment_type: 'same_day', received_ts: `${DAY}T07:30` } }), { ...opts, stockMiss: () => 0.2 });
   assert.equal(o.address_incomplete, 1);

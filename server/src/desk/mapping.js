@@ -33,7 +33,7 @@ export function toAgentOrder(row, { client = {}, distances = {}, stockMiss = () 
     address_incomplete: row.status === 'held' ? 1 : 0,
     stock_miss: region && stockMiss(row.client_id, region) >= threshold ? 1 : 0,
     carrier_id: row.carrier_id ?? null,
-    gateway_carrier_id: row.carrier_id ?? null,
+    gateway_carrier_id: n.gateway_carrier_id ?? row.carrier_id ?? null, // older orders: the carrier on the row
     cutoff_breach: commitment === 'same_day' && receivedTs.slice(11, 16) >= PICK_LIST_CUTOFF ? 1 : 0,
     order_channel: row.channel ?? n.order_channel ?? null,
   };

@@ -5,6 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { hashSecret } from '../ingest/auth.js';
+import { effectsOf } from '../desk/effects.js';
 
 export const SAMPLES_DIR = path.resolve(import.meta.dirname, '../../data/samples');
 
@@ -56,11 +57,23 @@ export async function rotateApiKey(store, clientId) {
 }
 
 /**
- * The agents' decisions on one desk order, as the customer sees them: Claude's reason when it has given one, else the
- * rule, without what follows "; " (costs and approval limits) and without ids or approval state.
+ * The agents' decisions on one desk order, as the customer sees them: the effect note the desk wrote on the shipment
+ * (effectsOf's customer sentence), never Claude's or the rule's staff-facing text, which carry costs and approvals.
+ * A decision with no effect, or whose note the desk has not written, is left out.
+ * @param rows      agent_decisions rows for the order (agent, decision, approval, sim_ts)
+ * @param deskOrder the order in the desk's state (received_ts, commitment_type, warehouse_id, carrier_id, client.account_tier)
+ * @param events    the shipment's events ({ by, note })
+ * @param gatewayCarrierId the carrier the gateway chose (normalized.gateway_carrier_id); older orders fall back to the row's
  */
-export const customerDecisions = (deskOrder) => (deskOrder?.decisions ?? []).map((d) => ({
-  agent: d.agent,
-  text: d.reason_source === 'claude' && d.reason ? d.reason : String(d.rule ?? '').split('; ')[0],
-  at: d.at,
-}));
+export function customerDecisions(rows, deskOrder, events = [], gatewayCarrierId = deskOrder?.carrier_id) {
+  if (!deskOrder) return [];
+  const written = new Set(events.filter((e) => e.by === 'agents' && e.note).map((e) => e.note));
+  const order = {
+    received_ts: deskOrder.received_ts, commitment_type: deskOrder.commitment_type, account_tier: deskOrder.client?.account_tier,
+    nearest_warehouse_id: deskOrder.warehouse_id, gateway_carrier_id: gatewayCarrierId ?? null,
+  };
+  return rows.flatMap((r) => {
+    const note = effectsOf(r.decision, order, r.approval)?.note;
+    return note && written.has(note) ? [{ agent: r.agent, text: note, at: r.sim_ts }] : [];
+  });
+}

@@ -144,6 +144,8 @@ export class IngestPipeline {
     const ledger = ledgers.get(promise.pickListDate);
     const best = this.ai.nextBestAction.decide({ ...features, address_incomplete: 0 }, { capacity: ledger }).best;
     if (!held) ledger.reserve(best.carrier_id);
+    // Kept on the order: the desk may give it another carrier, and says so against this one.
+    order.gateway_carrier_id = best.carrier_id;
     const scored = this.ai.scorer.score({ ...features, carrier_id: best.carrier_id });
     if (!held && scored.risk >= RISK_THRESHOLD) {
       issues.push({ code: 'high_late_risk', severity: 'warning', field: null,
