@@ -91,6 +91,8 @@ test('the public tracking view shows status and plain labels but no internal det
     { ts: '2026-10-27 15:01', actor: 'supervisor', type: 'approval_requested', detail: { message: 'draft' } },
   ]);
   assert.equal(view.stage, 'on_the_way');
+  assert.equal(view.promised_date, '2026-10-28');
+  assert.equal(view.eta, '2026-10-29');
   assert.match(view.banner, /late/i);
   assert.ok(view.events.every((e) => !('detail' in e) && !('actor' in e)));
   assert.ok(!view.events.some((e) => e.type === 'approval_requested'));

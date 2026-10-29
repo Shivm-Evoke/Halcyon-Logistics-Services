@@ -92,6 +92,8 @@ const PUBLIC_LABELS = {
 };
 const STAGES = ['received', 'confirmed', 'on_the_way', 'delivered'];
 
+const nextDay = (ymd) => new Date(Date.parse(`${ymd}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
+
 /** Status, a delay banner and a timeline with plain labels; no internal actors, rules, costs or approval drafts. */
 export function publicView(order, events) {
   const types = new Set(events.map((e) => e.type));
@@ -99,8 +101,11 @@ export function publicView(order, events) {
     : types.has('shipped') || types.has('delayed') || types.has('carrier_selected') ? 'on_the_way'
       : types.has('released') || types.has('wave_assigned') ? 'confirmed' : 'received';
   const delayed = types.has('delayed') && !types.has('delivered');
+  const promised = order.promised_date ? String(order.promised_date).slice(0, 10) : null;
   return {
-    ref: order.ref, status: order.status, commitment_type: order.commitment_type, promised_date: order.promised_date, carrier_id: order.carrier_id,
+    ref: order.ref, status: order.status, commitment_type: order.commitment_type, promised_date: promised, carrier_id: order.carrier_id,
+    // The carrier reports about a day late, so the expected date moves with it; the original promise stays visible.
+    eta: types.has('delayed') && promised ? nextDay(promised) : promised,
     stage, stages: STAGES, held: order.status === 'held',
     banner: delayed ? 'Your delivery is running about a day late. We spotted it early and are on it.' : null,
     rated: types.has('rated'),
