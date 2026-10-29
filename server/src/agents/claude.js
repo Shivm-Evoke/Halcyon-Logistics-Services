@@ -21,7 +21,14 @@ const BRIEFING_SYSTEM = `You are the Ops Lead for Halcyon Logistics' operations 
 Watchtower). Every half hour you brief the warehouse manager. Use the tools to look at the current state and the pending
 approvals, and to re-run an agent if its result looks inconsistent with another's. Then write a short briefing: what the
 agents did since the last briefing, any conflict between them, and what the manager needs to approve. At most five
-sentences, plain text.`;
+sentences, plain text: no markdown, no headings, no bold.
+
+How to read the numbers: this day is replayed from history, so recordedOnTimeWithoutAgents is what actually happened on it
+before the agents existed (null for test data). expectedOnTimeWithoutAgents is the same orders with every agent switched off,
+and expectedOnTimeWithAgents is the same orders with the agents' decisions, both estimated from how such orders did in
+history. The agents' effect is expectedOnTimeWithAgents minus the without-agents figure; the recorded rate is not the agents'
+result. Use decisionsSinceLastBriefing for "since the last briefing"; decisionsToday holds the totals. Every tool shows the
+day as it stood at this briefing.`;
 
 const str = { type: 'string' };
 const ORDER_SCHEMA = {
@@ -61,6 +68,8 @@ const TOOLS = [
 ].map((t) => ({ ...t, strict: true }));
 
 const textOf = (res) => res.content.filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
+// The screen shows plain text, so markdown bold is unwrapped.
+const plain = (t) => t.replace(/\*\*(.+?)\*\*/g, '$1');
 
 function foundryClient() {
   const { ANTHROPIC_FOUNDRY_API_KEY, ANTHROPIC_FOUNDRY_RESOURCE, ANTHROPIC_FOUNDRY_BASE_URL } = process.env;
@@ -127,7 +136,7 @@ export function createClaude({ client = foundryClient(), timeoutMs = TIMEOUT_MS 
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
           const res = await call({ max_tokens: 4096, output_config: { effort: 'medium' }, system: BRIEFING_SYSTEM, tools: TOOLS, tool_choice: { type: 'auto' }, messages });
           if (res.stop_reason !== 'tool_use') {
-            const text = textOf(res);
+            const text = plain(textOf(res));
             return text ? { text, toolCalls, source: 'claude' } : { text: '', toolCalls, source: 'rules only' };
           }
           messages.push({ role: 'assistant', content: res.content });

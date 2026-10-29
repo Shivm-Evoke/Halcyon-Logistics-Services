@@ -171,6 +171,8 @@ export class LiveDay {
 
   #brief(at) {
     const simTime = hhmm(at);
+    this.lastBriefAt = this.briefAt ?? 0;
+    this.briefAt = at;
     const entry = { simTime, text: this.#rulesBriefing(at), source: 'rules only' };
     this.briefings.push(entry);
     if (this.mode === 'recorded') {
@@ -179,23 +181,41 @@ export class LiveDay {
       return;
     }
     if (!this.claude?.available) return;
+    // Claude answers after the clock has moved on, so its tools see a snapshot of the day as it stood at this briefing.
     const summary = this.#summary(at);
+    const pending = this.#pending().filter((e) => e.at <= at).map(({ id, agent, simTime, rule, client }) => ({ id, agent, simTime, rule, client }));
     const tools = {
       get_state: async () => summary,
       run_agent: async ({ agent }) => this.planned.filter(({ d, at: when }) => d.agent === agent && when <= at).slice(-20).map(({ d }) => d),
-      list_pending_approvals: async () => this.#pending().map(({ id, agent, rule, client }) => ({ id, agent, rule, client })),
-      explain_decision: async ({ decision_id }) => [...this.events.values()].find((e) => e.id === decision_id) ?? null,
+      list_pending_approvals: async () => pending,
+      explain_decision: async ({ decision_id }) => [...this.events.values()].find((e) => e.id === decision_id && e.at <= at) ?? null,
     };
     this.#track(this.claude.briefing({ simTime, ...summary }, tools).then((r) => {
       if (r.source === 'claude' && r.text) Object.assign(entry, { text: r.text, source: 'claude' });
     }).catch(() => {}));
   }
 
+  /** What the day looks like at `at`, named so nobody (Claude included) mistakes the recorded rate for the agents' result. */
   #summary(at) {
-    const counts = Object.fromEntries(AGENT_ORDER.map((a) => [a, 0]));
-    for (const e of this.events.values()) if (e.at <= at) counts[e.agent]++;
+    const today = Object.fromEntries(AGENT_ORDER.map((a) => [a, 0]));
+    const since = Object.fromEntries(AGENT_ORDER.map((a) => [a, 0]));
+    const from = this.lastBriefAt ?? 0;
+    for (const e of this.events.values()) {
+      if (e.at > at) continue;
+      today[e.agent]++;
+      if (e.at > from) since[e.agent]++;
+    }
     const c = this.#counters(at);
-    return { orders: c.orders, onTimeActual: c.actual, onTimeWithoutAgents: c.baseline, onTimeAgents: c.agents, decisions: counts, pendingApprovals: this.#pending().length };
+    return {
+      ordersReceived: c.orders,
+      recordedOnTimeWithoutAgents: c.actual,
+      expectedOnTimeWithoutAgents: c.baseline,
+      expectedOnTimeWithAgents: c.agents,
+      decisionsToday: today,
+      decisionsSinceLastBriefing: since,
+      lastBriefing: hhmm(from),
+      pendingApprovals: this.#pending().filter((e) => e.at <= at).length,
+    };
   }
 
   #rulesBriefing(at) {
@@ -203,8 +223,8 @@ export class LiveDay {
     const waved = [...this.events.values()].filter((e) => e.agent === 'wave' && e.decision.wave === 2).length;
     const pct = (v) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
     const n = (k, one, many) => `${k} ${k === 1 ? one : many}`;
-    return `${hhmm(at)}: ${n(s.orders, 'order', 'orders')} in. Expected on time ${pct(s.onTimeAgents)} with the agents (${s.onTimeActual != null ? `recorded ${pct(s.onTimeActual)}` : `${pct(s.onTimeWithoutAgents)} without them`}). `
-      + `${n(waved, 'same-day order', 'same-day orders')} in the second wave; ${n(s.decisions.watchtower, 'watchtower action', 'watchtower actions')}; ${n(s.pendingApprovals, 'decision', 'decisions')} awaiting approval.`;
+    return `${hhmm(at)}: ${n(s.ordersReceived, 'order', 'orders')} in. Expected on time ${pct(s.expectedOnTimeWithAgents)} with the agents (${s.recordedOnTimeWithoutAgents != null ? `recorded ${pct(s.recordedOnTimeWithoutAgents)} without them` : `${pct(s.expectedOnTimeWithoutAgents)} without them`}). `
+      + `${n(waved, 'same-day order', 'same-day orders')} in the second wave; ${n(s.decisionsToday.watchtower, 'watchtower action', 'watchtower actions')}; ${n(s.pendingApprovals, 'decision', 'decisions')} awaiting approval.`;
   }
 
   async #expire(now) {

@@ -93,3 +93,15 @@ test('an email the parser cannot read becomes an order when Claude is confident'
   await fillUnparseable(parsed, 'text', async () => { called = true; return {}; }, 0.8);
   assert.equal(called, false);
 });
+
+test('briefings come back as plain text even if Claude adds markdown bold', async () => {
+  const client = fake(() => text('**14:00 briefing**\n\nAll **11** flags need approval.'));
+  const r = await createClaude({ client }).briefing({ simTime: '14:00' }, { get_state: async () => ({}) });
+  assert.equal(r.text, '14:00 briefing\n\nAll 11 flags need approval.');
+});
+
+test('the committed example settings file never carries a real key', async () => {
+  const fs = await import('node:fs');
+  const example = fs.readFileSync(new URL('../.env.example', import.meta.url), 'utf8');
+  assert.match(example, /^ANTHROPIC_FOUNDRY_API_KEY=$/m, 'put the key in server/.env, not server/.env.example');
+});

@@ -178,3 +178,26 @@ test('recorded mode without a recording says the AI is off, so nobody mistakes r
   const full = make({ mode: 'recorded', recorded: { reasons: { 'wave:x': 'AI: y' }, briefings: {} } });
   assert.equal((await full.state()).aiAvailable, true);
 });
+
+test('the Ops Lead sees the day as it stood at its briefing, with clearly named numbers', async () => {
+  const seen = [];
+  const spy = {
+    available: true,
+    explain: async (d) => ({ text: d.rule, source: 'rules only' }),
+    briefing: async (state, tools) => {
+      await new Promise((r) => setTimeout(r, 20));   // answers after the clock has moved on
+      seen.push({ state, pending: await tools.list_pending_approvals(), wave: await tools.run_agent({ agent: 'wave' }) });
+      return { text: 'ok', toolCalls: [], source: 'claude' };
+    },
+  };
+  const live = make({ claude: spy });
+  await live.advance(8 * 60);
+  await live.advance(16 * 60);
+  await live.idle();
+  const at8 = seen.find((x) => x.state.simTime === '08:00');
+  assert.ok(at8);
+  for (const k of ['recordedOnTimeWithoutAgents', 'expectedOnTimeWithoutAgents', 'expectedOnTimeWithAgents', 'decisionsSinceLastBriefing']) assert.ok(k in at8.state, k);
+  assert.ok(!('onTimeActual' in at8.state));
+  assert.ok(at8.pending.every((e) => e.simTime <= '08:00'), JSON.stringify(at8.pending.map((e) => e.simTime)));
+  assert.ok(at8.wave.every((d) => d.wave !== 2));             // the 13:00 wave had not happened at 08:00
+});
