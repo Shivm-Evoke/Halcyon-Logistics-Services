@@ -91,24 +91,34 @@ const addDays = (ymd, n) => {
   return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 };
 
-export function promiseDelivery({ receivedTs, commitmentType }) {
+/**
+ * One promise rule for the gateway and the Wave Planner. A same-day order after the cutoff keeps its promise on the
+ * second pick list when the warehouse still has room before that list closes; otherwise it ships tomorrow and is
+ * re-promised next-day. Without `secondWaveAt` there is no second list (the rule the history was measured under).
+ */
+export function promiseDelivery({ receivedTs, commitmentType, secondWaveAt = null, wave2Room = false }) {
   const [date, time = '00:00'] = receivedTs.replace(' ', 'T').split('T');
-  const afterCutoff = time.slice(0, 5) >= PICK_LIST_CUTOFF;
-  const pickListDate = afterCutoff ? addDays(date, 1) : date;
+  const hhmm = time.slice(0, 5);
+  const afterCutoff = hhmm >= PICK_LIST_CUTOFF;
+  const secondWave = Boolean(commitmentType === 'same_day' && afterCutoff && secondWaveAt && hhmm < secondWaveAt && wave2Room);
+  const pickListDate = afterCutoff && !secondWave ? addDays(date, 1) : date;
   // Today's rule promises from the received date. Only same-day breaks, because an
   // after-cutoff order cannot be picked until tomorrow; promise from the pick list instead.
-  const fixSameDay = commitmentType === 'same_day' && afterCutoff;
+  const fixSameDay = commitmentType === 'same_day' && afterCutoff && !secondWave;
   const promisedDate = addDays(fixSameDay ? pickListDate : date, CLASS_DAYS[commitmentType]);
   return {
     afterCutoff,
     pickListDate,
     promisedDate,
+    wave: !afterCutoff ? 1 : secondWave ? 2 : 'next',
     legacyPromisedDate: addDays(date, CLASS_DAYS[commitmentType]),
     offeredCommitment: fixSameDay ? 'next_day' : commitmentType,
-    note: fixSameDay
-      ? `Received after the ${PICK_LIST_CUTOFF} pick-list cutoff, so it ships tomorrow. Offer next-day (${promisedDate}) instead of same-day.`
-      : afterCutoff ? `After cutoff: goes on the ${pickListDate} pick list; promise still achievable.`
-        : `Makes today's ${PICK_LIST_CUTOFF} pick list.`,
+    note: secondWave
+      ? `After the ${PICK_LIST_CUTOFF} cutoff: joins the ${secondWaveAt} second pick list, so same-day is kept.`
+      : fixSameDay
+        ? `Received after the ${PICK_LIST_CUTOFF} pick-list cutoff, so it ships tomorrow. Offer next-day (${promisedDate}) instead of same-day.`
+        : afterCutoff ? `After cutoff: goes on the ${pickListDate} pick list; promise still achievable.`
+          : `Makes today's ${PICK_LIST_CUTOFF} pick list.`,
   };
 }
 

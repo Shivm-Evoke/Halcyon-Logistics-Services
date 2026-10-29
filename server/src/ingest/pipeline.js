@@ -7,6 +7,7 @@ import { validateOrder } from './validate.js';
 import { validateAddress, promiseDelivery } from '../rules.js';
 import { orderFeatures } from '../ml/features.js';
 import { RISK_THRESHOLD } from '../ml/ModelRegistry.js';
+import { DEFAULT_SETTINGS as SETTINGS } from '../agents/settings.js';
 
 // Anomaly codes the validator already covers, so they are not reported twice.
 const COVERED = new Set(['address_invalid', 'address_incomplete', 'impossible_promise', 'unknown_client', 'duplicate_order_id']);
@@ -104,17 +105,32 @@ export class IngestPipeline {
     const issues = [];
     const client = this.clients.get(order.client_id);
     const region = validateAddress(order.ship_to).region;
+    const warehouse_id = region ? this.nearest[region] : null;
     const requested = order.commitment_type || 'standard';
     if (!order.commitment_type) order.commitment_type = 'standard';
 
-    const promise = promiseDelivery({ receivedTs: order.received_ts, commitmentType: requested });
+    // Second pick list: same-day orders after 08:00 keep their promise while the warehouse has wave-2 room that day.
+    const day = order.received_ts.slice(0, 10);
+    const waveKey = `wave2|${day}|${warehouse_id}`;
+    if (warehouse_id && !ledgers.has(waveKey)) ledgers.set(waveKey, { used: await this.repo.wave2Usage(day, warehouse_id) });
+    const wave2 = ledgers.get(waveKey);
+    const promise = promiseDelivery({
+      receivedTs: order.received_ts, commitmentType: requested,
+      secondWaveAt: SETTINGS.secondWaveAt, wave2Room: Boolean(wave2 && wave2.used < SETTINGS.wave2CapacityPerWarehouse),
+    });
+    if (promise.wave === 2) {
+      if (!held) wave2.used += 1;
+      issues.push({ code: 'second_wave', severity: 'warning', field: 'commitment_type',
+        message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 cutoff: on the ${SETTINGS.secondWaveAt} second pick list at ${warehouse_id}, so same-day is kept` });
+    }
     if (promise.offeredCommitment !== requested) {
       corrections.push({ field: 'commitment_type', from: requested, to: promise.offeredCommitment, rule: 'same-day after 8am cutoff re-promised' });
       issues.push({ code: 'same_day_after_cutoff', severity: 'warning', field: 'commitment_type',
-        message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 pick-list cutoff: promised next-day ${promise.promisedDate} instead of same-day` });
+        message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 pick-list cutoff and the second wave is not available: promised next-day ${promise.promisedDate} instead of same-day` });
     }
     order.commitment_type = promise.offeredCommitment;
     order.pick_list_date = promise.pickListDate;
+    order.wave = promise.wave;
 
     const hour = Number(order.received_ts.slice(11, 13));
     for (const f of this.ai.anomalies.inspect({
@@ -124,7 +140,6 @@ export class IngestPipeline {
       if (!COVERED.has(f.code)) issues.push({ code: f.code, severity: 'warning', field: null, message: f.message });
     }
 
-    const warehouse_id = region ? this.nearest[region] : null;
     const features = orderFeatures({
       order_channel: channel, commitment_type: order.commitment_type, received_ts: order.received_ts,
       address_incomplete: held ? 1 : 0, stock_miss: region ? this.ai.stockMiss(order.client_id, region) : 0,

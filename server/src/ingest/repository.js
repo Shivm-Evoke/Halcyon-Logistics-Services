@@ -45,6 +45,12 @@ export const ingestRepository = {
     WHERE status IN ('accepted', 'corrected') AND (normalized->>'pick_list_date') = $1 GROUP BY 1`, [day]))
     .map((r) => [r.carrier_id, r.n])),
 
+  // Same-day orders a warehouse has already put on its second pick list that day.
+  wave2Usage: async (day, warehouseId) => Number((await one(`
+    SELECT count(*) AS n FROM inbound_orders
+    WHERE status IN ('accepted', 'corrected') AND warehouse_id = $2
+      AND (normalized->>'wave') = '2' AND (normalized->>'pick_list_date') = $1`, [day, warehouseId]))?.n || 0),
+
   getApiClient: (id) => one('SELECT * FROM api_clients WHERE client_id = $1', [id]),
   touchLogin: (id) => q('UPDATE api_clients SET last_login_at = now() WHERE client_id = $1', [id]),
   getIdempotent: (clientId, key) => one('SELECT response FROM api_idempotency WHERE client_id = $1 AND key = $2', [clientId, key]),

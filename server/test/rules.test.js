@@ -63,6 +63,30 @@ test('same-day after the cutoff is not promised as same-day', () => {
   assert.equal(p.offeredCommitment, 'next_day');
 });
 
+test('same-day after 08:00 keeps same-day on the second wave when the warehouse has room', () => {
+  const p = promiseDelivery({ receivedTs: '2026-10-27T10:15', commitmentType: 'same_day', secondWaveAt: '13:00', wave2Room: true });
+  assert.equal(p.offeredCommitment, 'same_day');
+  assert.equal(p.wave, 2);
+  assert.equal(p.pickListDate, '2026-10-27');
+  assert.equal(p.promisedDate, '2026-10-28');
+});
+
+test('same-day after 08:00 is re-promised next-day when the second wave is full or already gone', () => {
+  const full = promiseDelivery({ receivedTs: '2026-10-27T10:15', commitmentType: 'same_day', secondWaveAt: '13:00', wave2Room: false });
+  const late = promiseDelivery({ receivedTs: '2026-10-27T13:05', commitmentType: 'same_day', secondWaveAt: '13:00', wave2Room: true });
+  for (const p of [full, late]) {
+    assert.equal(p.offeredCommitment, 'next_day');
+    assert.equal(p.wave, 'next');
+  }
+});
+
+test('without a second wave the promise rule is unchanged', () => {
+  const p = promiseDelivery({ receivedTs: '2026-10-27T10:15', commitmentType: 'same_day' });
+  assert.equal(p.offeredCommitment, 'next_day');
+  assert.equal(p.wave, 'next');
+  assert.equal(promiseDelivery({ receivedTs: '2026-10-27T07:30', commitmentType: 'same_day' }).wave, 1);
+});
+
 test('carrier ranking uses expected cost including late cost', () => {
   const stats = [
     { carrier_id: 'A', avg_rate: 16.7, clean_late_rate: 0.05, has_api: 'Y' },
