@@ -93,6 +93,15 @@ test('stock effect', () => {
   assert.deepEqual(effectsOf({ agent: 'stock' }, o, 'auto'), { fields: { warehouse_id: 'W1' }, note: 'Stock moved to the nearest warehouse (W1)' });
 });
 
+test('carrier effects: a restricted order kept on the gateway carrier gets a confirmation note, no field changes', () => {
+  const confirmed = { fields: {}, note: 'Carrier B confirmed: the most reliable within capacity on this lane' };
+  const sameDay = { ...o, gateway_carrier_id: 'B', commitment_type: 'same_day', account_tier: 'Tier 2' };
+  const tier1 = { ...o, gateway_carrier_id: 'B', commitment_type: 'standard', account_tier: 'Tier 1' };
+  assert.deepEqual(effectsOf({ agent: 'carrier', carrier_id: 'B' }, sameDay, 'auto'), confirmed);
+  assert.deepEqual(effectsOf({ agent: 'carrier', carrier_id: 'B' }, tier1, 'approved'), confirmed);
+  assert.equal(effectsOf({ agent: 'carrier', carrier_id: 'B' }, { ...tier1, account_tier: 'Tier 2' }, 'auto'), null);
+});
+
 test('carrier effects', () => {
   assert.equal(effectsOf({ agent: 'carrier', carrier_id: 'D' }, o, 'auto'), null);
   assert.deepEqual(effectsOf({ agent: 'carrier', carrier_id: 'A' }, o, 'auto'), { fields: { carrier_id: 'A' }, note: 'Carrier A chosen: more reliable on this lane' });

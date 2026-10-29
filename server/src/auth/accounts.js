@@ -17,7 +17,7 @@ export async function addAccount({ email, role, client_id, name, password }, { s
   if (!EMAIL.test(e)) fail(`"${email}" is not an email address`);
   if (!ROLES.includes(role)) fail(`role must be ${ROLES.join(' or ')}`);
   const client = role === 'customer' ? String(client_id ?? '').trim().toUpperCase() : null;
-  if (role === 'customer' && !client) fail('A customer account needs a client (for example C055)');
+  if (role === 'customer' && !client) fail('A customer account needs a client (for example C176)');
   if (client && !(await clientExists(client))) fail(`Client ${client} does not exist`);
   const bad = validatePassword(password);
   if (bad) fail(bad);

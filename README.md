@@ -90,7 +90,7 @@ they never go in `.env`, App Settings, the code or logs.
 
 ```bash
 npm --prefix server run users -- add --email ops@halcyon.com --role staff
-npm --prefix server run users -- add --email buyer@acme.com --role customer --client C055
+npm --prefix server run users -- add --email buyer@acme.com --role customer --client C176
 npm --prefix server run users -- list
 npm --prefix server run users -- reset-password --email buyer@acme.com
 npm --prefix server run users -- disable --email buyer@acme.com

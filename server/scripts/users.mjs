@@ -1,7 +1,7 @@
 // Website accounts, managed in Postgres. Uses DATABASE_URL (or PG* variables); passwords are typed at a hidden prompt.
 //   npm --prefix server run users -- list
 //   npm --prefix server run users -- add --email ops@halcyon.com --role staff [--name "Ops team"]
-//   npm --prefix server run users -- add --email buyer@acme.com --role customer --client C055
+//   npm --prefix server run users -- add --email buyer@acme.com --role customer --client C176
 //   npm --prefix server run users -- reset-password --email ops@halcyon.com
 //   npm --prefix server run users -- disable --email buyer@acme.com      (enable to undo)
 // --password-stdin reads the password from standard input instead (for scripted test setup only).

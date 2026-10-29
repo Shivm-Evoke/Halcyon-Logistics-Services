@@ -6,17 +6,24 @@ import { getContainer } from '../src/container.js';
 import { getDesk, deskClockNow } from '../src/desk/instance.js';
 import { deskRepo } from '../src/desk/repository.js';
 import { SAMPLES, sendSample, forceFor } from '../src/portal/channels.js';
+import { restricted } from '../src/agents/carrier.js';
 
-const CLIENT = process.env.DEMO_CUSTOMER_CLIENT || 'C055';
+const CLIENT = process.env.DEMO_CUSTOMER_CLIENT || 'C176';
 const CLOCK = '2026-09-25 09:15';
 
-// What each sample is for, and the agent decision that shows it.
+// What each sample is for, and the agent decision that shows it. ok(decision, { gateway, order }) where gateway is the
+// gateway's result for the order and order the desk's view of it.
 const EXPECT = {
-  1: { cause: 'incomplete address', agent: 'intake', ok: () => true },
-  2: { cause: 'same-day after the 08:00 cutoff', agent: 'wave', ok: (d) => d.wave === 2 },
-  3: { cause: 'stock missing at the nearest warehouse', agent: 'stock', ok: () => true },
-  4: { cause: 'same-day / Tier 1 carrier over the cost cap', agent: 'carrier', ok: (d) => d.needsApproval },
-  5: { cause: 'high late risk', agent: 'watchtower', ok: () => true },
+  1: { cause: 'incomplete address', agent: 'intake', ok: () => true, want: 'an intake decision' },
+  2: { cause: 'same-day after the 08:00 cutoff', agent: 'wave', ok: (d) => d.wave === 2, want: 'a wave decision for wave 2' },
+  3: { cause: 'stock missing at the nearest warehouse', agent: 'stock', ok: () => true, want: 'a stock decision' },
+  4: {
+    cause: 'carrier choice on a same-day / Tier 1 order', agent: 'carrier',
+    ok: (d, { gateway, order }) => d.carrier_id !== gateway.carrier_id
+      || restricted({ commitment_type: order?.commitment_type, account_tier: order?.client.account_tier }),
+    want: "a carrier decision that changes the gateway's carrier, or keeps it on a same-day / Tier 1 order",
+  },
+  5: { cause: 'high late risk', agent: 'watchtower', ok: () => true, want: 'a watchtower decision (an upgrade or a client flag)' },
 };
 
 const desk = await getDesk();
@@ -43,7 +50,8 @@ let failed = 0;
 for (const { n, channel, order } of sent) {
   const e = EXPECT[n];
   const ds = rows.filter((r) => r.delivery_id === order.ref);
-  const pass = ds.some((r) => r.agent === e.agent && e.ok(r.decision));
+  const deskOrder = state.orders.find((o) => o.ref === order.ref);
+  const pass = ds.some((r) => r.agent === e.agent && e.ok(r.decision, { gateway: order, order: deskOrder }));
   if (!pass) failed++;
   const risk = order.late_risk == null ? '-' : order.late_risk.toFixed(2);
   console.log(`\n${pass ? 'PASS' : 'FAIL'} ${n} ${channel} (${e.cause}): ${order.ref ?? '(not stored)'} ${order.status}, gateway carrier ${order.carrier_id ?? '-'}, risk ${risk}`);
@@ -55,7 +63,7 @@ for (const { n, channel, order } of sent) {
       d.risk != null && `risk ${Number(d.risk).toFixed(2)}`].filter(Boolean).join(', ');
     console.log(`     ${r.agent} [${r.approval}] ${detail ? `(${detail}) ` : ''}${r.reason_source === 'claude' ? r.reason : r.rule}`);
   }
-  if (!pass) console.log(`     expected: a ${e.agent} decision${n === '2' ? ' for wave 2' : n === '4' ? ' needing approval' : ''}`);
+  if (!pass) console.log(`     expected: ${e.want}`);
 }
 console.log(`\n${sent.length - failed} of ${sent.length} samples got their expected decision`);
 await pool.end();
