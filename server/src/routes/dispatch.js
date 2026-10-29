@@ -26,7 +26,8 @@ r.post('/dispatch/:ref/advance', async (req, res) => {
   const current = await shipmentStore.latestStage(o.id);
   const next = nextStage(current);
   if (!next) return res.status(409).json({ error: `This order can't move on from ${String(current).replace('_', ' ')}` });
-  await shipmentStore.addEvent(o.id, next, req.user?.email ?? 'staff');
+  const moved = await shipmentStore.advance(o.id, current, next, req.user?.email ?? 'staff');
+  if (!moved) return res.status(409).json({ error: 'Someone else just moved this order; refresh the board' });
   res.json({ ref: req.params.ref, stage: next });
 });
 

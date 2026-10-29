@@ -5,7 +5,7 @@ export const SESSION_COOKIE = 'halcyon_session';
 export const SESSION_TTL = 8 * 3600;
 
 export const issueSession = (user, key) => signToken(
-  { sub: user.id, email: user.email, name: user.name, role: user.role, client_id: user.client_id ?? null }, key, SESSION_TTL,
+  { typ: 'session', sub: user.id, email: user.email, name: user.name, role: user.role, client_id: user.client_id ?? null }, key, SESSION_TTL,
 );
 
 /** @returns the signed-in user from a Cookie header, or null when absent, forged or expired. */
@@ -13,7 +13,8 @@ export function readSession(cookieHeader, key) {
   const token = String(cookieHeader || '').split(';').map((c) => c.trim())
     .find((c) => c.startsWith(`${SESSION_COOKIE}=`))?.slice(SESSION_COOKIE.length + 1);
   const p = token && verifyToken(token, key);
-  return p ? { id: p.sub, email: p.email, name: p.name, role: p.role, client_id: p.client_id } : null;
+  // Client API tokens share the signing key; only website session tokens count here.
+  return p?.typ === 'session' ? { id: p.sub, email: p.email, name: p.name, role: p.role, client_id: p.client_id } : null;
 }
 
 const attrs = (maxAge, secure) => `Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure ? '; Secure' : ''}`;

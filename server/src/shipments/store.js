@@ -13,6 +13,11 @@ export const ensureShipmentTable = () => q(`
   )`);
 
 export const shipmentStore = {
+  /** Records `next` only if the order is still at `from`, in one statement, so a double click moves it once. */
+  advance: (orderId, from, next, by) => one(`
+    INSERT INTO shipment_events (order_id, stage, by)
+    SELECT $1, $3, $4 WHERE (SELECT stage FROM shipment_events WHERE order_id = $1 ORDER BY at DESC, id DESC LIMIT 1) = $2
+    RETURNING *`, [orderId, from, next, by]),
   addEvent: (orderId, stage, by = 'system', note = null) => one(
     'INSERT INTO shipment_events (order_id, stage, by, note) VALUES ($1, $2, $3, $4) RETURNING *', [orderId, stage, by, note]),
   eventsFor: (orderIds) => q('SELECT * FROM shipment_events WHERE order_id = ANY($1) ORDER BY at, id', [orderIds]),
@@ -21,7 +26,8 @@ export const shipmentStore = {
   async recordVerdict(order) {
     const stage = initialStage(order.status);
     const current = await this.latestStage(order.id);
-    if (current === stage || (current && current !== 'on_hold' && stage === 'received')) return null;
+    // Only a new order, a hold or a just-received order takes the gateway's verdict; past that the shipment is moving.
+    if (current === stage || (current && current !== 'on_hold' && current !== 'received')) return null;
     return this.addEvent(order.id, stage);
   },
 };

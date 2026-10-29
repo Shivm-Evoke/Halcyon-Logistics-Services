@@ -71,6 +71,10 @@ await ensureUserTable();
 await ensureShipmentTable();
 const seeded = await seedDemoUsers(process.env, { store: userStore, clientExists });
 if (seeded.length) console.log(`Demo accounts ready: ${seeded.join(', ')}`);
+if (process.env.REQUIRE_LOGIN !== '0' && await userStore.count() === 0) {
+  console.warn('WARNING: sign-in is required but no accounts exist. Set DEMO_STAFF_EMAIL and DEMO_STAFF_PASSWORD, or nobody can open the staff screens.');
+}
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) console.warn('WARNING: JWT_SECRET is not set; every restart signs everyone out.');
 const container = await getContainer();
 // Load the agents' six months of orders up front, so the first replay or live day does not wait for it.
 await world();

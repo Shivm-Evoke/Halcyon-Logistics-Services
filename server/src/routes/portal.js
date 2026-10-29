@@ -4,6 +4,8 @@ import { Router } from 'express';
 import { q, one, DEMO_NOW } from '../db.js';
 import { getContainer } from '../container.js';
 import { asShipments, idFromRef } from '../shipments/views.js';
+import { shipmentStore } from '../shipments/store.js';
+import { customerCanEdit, initialStage } from '../shipments/stages.js';
 
 const r = Router();
 
@@ -55,7 +57,8 @@ r.post('/portal/orders', async (req, res) => {
 r.patch('/portal/orders/:ref', async (req, res) => {
   const o = await own(req, res);
   if (!o) return;
-  if (!['held', 'corrected', 'accepted'].includes(o.status)) return res.status(409).json({ error: `This order is ${o.status} and can't be changed` });
+  const stage = (await shipmentStore.latestStage(o.id)) ?? initialStage(o.status);
+  if (!customerCanEdit(stage)) return res.status(409).json({ error: `This order is already ${stage.replace('_', ' ')} and can't be changed` });
   const { ingest, ingestRepo } = await getContainer();
   await ingest.reprocess(o.id, req.body || {});
   res.json((await asShipments([await ingestRepo.getOrder(o.id)], { withEvents: true }))[0]);

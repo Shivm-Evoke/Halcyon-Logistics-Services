@@ -26,3 +26,10 @@ test('with login switched off the staff area is open but the portal still needs 
   assert.equal(accessFor('/agents/datasets', null, { requireLogin: false }), 'ok');
   assert.equal(accessFor('/portal/orders', null, { requireLogin: false }), 401);
 });
+
+test('the email provider webhook stays open and paths match whatever their case', () => {
+  assert.equal(accessFor('/ingest/email/inbound', null, on), 'ok');
+  assert.equal(accessFor('/ingest/email', null, on), 401);
+  assert.equal(accessFor('/PORTAL/orders', { role: 'staff' }, on), 403);
+  assert.equal(accessFor('/Portal/orders', null, { requireLogin: false }), 401);
+});

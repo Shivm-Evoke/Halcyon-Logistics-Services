@@ -21,4 +21,7 @@ export function stageOf(events) {
   return last?.stage ?? null;
 }
 
+/** Customers may change an order until it is picked. */
+export const customerCanEdit = (stage) => stage === 'on_hold' || stage === 'received';
+
 export const atRisk = (risk) => risk != null && Number(risk) >= RISK_THRESHOLD;

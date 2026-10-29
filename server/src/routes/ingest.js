@@ -37,7 +37,7 @@ r.post('/auth/login', async (req, res) => {
 function requireClient(req, res, next) {
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   const payload = token && verifyToken(token, JWT_KEY);
-  if (!payload) return res.status(401).json({ error: 'unauthorized', message: 'Missing, invalid or expired bearer token' });
+  if (!payload || payload.scope !== 'orders') return res.status(401).json({ error: 'unauthorized', message: 'Missing, invalid or expired bearer token' });
   req.clientId = payload.sub;
   next();
 }

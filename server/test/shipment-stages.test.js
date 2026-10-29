@@ -25,3 +25,10 @@ test('the current stage is the latest event and risk from 0.4 is at risk', () =>
   assert.equal(atRisk('0.39'), false);
   assert.equal(atRisk(null), false);
 });
+
+test('customers can change an order only while it is on hold or just received', async () => {
+  const { customerCanEdit } = await import('../src/shipments/stages.js');
+  assert.equal(customerCanEdit('on_hold'), true);
+  assert.equal(customerCanEdit('received'), true);
+  for (const s of ['picked', 'collected', 'in_transit', 'delivered', 'cancelled']) assert.equal(customerCanEdit(s), false, s);
+});

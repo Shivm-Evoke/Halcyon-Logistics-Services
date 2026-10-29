@@ -25,3 +25,9 @@ test('login attempts are limited per email per window', () => {
   t = 1001;
   assert.equal(rl.hit('a@x.com'), true);
 });
+
+test('a client API token is not a website session', async () => {
+  const { signToken } = await import('../src/ingest/auth.js');
+  const apiToken = signToken({ sub: 'C055', scope: 'orders' }, 'k', 60);
+  assert.equal(readSession(`${SESSION_COOKIE}=${apiToken}`, 'k'), null);
+});
