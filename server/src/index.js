@@ -21,6 +21,7 @@ import { gate, cachedLookup } from './auth/access.js';
 import { SIGNING_KEY } from './auth/key.js';
 import { ensureUserTable, userStore } from './auth/users.js';
 import { ensureShipmentTable } from './shipments/store.js';
+import { ensureDeskTable } from './desk/repository.js';
 
 // Sign-ins are signed with JWT_SECRET; without it in production every restart would sign everyone out.
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
@@ -88,6 +89,7 @@ await ensureDecisionTable();
 await ensureDatasetTable();
 await ensureUserTable();
 await ensureShipmentTable();
+await ensureDeskTable();
 if (process.env.REQUIRE_LOGIN !== '0' && !(await userStore.list()).some((u) => u.role === 'staff' && u.active)) {
   console.warn('WARNING: no active staff account. Create one with: npm --prefix server run users -- add --email <you> --role staff');
 }

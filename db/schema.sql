@@ -4,7 +4,7 @@ SET client_min_messages = warning;
 -- the tables under "Solution layer" hold the records the new app creates.
 
 DROP VIEW IF EXISTS v_deliveries CASCADE;
-DROP TABLE IF EXISTS shipment_events, users, agent_datasets, agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
+DROP TABLE IF EXISTS desk_clock, shipment_events, users, agent_datasets, agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
   cs_time_study, warehouse_region_distance, warehouses, carriers, clients CASCADE;
 
 CREATE TABLE clients (
@@ -263,3 +263,12 @@ CREATE TABLE shipment_events (
   note      text
 );
 CREATE INDEX ON shipment_events (order_id);
+
+-- The live order desk's ops clock: one row, the simulated time and the run it belongs to.
+CREATE TABLE desk_clock (
+  id             int PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  set_to         timestamp NOT NULL,              -- the simulated time when the clock was last set
+  set_at         timestamptz NOT NULL,            -- the real time it was set; the clock runs on from here
+  run_no         int NOT NULL,
+  run_started_at timestamptz NOT NULL
+);
