@@ -549,3 +549,18 @@ tr.filter-row select.input { padding-right: 24px; background-position: right 8px
 }
 
 .faint { color: var(--faint); }
+
+/* ---------- Operations day ---------- */
+.ops-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.ops-clock { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-xl); font-weight: 600; font-variant-numeric: tabular-nums; min-width: 110px; }
+.ops-lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.ops-lane, .ops-briefings, .ops-approvals { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow: auto; }
+.ops-event { padding: 10px 0; border-top: 1px solid var(--line); }
+.ops-event:first-child { border-top: 0; padding-top: 0; }
+.ops-event-title { font-weight: 500; margin: 4px 0 2px; }
+.ops-briefings li { padding: 8px 0; border-top: 1px solid var(--line); }
+.ops-briefings li:first-child { border-top: 0; padding-top: 0; }
+.ops-briefings p { margin: 4px 0 0; }
+.ops-approval { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.ops-approval:first-child { border-top: 0; padding-top: 0; }
+@media (max-width: 860px) { .ops-approval { flex-direction: column; } }
