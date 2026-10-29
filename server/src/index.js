@@ -9,7 +9,8 @@ import operations from './routes/operations.js';
 import accounts from './routes/accounts.js';
 import ml from './routes/ml.js';
 import ingest from './routes/ingest.js';
-import agents from './routes/agents.js';
+import agents, { world } from './routes/agents.js';
+import { ensureDecisionTable } from './agents/log.js';
 import { watchInbox } from './ingest/inboxWatcher.js';
 import { getContainer } from './container.js';
 
@@ -52,7 +53,10 @@ app.use((err, _req, res, _next) => {
 
 const port = Number(process.env.PORT || 4000);
 // Warm the model before taking traffic so the first request is not slow.
+await ensureDecisionTable();
 const container = await getContainer();
+// Load the agents' six months of orders up front, so the first replay or live day does not wait for it.
+await world();
 // Drop .eml / .edi / C###_*.csv files into the inbox folder to process them (INBOX_WATCH=0 disables).
 if (process.env.INBOX_WATCH !== '0') watchInbox(container.ingest);
 app.listen(port, () => console.log(`Halcyon API on http://localhost:${port}`));

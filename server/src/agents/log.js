@@ -4,6 +4,24 @@ import { q } from '../db.js';
 
 const DECIDABLE = new Set(['approved', 'rejected']);
 
+/** Creates the decision table on a database loaded before the agents existed (e.g. an existing Azure database). */
+export const ensureDecisionTable = () => q(`
+  CREATE TABLE IF NOT EXISTS agent_decisions (
+    id            serial PRIMARY KEY,
+    run_id        text NOT NULL,
+    sim_ts        text NOT NULL,
+    agent         text NOT NULL,
+    delivery_id   text,
+    decision      jsonb NOT NULL DEFAULT '{}',
+    rule          text,
+    reason        text,
+    reason_source text NOT NULL DEFAULT 'rules only' CHECK (reason_source IN ('claude', 'rules only')),
+    approval      text NOT NULL CHECK (approval IN ('auto', 'pending', 'approved', 'rejected', 'expired')),
+    actor         text,
+    created_at    timestamptz NOT NULL DEFAULT now()
+  );
+  CREATE INDEX IF NOT EXISTS agent_decisions_run ON agent_decisions (run_id, approval);`);
+
 export const decisionLog = {
   async insert(rows) {
     if (!rows.length) return [];

@@ -1,22 +1,57 @@
 # Halcyon Control
 
-A working demo for Hackathon 5.0, Problem 2. Leadership blames carrier routing for Halcyon's late deliveries, but the data shows that
-94% of late deliveries are caused before the truck leaves. This app runs on the real six-month dataset (48,340 deliveries) and puts
-a fix in front of each root cause.
+A working demo for Hackathon 5.0, Problem 2. Leadership blames carrier routing for Halcyon's late deliveries, but the data shows
+five causes, all before or at the warehouse. This app runs on the real six-month dataset (48,340 deliveries) and shows a solution
+at work: five AI agents that run Halcyon's operation and lift on-time from 71.0% to about 91%, with Claude (on Azure AI Foundry)
+reading orders, explaining every decision and briefing the manager.
 
-| Screen | Issue | What it does |
-|---|---|---|
-| Start here | — | Presenter guide: the story in nine steps, the brief mapped to screens, process map, known vs assumed, the one outcome metric, open questions, and the data behind the app |
-| Executive overview | — | On-time trend, root-cause split, cost of lateness, customer success workload |
-| Late-delivery diagnosis | — | Evidence for each cause, and the two tests that rule routing out |
-| Inventory placement | I3 | Stock-out matrix and safety-stock transfers per client and warehouse |
-| Carrier scorecard | I4 | Expected-cost carrier choice; time-critical orders only to carriers late on <10% of clean orders |
-| Exceptions control tower | I5 | Scores in-flight orders for risk of being late and sends proactive notices; checks the model against real outcomes |
-| Account health | I9 | Nine at-risk accounts, with per-client failure pattern and recovery plan |
-| AI risk model | ML | Late-risk model: out-of-time accuracy, calibration, drivers, capacity-limited backtest (71% → 92.7–93.9% on-time), live scorer |
-| Data quality | I10 | 13 rule checks on ingested data + per-client anomaly screen on incoming orders |
-| Inbound gateway | I1, I2 | API (login + token), EDI 850, email (.eml upload / drop folder / webhook) and CSV drops through one normalise → validate → AI pipeline; re-promises same-day orders after the 8am cutoff; replies to the client |
-| What-if & vendor decision | I6 | Simulates each fix on the history: 71% → 95% on-time, vs 72.7% for routing alone |
+| Screen | What it does |
+|---|---|
+| Start here | Presenter guide: the story in seven steps, the brief mapped to screens, process map, known vs assumed, the data behind the app |
+| Why we're late | The five measured causes, and the evidence that route planning makes no difference |
+| Operations day | Live: the worst Friday of September replayed on a clock while the agents work; approval queue; Ops Lead briefings |
+| Six months with agents | All 48,340 orders re-run with the agents: weekly on-time, uplift by agent, money, at-risk accounts; editable assumptions |
+| Meet the agents | Each agent's job, rules and limits, with its latest decisions |
+| The decision | Don't sign the routing contract as scoped; run the agents; rollout |
+| Under the hood | Inbound gateway, Carrier scorecard, Inventory placement, Exceptions control tower, AI risk model, Data quality, Account health |
+
+## Operations agents
+
+`server/src/agents`, served by `server/src/routes/agents.js`. Design: `docs/superpowers/specs/2026-10-29-agentic-operations-design.md`.
+
+| Agent | Fixes | Rule (repeatable) | Claude (live day) |
+|---|---|---|---|
+| Intake | Incomplete addresses (27.8% of email orders) | Validator and auto-fixes; completes a share of addresses before the pick list | Reads emails the parser cannot; explains; drafts the client query |
+| Wave Planner | Same-day orders after the 08:00 pick list (39% on time) | Second pick wave at 13:00, ranked by SLA, at-risk account, arrival | Explains what joined and what did not |
+| Stock | Stock not at the nearest warehouse (50% on time) | Safety stock for client × region pairs missing 10%+, learned from past days only | Explains transfers |
+| Carrier | Slow carriers D/E/F and the Friday overflow | Lowest rate + expected cost of lateness within capacity; same-day/Tier 1 only on A–C; Friday capacity pre-booked | Explains trade-offs |
+| Watchtower | Remaining risk | Moves an order to a safer carrier with room when risk drops 5+ points; flags key clients | Drafts the client message |
+| Ops Lead | Coordination | — | Tool-using briefing every two hours and at the second wave |
+
+- **Outcome model** (`outcomes.js`): each decided order's chance of being on time is the rate such orders achieved in history
+  (carrier × distance band × service × the three problem flags). With every agent off it reproduces the recorded 71.0%.
+- **Replay** (`simulator.js`): rules only, no Claude calls, deterministic; ~0.4 s for six months. Result with default settings:
+  71.0% → 91.3% (intake +4.6, wave +3.9, stock +3.4, carrier +8.4), about $0.9M net over six months.
+- **Limits** are enforced in code before an action runs; anything over a limit waits in the approval queue
+  (`agent_decisions` table) and expires after two simulated hours. Claude failing, slow or refusing never stops a decision: the
+  rule stands and the reason reads "rules only".
+- **Assumptions** the data does not record (carrier capacity, second-wave pick capacity, address fix rate) are settings on the
+  Six months screen.
+
+### Claude on Azure AI Foundry
+
+Set these where the API runs (locally in your shell; on Azure as App Service application settings):
+
+| Variable | Value |
+|---|---|
+| `ANTHROPIC_FOUNDRY_API_KEY` | Your Foundry key |
+| `ANTHROPIC_FOUNDRY_RESOURCE` | Your Foundry resource name (or `ANTHROPIC_FOUNDRY_BASE_URL`) |
+| `CLAUDE_MODEL` | Optional; default `claude-opus-5-5` (your deployment name if it differs) |
+| `CLAUDE_FALLBACK_MODEL` | Optional; model tried if Claude declines a request; default `claude-opus-4-8` |
+
+Without them the app runs with rules only ("AI offline: rules running"). To record a stage backup: start the operations day in
+Live mode, run it to the end, then `POST /api/agents/live/<runId>/record`; this writes `server/data/recorded-day.json`, which
+Recorded mode replays without any network.
 
 ## Stack
 
@@ -84,7 +119,9 @@ The app deploys as one Docker container (API, risk model, inbound gateway and th
 `render.yaml` sets both up on [Render](https://render.com): push the repo to GitHub, then New → Blueprint → pick the
 repo → Apply, and enter a `SITE_PASSWORD` when asked. Every push to `main` redeploys.
 
-- On first start the container loads `db/data/` into the empty database and trains the model (seconds).
+- On first start the container loads `db/data/` into the empty database and trains the model (seconds). On a database loaded
+  earlier, the server creates the agents' `agent_decisions` table at startup.
+- Claude needs the Foundry variables above; without them the agents run on rules only.
 - `SITE_PASSWORD` puts a browser password prompt in front of the site; `/api/health` and the client API
   (`/api/auth/login`, `/api/v1/*`, token-authenticated) stay open.
 - Client API secrets are generated on first load. To keep your local ones, add your
