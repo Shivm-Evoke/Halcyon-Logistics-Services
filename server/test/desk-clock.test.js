@@ -45,6 +45,17 @@ test('dueStage picks wave 1 at 08:00 and later orders the day after', () => {
   assert.equal(dueStage(std, '2026-09-26 08:00'), 'picked');
 });
 
+test('dueStage never delivers an order before it is picked and collected', () => {
+  // Same-day, received after the 08:00 cutoff with no second wave: picked the next morning, so delivered no earlier
+  // than the end of that day, never on the night it was received.
+  const late = { stage: 'received', wave: null, commitment_type: 'same_day', promised_date: '2026-09-25', received_ts: '2026-09-25 09:15' };
+  assert.equal(dueStage(late, '2026-09-25 23:59'), 'received');
+  assert.equal(dueStage(late, '2026-09-26 08:00'), 'picked');
+  assert.equal(dueStage(late, '2026-09-26 14:00'), 'collected');
+  assert.equal(dueStage(late, '2026-09-26 15:00'), 'in_transit');
+  assert.equal(dueStage(late, '2026-09-26 23:59'), 'delivered');
+});
+
 test('dueStage never moves held or cancelled orders, nor backwards', () => {
   assert.equal(dueStage({ ...wave2, stage: 'on_hold' }, '2026-09-25 23:59'), 'on_hold');
   assert.equal(dueStage({ ...wave2, stage: 'cancelled' }, '2026-09-25 23:59'), 'cancelled');

@@ -14,7 +14,7 @@ const taken = (approval) => approval === 'auto' || approval === 'approved';
 export function effectsOf(decision, decidedOrder, approval) {
   switch (decision.agent) {
     case 'wave': {
-      if (decision.needsApproval && approval === 'pending') return { fields: {}, note: 'Waiting for approval to join the second wave' };
+      if (decision.needsApproval && approval === 'pending') return { fields: {}, note: 'Second pick wave being confirmed' };
       if (decision.needsApproval && !taken(approval)) {
         const { promisedDate } = promiseDelivery({ receivedTs: decidedOrder.received_ts, commitmentType: 'next_day' });
         return { fields: { commitment_type: 'next_day', promised_date: promisedDate }, note: 'Second wave full: promised next-day' };
@@ -28,7 +28,7 @@ export function effectsOf(decision, decidedOrder, approval) {
       return { fields: { warehouse_id: decidedOrder.nearest_warehouse_id }, note: `Stock moved to the nearest warehouse (${decidedOrder.nearest_warehouse_id})` };
     case 'carrier': {
       const x = decision.carrier_id;
-      if (decision.needsApproval && approval === 'pending') return { fields: {}, note: `Carrier ${x} waiting for approval (over the cost limit)` };
+      if (decision.needsApproval && approval === 'pending') return { fields: {}, note: 'Carrier being confirmed' };
       const chosen = decision.needsApproval && !taken(approval) ? decision.fallbackCarrierId : x;
       if (!chosen) return null;
       // A same-day or Tier 1 order the agent leaves with the gateway's carrier: say it was checked, change nothing.

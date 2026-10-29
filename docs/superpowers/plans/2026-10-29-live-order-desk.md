@@ -83,10 +83,10 @@
 - Produces: `toAgentOrder(row, { client, distances, stockMiss, threshold }) -> agentOrder` where `row` is an `inbound_orders` row with `normalized`; fields: `delivery_id = orderRef(row.id)`, `order_id = row.id`, `client_id`, `client_name`, `account_tier`, `account_status`, `commitment_type` (`normalized.commitment_type`), `received_ts` (`normalized.received_ts`, 'YYYY-MM-DD HH:MM'), `destination_region`, `nearest_warehouse_id = row.warehouse_id`, `fulfilment_warehouse_id = row.warehouse_id`, `distance_miles`, `address_incomplete` (1 when `row.status === 'held'`), `stock_miss` (1 when `stockMiss(client, region) >= threshold`), `carrier_id = row.carrier_id`, `cutoff_breach` (1 when same_day and received after 08:00), `order_channel`.
 - Produces: `deskDecide(agentOrders, ctx) -> { decided, decisions }` = `simulateDay` over the orders that have a region and warehouse, plus intake-only for held ones (held orders get no stock/carrier/wave/watchtower decision).
 - Produces: `effectsOf(decision, decidedOrder, approval) -> { fields: {commitment_type?, promised_date?, carrier_id?, warehouse_id?, release?: true}, note: string } | null`, approval ∈ `auto | pending | approved | rejected | expired`. Notes (exact copy):
-  - wave 2: `Second pick wave at 13:00: still same-day`; wave pending: `Waiting for approval to join the second wave`; wave rejected/expired: `Second wave full: promised next-day` (fields: commitment `next_day`, promised next day).
+  - wave 2: `Second pick wave at 13:00: still same-day`; wave pending: `Second pick wave being confirmed`; wave rejected/expired: `Second wave full: promised next-day` (fields: commitment `next_day`, promised next day).
   - intake fix: `Address completed from the client's records` (release); intake query: `Address query sent to the client`.
   - stock: `Stock moved to the nearest warehouse (<WH>)`.
-  - carrier: `Carrier <X> chosen: more reliable on this lane` (only when it differs from the gateway's); pending: `Carrier <X> waiting for approval (over the cost limit)`.
+  - carrier: `Carrier <X> chosen: more reliable on this lane` (only when it differs from the gateway's); pending: `Carrier being confirmed` (staff see the approval on Live operations).
   - watchtower upgrade: `Moved to carrier <X> before the 14:00 collection`; notify: `Client told about the risk of a late delivery`.
 
 - [ ] **Step 1: Failing tests** (fixture world from a few hundred synthetic history rows like `agents-liveday.test.js` builds):
@@ -177,7 +177,7 @@
 
 **Interfaces:**
 - Consumes: Task 5 routes; `POST /api/agents/approvals/:id`.
-- `LiveOps.jsx`: clock with `Set clock` (default value `2026-09-25 07:30`) and `Advance to next event`; orders table (ref, client, channel, received, stage, promised, carrier, risk); expanding a row shows gateway checks and each agent decision with its reason and an AI/rules badge; approval queue with Approve/Reject; per-order `Move on`; five-agent strip with counts. Polls `GET /api/desk` every 4 s.
+- `LiveOps.jsx`: clock with `Set clock` (default value `2026-09-25 09:15`) and `Advance to next event`; orders table (ref, client, channel, received, stage, promised, carrier, risk); expanding a row shows gateway checks and each agent decision with its reason and an AI/rules badge; approval queue with Approve/Reject; per-order `Move on`; five-agent strip with counts. Polls `GET /api/desk` every 4 s.
 - `Problem.jsx`: headline (71.0% vs 94%) and the five causes with counts and cost, taken from the existing `/api/agents/causes` data that WhyLate uses; no other sections.
 - `Results.jsx`: `<SixMonths />` then `<Decision />` content.
 - NAV exactly per Global Constraints; Evidence is a collapsed group (closed by default) holding Carrier scorecard, Inventory placement, Test data. Landing path for staff: `/problem`.

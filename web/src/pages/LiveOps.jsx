@@ -6,7 +6,7 @@ import { api, num, pct } from '../api.js';
 import { PageHead, Card, Badge } from '../components/ui.jsx';
 import { STAGE_LABEL, stageTone } from '../portal/stages.js';
 
-const DEFAULT_CLOCK = '2026-09-25 07:30';
+const DEFAULT_CLOCK = '2026-09-25 09:15';
 const POLL_MS = 4000;
 const AGENTS = [
   { id: 'intake', label: 'Intake', icon: Inbox },
@@ -65,10 +65,15 @@ export default function LiveOps() {
   const [open, setOpen] = useState(() => new Set());
   const [busy, setBusy] = useState(null);       // what is being sent: 'clock' | 'advance' | an order ref | a decision id
   const sending = useRef(false);
+  const seq = useRef(0);                         // bumped by every change, so a poll that started before one is dropped
 
   const load = useCallback(async () => {
     if (sending.current) return;
-    try { setDesk(await api('/desk')); setError(''); } catch (e) { setError(e.message); }
+    const at = seq.current;
+    try {
+      const next = await api('/desk');
+      if (at === seq.current && !sending.current) { setDesk(next); setError(''); }
+    } catch (e) { if (at === seq.current) setError(e.message); }
   }, []);
   useEffect(() => {
     load();
@@ -78,11 +83,11 @@ export default function LiveOps() {
 
   // A change to the desk: the answer is the new state, so show it at once.
   const act = async (key, path, body) => {
-    sending.current = true; setBusy(key); setError('');
+    seq.current += 1; sending.current = true; setBusy(key); setError('');
     try { setDesk(await api(path, { method: 'POST', body })); } catch (e) { setError(e.message); } finally { sending.current = false; setBusy(null); }
   };
   const decide = async (id, approval) => {
-    sending.current = true; setBusy(id); setError('');
+    seq.current += 1; sending.current = true; setBusy(id); setError('');
     try { await api(`/agents/approvals/${id}`, { method: 'POST', body: { approval } }); setDesk(await api('/desk')); } catch (e) { setError(e.message); } finally { sending.current = false; setBusy(null); }
   };
   const toggle = (ref) => setOpen((s) => { const n = new Set(s); if (n.has(ref)) n.delete(ref); else n.add(ref); return n; });
@@ -110,7 +115,7 @@ export default function LiveOps() {
           <button className="btn" type="submit" disabled={off}>Set clock</button>
         </form>
         <button className="btn primary" onClick={() => act('advance', '/desk/advance')} disabled={off}><SkipForward size={15} /> Advance to next event</button>
-        <span className="small muted">Setting the clock starts a new run; advancing keeps it.</span>
+        <span className="small muted">Setting the clock starts a new run; advancing keeps it. Sample orders take the clock's time, so set it after 08:00 to see the 8 AM cutoff.</span>
       </div>
 
       <div className="ops-lanes section-gap" aria-label="The five agents">

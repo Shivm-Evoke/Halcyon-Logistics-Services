@@ -94,7 +94,10 @@ npm --prefix server run users -- add --email buyer@acme.com --role customer --cl
 npm --prefix server run users -- list
 npm --prefix server run users -- reset-password --email buyer@acme.com
 npm --prefix server run users -- disable --email buyer@acme.com
+npm --prefix server run users -- set-client --email buyer@acme.com --client C176
 ```
+
+`set-client` moves a customer account to another client (the client must exist) and ends its existing sign-ins.
 
 For production, run `add` once from your machine with `DATABASE_URL` set to the Azure database to create the first staff
 account. Passwords need at least 12 characters.

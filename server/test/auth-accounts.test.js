@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validatePassword, addAccount, setPassword, setActive, MIN_PASSWORD } from '../src/auth/accounts.js';
+import { validatePassword, addAccount, setPassword, setActive, setClient, MIN_PASSWORD } from '../src/auth/accounts.js';
 
 const memoryStore = () => {
   const rows = new Map();
@@ -49,4 +49,19 @@ test('a password reset or disable ends existing sign-ins', async () => {
   assert.equal(store.rows.get('ops@h.test').active, false);
   assert.equal(store.rows.get('ops@h.test').session_version, 2);
   await assert.rejects(setActive('ghost@h.test', false, deps(store)), /No account/);
+});
+
+test('moving a customer to another client checks the client and ends existing sign-ins', async () => {
+  const store = memoryStore();
+  const d = { ...deps(store), clientExists: async (c) => ['C055', 'C176'].includes(c) };
+  await addAccount({ email: 'buyer@c055.test', role: 'customer', client_id: 'C055', password: 'long-enough-pass' }, d);
+  const u = await setClient('Buyer@C055.test', ' c176 ', d);
+  assert.equal(u.client_id, 'C176');
+  assert.equal(store.rows.get('buyer@c055.test').session_version, 1);
+  await assert.rejects(setClient('buyer@c055.test', 'C999', d), /C999 does not exist/);
+  await assert.rejects(setClient('buyer@c055.test', '', d), /client/);
+  await assert.rejects(setClient('ghost@h.test', 'C176', d), /No account/);
+  await addAccount({ email: 'ops@h.test', role: 'staff', password: 'long-enough-pass' }, d);
+  await assert.rejects(setClient('ops@h.test', 'C176', d), /customer/);
+  assert.equal(store.rows.get('buyer@c055.test').client_id, 'C176');
 });

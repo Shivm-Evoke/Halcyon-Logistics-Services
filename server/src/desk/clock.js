@@ -50,7 +50,9 @@ export function dueStage(order, now) {
   const pickDay = order.wave ? received.slice(0, 10) : addDays(received.slice(0, 10), 1);
   const pickAt = `${pickDay} ${order.wave === 2 ? '13:00' : '08:00'}`;
   const collectAt = `${pickDay} 14:00`;
-  const deliverAt = `${localTs(order.promised_date).slice(0, 10)} 23:59`;
+  // Never delivered before it is picked and collected: at the latest of the promised date and the pick day.
+  const promised = localTs(order.promised_date).slice(0, 10);
+  const deliverAt = `${promised > pickDay ? promised : pickDay} 23:59`;
   let due = 'received';
   if (t >= pickAt) due = 'picked';
   if (t >= collectAt) due = 'collected';

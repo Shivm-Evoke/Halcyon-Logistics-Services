@@ -81,7 +81,7 @@ const o = { received_ts: '2026-09-23 09:15', nearest_warehouse_id: 'W1', gateway
 
 test('wave effects', () => {
   assert.equal(effectsOf({ agent: 'wave', wave: 2, needsApproval: false }, o, 'auto').note, 'Second pick wave at 13:00: still same-day');
-  assert.equal(effectsOf({ agent: 'wave', wave: 'next', needsApproval: true }, o, 'pending').note, 'Waiting for approval to join the second wave');
+  assert.equal(effectsOf({ agent: 'wave', wave: 'next', needsApproval: true }, o, 'pending').note, 'Second pick wave being confirmed');
   assert.equal(effectsOf({ agent: 'wave', wave: 'next', needsApproval: true }, o, 'approved').note, 'Second pick wave at 13:00: still same-day');
   for (const a of ['rejected', 'expired']) {
     const e = effectsOf({ agent: 'wave', wave: 'next', needsApproval: true }, o, a);
@@ -112,7 +112,7 @@ test('carrier effects: a restricted order kept on the gateway carrier gets a con
 test('carrier effects', () => {
   assert.equal(effectsOf({ agent: 'carrier', carrier_id: 'D' }, o, 'auto'), null);
   assert.deepEqual(effectsOf({ agent: 'carrier', carrier_id: 'A' }, o, 'auto'), { fields: { carrier_id: 'A' }, note: 'Carrier A chosen: more reliable on this lane' });
-  assert.equal(effectsOf({ agent: 'carrier', carrier_id: 'A', needsApproval: true, fallbackCarrierId: 'B' }, o, 'pending').note, 'Carrier A waiting for approval (over the cost limit)');
+  assert.equal(effectsOf({ agent: 'carrier', carrier_id: 'A', needsApproval: true, fallbackCarrierId: 'B' }, o, 'pending').note, 'Carrier being confirmed');
   assert.equal(effectsOf({ agent: 'carrier', carrier_id: 'A', needsApproval: true, fallbackCarrierId: 'B' }, o, 'rejected').fields.carrier_id, 'B');
 });
 

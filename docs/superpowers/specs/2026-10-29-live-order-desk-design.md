@@ -68,7 +68,7 @@ New module `server/src/desk/` that runs the existing agents on live gateway orde
 
 **Ops clock.** The desk has a clock: a simulated date-time that runs at real speed from the moment staff set
 it. Stored in table `desk_clock (id int primary key default 1, set_to timestamp, set_at timestamptz)`. Default
-when unset: Friday 2026-09-25 09:15. Staff can set it (e.g. back to 07:30 before the demo) and press
+when unset: Friday 2026-09-25 09:15. Staff can set it (e.g. back to 09:15 before the demo) and press
 **Advance** to the next event (08:00 wave 1, 13:00 wave 2, 14:00 collection, end of day). Every order the portal
 sends gets `received_ts` = the ops clock now (samples carry no timestamp of their own).
 
@@ -151,7 +151,7 @@ the replay, Operations day or the history.
 
 - A customer must never create or see orders for another client through EDI or email (sender in the file ignored).
 - Re-running the desk is idempotent: same decisions, same events, no duplicates.
-- Running the demo twice: setting the ops clock (e.g. back to 07:30) starts a new desk run
+- Running the demo twice: setting the ops clock (e.g. back to 09:15) starts a new desk run
   (`run_id = desk-<date>-<n>`); only orders received after that moment are live, earlier ones stay in history
   untouched.
 - The ops clock across midnight and a server restart (clock persists).

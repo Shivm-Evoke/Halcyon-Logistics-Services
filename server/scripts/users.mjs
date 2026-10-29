@@ -4,12 +4,13 @@
 //   npm --prefix server run users -- add --email buyer@acme.com --role customer --client C176
 //   npm --prefix server run users -- reset-password --email ops@halcyon.com
 //   npm --prefix server run users -- disable --email buyer@acme.com      (enable to undo)
+//   npm --prefix server run users -- set-client --email buyer@acme.com --client C176   (ends its sign-ins)
 // --password-stdin reads the password from standard input instead (for scripted test setup only).
 import readline from 'node:readline';
 import { parseArgs } from 'node:util';
 import { pool } from '../src/db.js';
 import { ensureUserTable, userStore, clientExists } from '../src/auth/users.js';
-import { addAccount, setPassword, setActive } from '../src/auth/accounts.js';
+import { addAccount, setPassword, setActive, setClient } from '../src/auth/accounts.js';
 
 const [command, ...rest] = process.argv.slice(2);
 const { values: o } = parseArgs({ args: rest, options: {
@@ -57,8 +58,11 @@ try {
   } else if (command === 'disable' || command === 'enable') {
     await setActive(need('email'), command === 'enable', deps);
     console.log(`${o.email} ${command}d${command === 'disable' ? '; its sign-ins have ended' : ''}`);
+  } else if (command === 'set-client') {
+    const u = await setClient(need('email'), need('client'), deps);
+    console.log(`${u.email} now belongs to client ${u.client_id}; its sign-ins have ended`);
   } else {
-    console.log('Commands: list | add | reset-password | disable | enable  (see the top of scripts/users.mjs)');
+    console.log('Commands: list | add | reset-password | disable | enable | set-client  (see the top of scripts/users.mjs)');
     process.exitCode = command ? 1 : 0;
   }
 } catch (e) {

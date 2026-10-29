@@ -34,7 +34,8 @@ async function decisionsFor(shipment, gatewayCarrierId) {
     if (!order) return [];
     const rows = (await deskRepo.decisions(state.clock.runId)).filter((d) => d.delivery_id === shipment.ref);
     return customerDecisions(rows, order, shipment.events, gatewayCarrierId ?? undefined);
-  } catch {
+  } catch (e) {
+    console.error('Portal decisions failed:', e.message);
     return [];
   }
 }

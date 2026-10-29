@@ -44,3 +44,14 @@ export async function setPassword(email, password, { store, hash = hashSecret })
 }
 
 export const setActive = (email, active, { store }) => change(email, { active }, store);
+
+/** Moves a customer account to another client; its existing sign-ins end. */
+export async function setClient(email, client_id, { store, clientExists }) {
+  const client = String(client_id ?? '').trim().toUpperCase();
+  if (!client) fail('A client is needed (for example C176)');
+  const current = await store.byEmail(normalEmail(email));
+  if (!current) fail(`No account for ${normalEmail(email)}`);
+  if (current.role !== 'customer') fail(`${current.email} is a ${current.role} account; only customer accounts have a client`);
+  if (!(await clientExists(client))) fail(`Client ${client} does not exist`);
+  return change(email, { client_id: client }, store);
+}

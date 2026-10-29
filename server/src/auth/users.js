@@ -29,7 +29,7 @@ export const userStore = {
     `INSERT INTO users (email, role, client_id, name, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING ${PUBLIC_COLUMNS}`,
     [email, role, client_id, name, password_hash]),
   update: (email, patch) => {
-    const keys = Object.keys(patch).filter((k) => ['password_hash', 'active', 'session_version', 'name'].includes(k));
+    const keys = Object.keys(patch).filter((k) => ['password_hash', 'active', 'session_version', 'name', 'client_id'].includes(k));
     return one(`UPDATE users SET ${keys.map((k, i) => `${k} = $${i + 2}`).join(', ')} WHERE email = $1 RETURNING ${PUBLIC_COLUMNS}`,
       [email, ...keys.map((k) => patch[k])]);
   },
