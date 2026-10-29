@@ -40,7 +40,7 @@ const MAX_PASSES = 3;              // a release or a reset approval re-runs the 
  * @param claude     createClaude() result or null (reasons then stay the rules)
  * @param stockMiss  (clientId, region) => historical share of stock misses; threshold from settings
  * @param enabled    false (DESK=0): the desk does nothing and the gateway's orders stand as they are
- * @returns {{ enabled, refresh, state, setClock, advance, advanceOrder, clockNow, idle }}
+ * @returns {{ enabled, refresh, state, setClock, advance, advanceOrder, clockNow, currentClock, idle }}
  */
 export function createDesk({
   repo, log, shipments, world, claude = null, settings = DEFAULT_SETTINGS, stockMiss = () => 0,
@@ -314,6 +314,8 @@ export function createDesk({
     }),
     /** The ops clock now ('YYYY-MM-DD HH:MM'), or null before the clock is loaded or with the desk off. */
     clockNow: () => (enabled && clock ? clockNow(clock, now()) : null),
+    /** The ops clock now, loading it first if needed; null only with the desk off. */
+    currentClock: async () => (enabled ? clockNow(await load(), now()) : null),
     /** Resolves when every Claude call started so far has finished (tests). */
     idle: async () => { while (work.size) await Promise.allSettled([...work]); },
   };

@@ -13,7 +13,7 @@ import { IngestPipeline } from './ingest/pipeline.js';
 import { IngestService } from './ingest/IngestService.js';
 import { createClaude } from './agents/claude.js';
 import { DEFAULT_SETTINGS } from './agents/settings.js';
-import { deskClockNow } from './desk/instance.js';
+import { deskClock } from './desk/instance.js';
 
 async function build() {
   const started = performance.now();
@@ -66,7 +66,7 @@ async function build() {
     },
   }), container.claude.available
     ? { extractEmail: (text) => container.claude.extractEmail(text), minConfidence: DEFAULT_SETTINGS.intakeConfidenceMin }
-    : null, { clock: deskClockNow }); // orders without a time of their own are received at the desk's ops clock
+    : null, { clock: deskClock }); // orders without a time of their own are received at the desk's ops clock
   console.log(`ML ready in ${Math.round(performance.now() - started)} ms (model ${registry.meta.version})`);
   return container;
 }

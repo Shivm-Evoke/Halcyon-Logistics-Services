@@ -20,18 +20,18 @@ const AGENTS = [
 const agentName = (id) => AGENTS.find((a) => a.id === id)?.label ?? id;
 const MOVABLE = new Set(['received', 'picked', 'collected', 'in_transit']);
 
-/** Newest first: by received time, then ref. */
-const newestFirst = (a, b) => String(b.received_ts ?? '').localeCompare(String(a.received_ts ?? '')) || String(b.ref).localeCompare(String(a.ref));
+/** Newest first, in the order they arrived: by the ref's number (the gateway's order id), highest first. */
+const refNo = (ref) => Number(/(\d+)$/.exec(String(ref))?.[1] ?? 0);
+const newestFirst = (a, b) => refNo(b.ref) - refNo(a.ref);
 /** Case-insensitive match on the order ref (IN-002072 or just 2072) or the client's name or id. */
 const matches = (o, query) => {
   const t = query.trim().toLowerCase();
   return !t || [o.ref, o.client?.client_name, o.client?.client_id].some((v) => v && String(v).toLowerCase().includes(t));
 };
-/** When each stage was reached: its first stage event (agent notes carry the stage they were written at). */
+/** When each stage was reached: its first stage event; agent notes are ignored, as on the customer's timeline. */
 function stageTimes(events = []) {
   const at = {};
   for (const e of events) if (!e.note && !(e.stage in at)) at[e.stage] = e.at;
-  for (const e of events) if (!(e.stage in at)) at[e.stage] = e.at;
   return at;
 }
 

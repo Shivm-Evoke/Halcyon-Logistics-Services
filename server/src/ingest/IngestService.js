@@ -16,7 +16,7 @@ export class IngestService {
 
   async #complete(channel, { source, subject, raw, records, fallbackTs }, makeReply, force = null) {
     records = IngestService.#forced(records, force);
-    fallbackTs ||= this.clock?.() || undefined;
+    fallbackTs ||= (await this.clock?.()) || undefined; // the clock may be async (the desk built on first use)
     const { message, results } = await this.pipeline.run({ channel, source, subject, raw, records, fallbackTs });
     const reply = makeReply(results);
     await this.pipeline.finish(message.id, { status: message.status, summary: message.summary, reply });

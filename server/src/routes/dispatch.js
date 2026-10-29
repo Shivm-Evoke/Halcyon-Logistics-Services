@@ -5,7 +5,7 @@ import { getContainer } from '../container.js';
 import { shipmentStore } from '../shipments/store.js';
 import { STAGES, nextStage } from '../shipments/stages.js';
 import { asShipments, idFromRef } from '../shipments/views.js';
-import { deskClockNow } from '../desk/instance.js';
+import { deskClock } from '../desk/instance.js';
 
 const r = Router();
 
@@ -27,7 +27,7 @@ r.post('/dispatch/:ref/advance', async (req, res) => {
   const current = await shipmentStore.latestStage(o.id);
   const next = nextStage(current);
   if (!next) return res.status(409).json({ error: `This order can't move on from ${String(current).replace('_', ' ')}` });
-  const moved = await shipmentStore.advance(o.id, current, next, req.user?.email ?? 'staff', deskClockNow()); // ops clock, as the desk
+  const moved = await shipmentStore.advance(o.id, current, next, req.user?.email ?? 'staff', await deskClock()); // ops clock, as the desk
   if (!moved) return res.status(409).json({ error: 'Someone else just moved this order; refresh the board' });
   res.json({ ref: req.params.ref, stage: next });
 });

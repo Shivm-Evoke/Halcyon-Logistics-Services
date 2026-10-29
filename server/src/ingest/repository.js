@@ -1,11 +1,23 @@
 // Data access for the inbound gateway.
 import { q, one } from '../db.js';
 import { shipmentStore } from '../shipments/store.js';
-import { deskClockNow } from '../desk/instance.js';
+import { deskClock } from '../desk/instance.js';
 
-// Every saved or re-checked order gets its shipment stage from the gateway's verdict, at the desk's ops clock
-// (the database's now() with the desk off), so its timeline reads on the same clock as Live operations.
-const recorded = async (row) => { if (row) await shipmentStore.recordVerdict(row, deskClockNow()); return row; };
+/**
+ * When a new order's first shipment event happened: with the desk on, the order's own received time (the Received
+ * column on Live operations), else the ops clock; with the desk off (opsClock null), null, so the database's now().
+ */
+export const verdictAt = (row, opsClock) =>
+  (opsClock ? String(row.normalized?.received_ts ?? '').replace('T', ' ').slice(0, 16) || opsClock : null);
+
+// Every saved order gets its shipment stage from the gateway's verdict at its received time; a re-checked (fixed)
+// order is released at the ops clock now. With the desk off, both are the database's now().
+const recorded = async (row, { fixed = false } = {}) => {
+  if (!row) return row;
+  const clock = await deskClock();
+  await shipmentStore.recordVerdict(row, fixed ? clock : verdictAt(row, clock));
+  return row;
+};
 
 export const ingestRepository = {
   loadClients: async () => new Map((await q('SELECT * FROM clients')).map((c) => [c.client_id, c])),
@@ -30,7 +42,7 @@ export const ingestRepository = {
       commitment_type = $8, promised_date = $9, warehouse_id = $10, carrier_id = $11, updated_at = now()
     WHERE id = $1 RETURNING *`,
   [id, o.status, o.normalized, JSON.stringify(o.corrections), JSON.stringify(o.issues), o.risk, JSON.stringify(o.drivers),
-    o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id])),
+    o.commitment_type, o.promised_date, o.warehouse_id, o.carrier_id]), { fixed: true }),
 
   getOrder: (id) => one('SELECT * FROM inbound_orders WHERE id = $1', [id]),
 

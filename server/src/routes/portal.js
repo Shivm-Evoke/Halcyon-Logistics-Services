@@ -6,7 +6,7 @@ import { getContainer } from '../container.js';
 import { asShipments, idFromRef } from '../shipments/views.js';
 import { shipmentStore } from '../shipments/store.js';
 import { customerCanEdit, initialStage } from '../shipments/stages.js';
-import { getDesk, refreshDesk, deskClockNow } from '../desk/instance.js';
+import { getDesk, refreshDesk, deskClock } from '../desk/instance.js';
 import { deskRepo } from '../desk/repository.js';
 import { forceFor, formOrder, sendSample, rotateApiKey, customerDecisions } from '../portal/channels.js';
 
@@ -14,7 +14,7 @@ const r = Router();
 const rawBody = express.text({ type: ['message/rfc822', 'text/plain', 'application/edi-x12'], limit: '5mb' });
 const content = (req) => (typeof req.body === 'string' ? req.body : req.body?.content || '');
 // Portal orders are the session's client's, received at the ops clock.
-const force = (req) => forceFor(req.user, deskClockNow());
+const force = async (req) => forceFor(req.user, await deskClock());
 
 // The gateway's results as shipments (an order it did not store stays as the gateway reported it).
 async function shipmentsOf(results) {
@@ -75,7 +75,7 @@ r.get('/portal/orders/:ref', async (req, res) => {
 // One order from the portal form, through the same gateway pipeline as API, email and EDI orders.
 r.post('/portal/orders', async (req, res) => {
   const { ingest } = await getContainer();
-  const result = await ingest.form(req.user.client_id, formOrder(req.body || {}), force(req));
+  const result = await ingest.form(req.user.client_id, formOrder(req.body || {}), await force(req));
   await refreshDesk();
   res.status(201).json((await shipmentsOf(result.orders))[0]);
 });
@@ -83,21 +83,21 @@ r.post('/portal/orders', async (req, res) => {
 // An X12 850 file or a raw email (.eml), as text or { content }. The client is the session's, whatever the file says.
 r.post('/portal/edi', rawBody, async (req, res) => {
   if (!content(req).trim()) return res.status(400).json({ error: 'Empty EDI file' });
-  const result = await (await getContainer()).ingest.edi(content(req), { filename: req.body?.filename }, force(req));
+  const result = await (await getContainer()).ingest.edi(content(req), { filename: req.body?.filename }, await force(req));
   await refreshDesk();
   res.status(201).json({ orders: await shipmentsOf(result.orders) });
 });
 
 r.post('/portal/email', rawBody, async (req, res) => {
   if (!content(req).trim()) return res.status(400).json({ error: 'Empty email' });
-  const result = await (await getContainer()).ingest.email(content(req), { filename: req.body?.filename }, force(req));
+  const result = await (await getContainer()).ingest.email(content(req), { filename: req.body?.filename }, await force(req));
   await refreshDesk();
   res.status(201).json({ orders: await shipmentsOf(result.orders) });
 });
 
 // One of the five sample orders (1-5), each showing one cause of late deliveries, sent through its own channel.
 r.post('/portal/samples/:n', async (req, res) => {
-  const sent = await sendSample((await getContainer()).ingest, req.params.n, force(req));
+  const sent = await sendSample((await getContainer()).ingest, req.params.n, await force(req));
   if (!sent) return res.status(404).json({ error: 'not_found', message: `No sample ${req.params.n}; samples are 1 to 5` });
   await refreshDesk();
   res.status(201).json({ channel: sent.channel, orders: await shipmentsOf(sent.result.orders) });

@@ -386,3 +386,13 @@ test('state carries each order\'s shipment events for the timeline, oldest first
   assert.equal(order.promised_date, '2026-09-28');
   assert.equal(typeof order.risk, 'number');
 });
+
+test('currentClock loads the ops clock on first use, before any run; with the desk off it is null', async () => {
+  const db = fakeDb();
+  const desk = deskOn(db);
+  assert.equal(desk.clockNow(), null, 'not loaded yet');
+  assert.equal(await desk.currentClock(), '2026-09-25 09:15');
+  db.tick(5);
+  assert.equal(await desk.currentClock(), '2026-09-25 09:20');
+  assert.equal(await deskOn(fakeDb(), { enabled: false }).currentClock(), null);
+});

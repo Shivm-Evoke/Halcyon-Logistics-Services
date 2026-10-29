@@ -287,3 +287,25 @@ test('gateway: a /v1 API client order stays API', async () => {
   assert.equal(seen.saved[0].normalized.channel, 'API');
   assert.equal(seen.scored[0].order_channel, 'API');
 });
+
+test('gateway: an async clock (the desk built on first use) is awaited for orders without their own time', async () => {
+  const { service, saved } = makeGateway({ clock: async () => '2026-09-25 07:05' });
+  await service.api('C001', [{ ...apiOrder, received_at: undefined }]);
+  assert.equal(saved[0].normalized.received_ts.slice(0, 16).replace('T', ' '), '2026-09-25 07:05');
+});
+
+// ---- the verdict event's time: the order's own received time on the ops clock; now() with the desk off ----
+import { verdictAt } from '../src/ingest/repository.js';
+import { deskClock } from '../src/desk/instance.js';
+
+test('verdict: a new order\'s first event is its received time when the desk is on, so table and timeline agree', () => {
+  assert.equal(verdictAt({ normalized: { received_ts: '2026-09-25T09:15' } }, '2026-09-25 09:16'), '2026-09-25 09:15');
+  assert.equal(verdictAt({ normalized: {} }, '2026-09-25 09:16'), '2026-09-25 09:16', 'no received time: the ops clock');
+  assert.equal(verdictAt({ normalized: { received_ts: '2026-09-25T09:15' } }, null), null, 'desk off: now()');
+});
+
+test('deskClock: null with DESK=0, without building the desk', async () => {
+  const before = process.env.DESK;
+  process.env.DESK = '0';
+  try { assert.equal(await deskClock(), null); } finally { if (before === undefined) delete process.env.DESK; else process.env.DESK = before; }
+});

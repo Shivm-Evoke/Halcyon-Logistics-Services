@@ -28,6 +28,15 @@ export function getDesk() {
 /** The ops clock for the gateway's timestamps ('YYYY-MM-DD HH:MM'), or null until the desk is loaded or with it off. */
 export const deskClockNow = () => desk?.clockNow() ?? null;
 
+/**
+ * The ops clock, building the desk and loading its clock first if needed (the first order after a restart is on the
+ * ops clock too); null with DESK=0.
+ */
+export async function deskClock() {
+  if (process.env.DESK === '0') return null;
+  return (await getDesk()).currentClock();
+}
+
 /** Re-runs the desk after an order arrives, is fixed or an approval changes; never throws, so a response never fails on it. */
 export async function refreshDesk() {
   try {
