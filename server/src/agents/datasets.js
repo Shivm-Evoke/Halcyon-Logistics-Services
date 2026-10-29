@@ -72,7 +72,9 @@ export function parseDataset(text, { clients }) {
       after_cutoff: hour >= CUTOFF_HOUR ? 1 : 0,
       cutoff_breach: r.commitment_type === 'same_day' && hour >= CUTOFF_HOUR ? 1 : 0,
       address_incomplete: r.address_status === 'incomplete' ? 1 : 0,
-      stock_miss: r.nearest_warehouse_had_stock === 'N' ? 1 : 0,
+      // Same definition the model is trained on (f_stock): shipped from a warehouse other than the nearest.
+      // Without a fulfilment warehouse, the stock column is the best available signal.
+      stock_miss: (r.fulfilment_warehouse_id ? r.fulfilment_warehouse_id !== r.nearest_warehouse_id : r.nearest_warehouse_had_stock === 'N') ? 1 : 0,
       destination_region: r.destination_region,
       nearest_warehouse_id: r.nearest_warehouse_id,
       fulfilment_warehouse_id: r.fulfilment_warehouse_id || r.nearest_warehouse_id,

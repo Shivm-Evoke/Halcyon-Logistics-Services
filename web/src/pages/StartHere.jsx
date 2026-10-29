@@ -16,7 +16,7 @@ const PROCESS = [
   { n: 4, step: 'WMS holds orders and stock, makes pick lists', who: 'WMS', issue: null },
   { n: 5, step: 'Pick list compiled at 8am; later orders go on tomorrow’s list', who: 'Warehouse supervisors', issue: 'I2', breaks: 'Same-day is still promised after 8am: 61% of those arrive late', to: '/why-late' },
   { n: 6, step: 'Pick, pack, place on the dock for collection', who: 'Warehouse floor', issue: null },
-  { n: 7, step: 'Which warehouse holds a client’s stock: set at onboarding, reviewed quarterly', who: 'Onboarding team', issue: 'I3', breaks: 'Nearest warehouse is out of stock on 14% of orders: 50% late', to: '/inventory' },
+  { n: 7, step: 'Which warehouse holds a client’s stock: set at onboarding, reviewed quarterly', who: 'Onboarding team', issue: 'I3', breaks: '14% of orders ship from a farther warehouse (the nearest is out of stock on 12%): 50% late', to: '/inventory' },
   { n: 8, step: 'Carrier chosen from the rate card and a preference spreadsheet', who: 'Warehouse team', issue: 'I4', breaks: 'Cheapest carriers (D, E, F) have no tracking and are 17–34% late on clean orders', to: '/carriers' },
   { n: 9, step: 'Carrier collects and delivers; delivery events come back', who: '6 carriers', issue: 'I5', breaks: 'Three carriers send no live events, so nobody sees a delay coming', to: '/control-tower' },
   { n: 10, step: 'Client chases; customer success handles re-delivery, penalties, renewals', who: 'Customer success', issue: 'I8', breaks: '64% of the team’s week is firefighting; 9 accounts ($14.2M) threatening to leave', to: '/accounts' },
@@ -28,7 +28,7 @@ const STORY = [
   { to: '/operations-day', screen: 'Operations day', title: 'The solution at work: our worst Friday', show: 'Start the day (Recorded if offline), jump to 08:00, then 13:00 for the second wave; approve one item.',
     say: 'Five agents run the day: they fix addresses, open a second pick wave, place stock, pick reliable carriers and rescue risky orders. Claude explains each decision; anything over a limit waits for a manager.', point: 'Recorded vs with agents' },
   { to: '/six-months', screen: 'Six months with agents', title: 'Proof on every order since April', show: 'The weekly lines, then the waterfall; change one assumption and re-run.',
-    say: 'Re-run on all 48,340 deliveries with real capacity limits, the agents lift on-time by about 20 points and save around $1M net. Each agent’s share is visible.', point: '71% → 91%' },
+    say: 'Re-run on all 48,340 deliveries with real capacity limits, the agents lift on-time by about 20 points and save about $0.9M net. Each agent’s share is visible.', point: '71% → 91%' },
   { to: '/agents', screen: 'Meet the agents', title: 'What each agent does, and its limits', show: 'One agent card, then its link to the screen under the hood.',
     say: 'Rules make routine decisions, so the numbers are repeatable; Claude reads, explains and handles exceptions. The server enforces the limits, not the AI.', point: '5 agents + Ops Lead' },
   { to: '/decision', screen: 'The decision', title: 'What leadership should do', show: 'The two cards, then the rollout.',
@@ -36,7 +36,7 @@ const STORY = [
   { to: '/inbound', screen: 'Inbound gateway', title: 'Under the hood: Intake at the door', show: 'Process a test email live, then the live-week card.',
     say: 'Every order from email, API, EDI or file is checked and repaired before the pick list; emails the parser cannot read go to Claude.', point: '100% of injected errors caught' },
   { to: '/ai-model', screen: 'AI risk model', title: 'Under the hood: the risk model the Watchtower uses', show: 'Calibration, then the backtest.',
-    say: 'Trained on April–August and tested on a September it never saw; its estimates match reality to within 0.1 points.', point: 'Calibrated on unseen data' },
+    say: 'Trained on April–August and tested on a September it never saw; its overall estimate matches reality to within 0.1 points, and its per-risk-band error is under 1%.', point: 'Calibrated on unseen data' },
 ];
 
 const BRIEF = [
@@ -79,7 +79,10 @@ export default function StartHere() {
   const k = overview.data.kpis;
   const causes = overview.data.causes;
   const totalLate = causes.reduce((s, c) => s + c.late, 0);
-  const upstream = 1 - (causes.find((c) => c.cause === 'residual')?.late ?? 0) / totalLate;
+  const lateOf = (name) => causes.find((c) => c.cause === name)?.late ?? 0;
+  const upstream = 1 - lateOf('residual') / totalLate;
+  // Address, cutoff and stock act before collection; slow carriers act after it.
+  const beforeTruck = (lateOf('address') + lateOf('cutoff') + lateOf('stock')) / totalLate;
   const w = week.data;
 
   return (
@@ -103,7 +106,8 @@ export default function StartHere() {
         <Card>
           <div className="row small" style={{ gap: 8, marginBottom: 10, color: 'var(--good-ink)' }}><CheckCircle2 size={15} /> What the data shows</div>
           <div style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.35, }}>
-            {pct(upstream, 0)} of late deliveries go wrong before the truck leaves. Five operations agents that fix those causes reach
+            {pct(upstream, 0)} of late deliveries have a cause other than route planning, and {pct(beforeTruck, 0)} go wrong before
+            the truck leaves. Five operations agents that fix those causes reach
             {agents ? ` ${pct(agents)}` : ' ~91%'} on-time over the same six months; route planning makes no measurable difference.
           </div>
           <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>

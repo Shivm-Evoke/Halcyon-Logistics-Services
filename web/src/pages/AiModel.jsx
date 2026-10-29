@@ -27,8 +27,9 @@ export default function AiModel() {
   const t = meta.test;
   const ece = t.calibration.reduce((s, c) => s + c.n * Math.abs(c.predicted - c.actual), 0) / t.n;
   const bt = backtest.data;
-  const SHORT = ['AI carrier + promise', 'Data fixes only', 'Full AI operation'];
-  const bars = [{ name: 'Actual today', on_time: bt.actual_on_time }, ...bt.scenarios.slice(1).map((s, i) => ({ name: SHORT[i], full: s.name, on_time: s.on_time }))];
+  // Short tick labels so four bars fit a half-width card; the tooltip keeps the full scenario name.
+  const SHORT = ['AI carrier', 'Data fixes', 'Full AI'];
+  const bars = [{ name: 'Today', full: 'Actual today', on_time: bt.actual_on_time }, ...bt.scenarios.slice(1).map((s, i) => ({ name: SHORT[i], full: s.name, on_time: s.on_time }))];
 
   const retrain = async () => {
     setTraining(true);
@@ -48,19 +49,19 @@ export default function AiModel() {
         <Kpi icon={Target} label="Accuracy (AUC)" value={t.auc.toFixed(3)} sub="0.5 = guessing, 1 = perfect" tone="good" />
         <Kpi icon={Gauge} label="Precision at 40% risk" value={pct(t.at_threshold.precision, 0)} sub="of flagged orders were late" />
         <Kpi icon={Gauge} label="Recall at 40% risk" value={pct(t.at_threshold.recall, 0)} sub="of late orders were flagged" />
-        <Kpi icon={BrainCircuit} label="Calibration error" value={pct(ece)} sub="predicted vs actual late rate" tone="good" />
+        <Kpi icon={BrainCircuit} label="Calibration error" value={pct(ece)} sub="per risk band, predicted vs actual" tone="good" />
         <Kpi icon={Timer} label="Training time" value={`${num(meta.train_ms)} ms`} sub={`${meta.iterations} Newton iterations`} />
         <Kpi icon={Zap} label="Model version" value={`v${meta.id}`} sub={`${meta.algorithm} · trained ${String(meta.trained_at).slice(0, 16)}`} />
       </div>
 
       <div className="grid g2" style={{ marginBottom: 16 }}>
-        <Card title="What the AI-driven operation would have achieved in September" sub="Expected on-time rate, replaying the test month day by day within each carrier's daily capacity. The model's estimate of 'today' matches reality, which is why the other bars can be trusted.">
+        <Card title="September backtest (ML policy): what the AI-driven operation would have achieved" sub="Expected on-time rate, replaying the test month day by day within each carrier's daily capacity. The model's estimate of 'today' matches reality, which is why the other bars can be trusted. The six-month replay with the rule-based agents (Six months screen) reaches 91.3%: a different policy over a longer period.">
           <ResponsiveContainer width="100%" height={270}>
             <BarChart data={bars} margin={{ top: 22, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid {...gridProps} />
               <XAxis dataKey="name" {...axisX} interval={0} />
               <YAxis domain={[0.5, 1]} tickFormatter={(v) => pct(v, 0)} {...axisY} />
-              <Tooltip cursor={{ fill: PAL.cursor }} content={<ChartTip format={(v) => pct(v)} />} />
+              <Tooltip cursor={{ fill: PAL.cursor }} content={<ChartTip format={(v) => pct(v)} title={(label, p) => p?.[0]?.payload?.full || label} />} />
               <ReferenceLine y={0.94} stroke={PAL.benchmark} strokeDasharray="4 4" strokeOpacity={0.6} label={{ value: 'Benchmark 94%', fill: PAL.benchmark, fontSize: 12, position: 'insideTopLeft' }} />
               <Bar dataKey="on_time" name="On-time" {...barProps} maxBarSize={72}>
                 {bars.map((b, i) => <Cell key={b.name} fill={scenarioColor(i)} />)}

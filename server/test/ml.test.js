@@ -87,6 +87,16 @@ test('client profiler flags an unusual destination and duplicate order id', () =
   assert.ok(!codes.includes('unusual_channel'));
 });
 
+test('client profiler skips a rarity check when the value is unknown, so no "null" reaches the message', () => {
+  const history = Array.from({ length: 200 }, (_, i) => ({
+    client_id: 'C1', order_id: `O${i}`, order_channel: 'EDI', destination_region: 'West', commitment_type: 'standard', received_hour: 9,
+  }));
+  const findings = new ClientProfiler().fit(history)
+    .inspect({ client_id: 'C1', order_id: 'X1', order_channel: null, destination_region: null, commitment_type: undefined, received_hour: null });
+  assert.deepEqual(findings.filter((f) => /null|undefined|NaN/.test(f.message)), []);
+  assert.ok(!findings.some((f) => f.code === 'unusual_destination'));
+});
+
 test('data-quality scanner counts and samples each check through an injected query', async () => {
   const { DataQualityScanner } = await import('../src/quality/DataQualityScanner.js');
   const calls = [];

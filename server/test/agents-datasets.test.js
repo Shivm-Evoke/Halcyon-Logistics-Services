@@ -27,6 +27,15 @@ test('a valid row becomes an order the agents can work on, with client details l
   assert.deepEqual(r.days, ['2026-11-02']);
 });
 
+test('stock miss means "shipped from another warehouse", the definition the model is trained on', () => {
+  // Nearest W3 reports stock but the order still left from W2: a miss, as in the history (f_stock).
+  const moved = parseDataset(csv('T2,C001,API,2026-11-02 07:15,standard,complete,Southeast,W3,W2,Y,600,B,15,Y'), { clients }).orders[0];
+  assert.equal(moved.stock_miss, 1);
+  // Shipped from the nearest warehouse: no miss, whatever the stock column says.
+  const local = parseDataset(csv('T3,C001,API,2026-11-02 07:15,standard,complete,Southeast,W3,W3,N,140,B,15,Y'), { clients }).orders[0];
+  assert.equal(local.stock_miss, 0);
+});
+
 test('outcomes are optional; optional columns get sensible defaults', () => {
   const r = parseDataset([
     'client_id,order_received_ts,commitment_type,address_status,destination_region,nearest_warehouse_id,nearest_warehouse_had_stock,distance_miles,carrier_id',

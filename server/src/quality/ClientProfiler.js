@@ -43,15 +43,17 @@ export class ClientProfiler {
       add('impossible_promise', 'medium', `Same-day requested at ${order.received_hour}:00, after the 08:00 pick-list cutoff`);
     }
 
+    // A value that is not known (e.g. the region of an address that failed validation) cannot be unusual.
+    const known = (v) => v != null && v !== '';
     if (p && p.n >= MIN_HISTORY) {
       const r = share(p.region, order.destination_region, p.n);
-      if (r < RARE_SHARE) add('unusual_destination', 'medium', `${order.destination_region} is ${(r * 100).toFixed(1)}% of this client's orders`);
+      if (known(order.destination_region) && r < RARE_SHARE) add('unusual_destination', 'medium', `${order.destination_region} is ${(r * 100).toFixed(1)}% of this client's orders`);
       const c = share(p.channel, order.order_channel, p.n);
-      if (c < RARE_SHARE) add('unusual_channel', 'low', `${order.order_channel} is ${(c * 100).toFixed(1)}% of this client's orders`);
+      if (known(order.order_channel) && c < RARE_SHARE) add('unusual_channel', 'low', `${order.order_channel} is ${(c * 100).toFixed(1)}% of this client's orders`);
       const k = share(p.commitment, order.commitment_type, p.n);
-      if (k < RARE_SHARE) add('unusual_service', 'low', `${order.commitment_type} is ${(k * 100).toFixed(1)}% of this client's orders`);
+      if (known(order.commitment_type) && k < RARE_SHARE) add('unusual_service', 'low', `${order.commitment_type} is ${(k * 100).toFixed(1)}% of this client's orders`);
       const h = share(p.hour, order.received_hour, p.n);
-      if (h < RARE_SHARE / 2) add('unusual_time', 'low', `Orders at ${order.received_hour}:00 are rare for this client`);
+      if (known(order.received_hour) && h < RARE_SHARE / 2) add('unusual_time', 'low', `Orders at ${order.received_hour}:00 are rare for this client`);
     }
     return out;
   }
