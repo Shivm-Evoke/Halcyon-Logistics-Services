@@ -1,5 +1,5 @@
 // Who may call which API: public routes, the customer portal, and everything else for Halcyon staff.
-import { readSession, currentUser } from './session.js';
+import { readSession, currentUser, shouldRenew, issueSession, sessionCookie } from './session.js';
 
 // The client API (/auth, /v1) has its own bearer-token login; /session is how the website signs in.
 // The email provider's inbound webhook was open before sign-in existed and stays open.
@@ -32,7 +32,12 @@ export function cachedLookup(lookup, { ttlMs = 5000, now = Date.now } = {}) {
 /** Express middleware for /api: sets req.user from the session cookie and the account, then enforces accessFor. */
 export const gate = ({ key, requireLogin, lookup }) => async (req, res, next) => {
   try {
-    req.user = await currentUser(readSession(req.headers.cookie, key), lookup);
+    const session = readSession(req.headers.cookie, key);
+    req.user = await currentUser(session, lookup);
+    if (req.user && shouldRenew(session, Math.floor(Date.now() / 1000))) {
+      const secure = process.env.NODE_ENV === 'production';
+      res.setHeader('Set-Cookie', sessionCookie(issueSession({ id: req.user.id, session_version: session.ver }, key), { secure }));
+    }
     const verdict = accessFor(req.path, req.user, { requireLogin });
     if (verdict === 'ok') return next();
     res.status(verdict).json({ error: verdict === 401 ? 'Sign in required' : 'Not allowed' });

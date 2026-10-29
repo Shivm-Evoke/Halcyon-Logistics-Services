@@ -3,21 +3,24 @@
 import { signToken, verifyToken } from '../ingest/auth.js';
 
 export const SESSION_COOKIE = 'halcyon_session';
-export const SESSION_TTL = 8 * 3600;
+export const SESSION_TTL = 7 * 24 * 3600;
 
 /** The token names the account and its session version; role and client are read from the database on use. */
 export const issueSession = (user, key) => signToken(
   { typ: 'session', sub: user.id, ver: user.session_version ?? 0 }, key, SESSION_TTL,
 );
 
-/** @returns { id, ver } from a Cookie header, or null when absent, forged, expired or not a session token. */
+/** @returns { id, ver, exp } from a Cookie header, or null when absent, forged, expired or not a session token. */
 export function readSession(cookieHeader, key) {
   const token = String(cookieHeader || '').split(';').map((c) => c.trim())
     .find((c) => c.startsWith(`${SESSION_COOKIE}=`))?.slice(SESSION_COOKIE.length + 1);
   const p = token && verifyToken(token, key);
   // Client API tokens share the signing key; only website session tokens count here.
-  return p?.typ === 'session' ? { id: p.sub, ver: p.ver } : null;
+  return p?.typ === 'session' ? { id: p.sub, ver: p.ver, exp: p.exp } : null;
 }
+
+/** A session with less than half its life left is reissued, so people who keep using the site stay signed in. */
+export const shouldRenew = (payload, nowSec) => payload.exp - nowSec < SESSION_TTL / 2;
 
 /**
  * The signed-in account, or null when it was disabled, deleted, or signed out / given a new password since the

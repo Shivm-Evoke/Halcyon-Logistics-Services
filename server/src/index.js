@@ -27,6 +27,9 @@ if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   console.error('JWT_SECRET must be set in production');
   process.exit(1);
 }
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'production') {
+  console.warn('JWT_SECRET is not set: every restart signs everyone out');
+}
 
 const app = express();
 // Azure App Service terminates TLS in front of the app: trust its one hop for the client address (sign-in limits).
