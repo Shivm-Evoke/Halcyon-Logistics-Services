@@ -6,7 +6,7 @@ test('defaults are valid and returned whole', () => {
   const r = validateSettings({});
   assert.equal(r.ok, true);
   assert.deepEqual(r.settings, DEFAULT_SETTINGS);
-  assert.equal(DEFAULT_SETTINGS.secondWaveAt, '11:30');
+  assert.equal(DEFAULT_SETTINGS.secondWaveAt, '13:00');
   assert.equal(DEFAULT_SETTINGS.wave2CapacityPerWarehouse, 30);
 });
 

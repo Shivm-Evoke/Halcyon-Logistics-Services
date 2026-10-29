@@ -8,6 +8,12 @@ export class StockAgent {
   constructor(settings) {
     this.settings = settings;
     this.seen = new Map(); // 'client|region' -> { n, miss }
+    this.stocked = new Set(); // pairs whose safety stock is already at the nearest warehouse
+  }
+
+  /** Records transfers that went ahead; their stock stays in place on later nights. */
+  commit(pairs) {
+    for (const p of pairs) this.stocked.add(p);
   }
 
   observe(dayOrders) {
@@ -19,11 +25,14 @@ export class StockAgent {
     }
   }
 
-  /** @returns {{ pairs: Set<string>, decisions: { agent:'stock', pair:string, missRate:number, needsApproval:boolean, rule:string }[] }} */
+  /**
+   * Tonight's new transfers (decisions) and every pair stocked after them without approval (pairs).
+   * @returns {{ pairs: Set<string>, decisions: { agent:'stock', pair:string, missRate:number, needsApproval:boolean, rule:string }[] }}
+   */
   planTransfers() {
     const { stockMissThreshold, transferLimitPerNight } = this.settings;
     const qualifying = [...this.seen]
-      .filter(([, s]) => s.n >= MIN_ORDERS && s.miss / s.n >= stockMissThreshold)
+      .filter(([pair, s]) => !this.stocked.has(pair) && s.n >= MIN_ORDERS && s.miss / s.n >= stockMissThreshold)
       .map(([pair, s]) => ({ pair, missRate: s.miss / s.n }))
       .sort((a, b) => b.missRate - a.missRate);
     const decisions = qualifying.map(({ pair, missRate }, i) => ({
@@ -34,6 +43,6 @@ export class StockAgent {
       rule: `${Math.round(missRate * 100)}% of this client's orders to this region missed stock at the nearest warehouse`
         + (i >= transferLimitPerNight ? `; over tonight's limit of ${transferLimitPerNight} transfers` : ''),
     }));
-    return { pairs: new Set(decisions.filter((d) => !d.needsApproval).map((d) => d.pair)), decisions };
+    return { pairs: new Set([...this.stocked, ...decisions.filter((d) => !d.needsApproval).map((d) => d.pair)]), decisions };
   }
 }

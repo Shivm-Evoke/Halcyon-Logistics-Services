@@ -10,7 +10,7 @@ const order = (time, extra = {}) => ({
 });
 
 test('orders before 08:00 make the first pick list; same-day orders up to the second wave join it; later ones wait', () => {
-  const a = order('07:59'); const b = order('08:00'); const c = order('11:29'); const d = order('11:30');
+  const a = order('07:59'); const b = order('08:00'); const c = order('12:59'); const d = order('13:00');
   const plan = planWaves([a, b, c, d], S);
   assert.equal(plan.get(a.delivery_id).wave, 1);
   assert.equal(plan.get(b.delivery_id).wave, 2);

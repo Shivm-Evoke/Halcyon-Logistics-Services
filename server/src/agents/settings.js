@@ -3,13 +3,13 @@
 
 export const DEFAULT_SETTINGS = Object.freeze({
   seed: 42,
-  secondWaveAt: '11:30',            // second pick list; carriers collect 14:00-18:00
+  secondWaveAt: '13:00',            // second pick list, an hour before carriers start collecting (14:00-18:00)
   wave2CapacityPerWarehouse: 30,    // orders each warehouse can add to the second wave per day
   carrierHeadroom: 0.25,            // carriers A-F can take their busiest historical day plus this share
   fridayPrebookShare: 0.3,          // extra A-C capacity booked from Thursday for Friday
   addressFixRate: 0.8,              // share of incomplete addresses completed before the pick list
   intakeConfidenceMin: 0.8,
-  stockMissThreshold: 0.2,          // client x region miss rate that triggers pre-positioning
+  stockMissThreshold: 0.1,          // client x region miss rate that triggers safety stock at the nearest warehouse
   transferLimitPerNight: 40,        // client x region transfers allowed without approval
   watchtowerRiskMin: 0.4,           // P(late) above which an order in transit is upgraded
   costCapUsd: 6,                    // extra carrier cost per order allowed without approval

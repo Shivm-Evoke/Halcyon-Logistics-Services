@@ -7,14 +7,20 @@ export const PREMIUM = ['A', 'B', 'C'];
 
 const restricted = (o) => o.commitment_type === 'same_day' || o.account_tier === 'Tier 1';
 
+/** Today's carrier limits, with A-C raised by the capacity pre-booked for Fridays. */
+export function dayLimits(limits, settings, isFriday) {
+  const lim = { ...limits };
+  if (isFriday) for (const c of PREMIUM) if (lim[c] != null) lim[c] = Math.floor(lim[c] * (1 + settings.fridayPrebookShare));
+  return lim;
+}
+
 /**
  * @param limits  { carrier_id: max orders today }
  * @param rates   { carrier_id: average rate in USD }
  * @returns {{ assignments: Map<string, { agent:'carrier', carrier_id, expectedCost, extraCost, needsApproval, fallbackCarrierId, rule }>, usage }}
  */
 export function allocateCarriers(dayOrders, { model, limits, rates, settings, isFriday }) {
-  const lim = { ...limits };
-  if (isFriday) for (const c of PREMIUM) if (lim[c] != null) lim[c] = Math.floor(lim[c] * (1 + settings.fridayPrebookShare));
+  const lim = dayLimits(limits, settings, isFriday);
   const usage = Object.fromEntries(Object.keys(lim).map((c) => [c, 0]));
   const hasRoom = (c) => usage[c] < lim[c];
   const cheapest = Math.min(...Object.values(rates));
