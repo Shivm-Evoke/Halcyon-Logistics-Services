@@ -105,3 +105,19 @@ test('the committed example settings file never carries a real key', async () =>
   const example = fs.readFileSync(new URL('../.env.example', import.meta.url), 'utf8');
   assert.match(example, /^ANTHROPIC_FOUNDRY_API_KEY=$/m, 'put the key in server/.env, not server/.env.example');
 });
+
+test('a failing Claude call is logged once per distinct reason, with its HTTP status', async () => {
+  const warned = [];
+  const original = console.warn;
+  console.warn = (...a) => warned.push(a.join(' '));
+  try {
+    const client = fake(() => { throw Object.assign(new Error('Access denied due to invalid subscription key'), { status: 401 }); });
+    const c = createClaude({ client });
+    await c.explain(decision, {});
+    await c.explain(decision, {});
+    assert.equal(warned.length, 1);
+    assert.match(warned[0], /Claude call failed: HTTP 401 Access denied/);
+  } finally {
+    console.warn = original;
+  }
+});

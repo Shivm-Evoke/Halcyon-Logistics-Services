@@ -74,6 +74,8 @@ const plain = (t) => t.replace(/\*\*(.+?)\*\*/g, '$1');
 function foundryClient() {
   const { ANTHROPIC_FOUNDRY_API_KEY, ANTHROPIC_FOUNDRY_RESOURCE, ANTHROPIC_FOUNDRY_BASE_URL } = process.env;
   if (!ANTHROPIC_FOUNDRY_API_KEY || !(ANTHROPIC_FOUNDRY_RESOURCE || ANTHROPIC_FOUNDRY_BASE_URL)) return null;
+  // The key's length (never the key) tells a pasted space or a truncated key apart from a wrong one.
+  console.log(`Claude: Foundry ${ANTHROPIC_FOUNDRY_RESOURCE || ANTHROPIC_FOUNDRY_BASE_URL}, model ${MODEL}, key ${ANTHROPIC_FOUNDRY_API_KEY.length} characters`);
   // Server-side fallbacks are not available on Foundry, so a refusal is retried on the fallback model by the SDK.
   return new AnthropicFoundry({ middleware: [betaRefusalFallbackMiddleware([{ model: FALLBACK_MODEL }])] });
 }
@@ -84,6 +86,8 @@ function foundryClient() {
 export function createClaude({ client = foundryClient(), timeoutMs = TIMEOUT_MS } = {}) {
   const available = Boolean(client);
 
+  // Each distinct failure is logged once, so a wrong key or deployment shows in the log stream without flooding it.
+  const logged = new Set();
   async function call(params) {
     if (!client) throw new Error('Claude is not configured');
     let timer;
@@ -92,6 +96,10 @@ export function createClaude({ client = foundryClient(), timeoutMs = TIMEOUT_MS 
       const res = await Promise.race([client.beta.messages.create({ model: MODEL, ...params }, { timeout: timeoutMs }), timeout]);
       if (res.stop_reason === 'refusal') throw new Error('Claude declined');
       return res;
+    } catch (e) {
+      const reason = `${e.status ? `HTTP ${e.status} ` : ''}${e.message}`;
+      if (!logged.has(reason)) { logged.add(reason); console.warn(`Claude call failed: ${reason}`); }
+      throw e;
     } finally {
       clearTimeout(timer);
     }
