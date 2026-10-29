@@ -11,6 +11,7 @@ import ml from './routes/ml.js';
 import ingest from './routes/ingest.js';
 import agents, { world } from './routes/agents.js';
 import { ensureDecisionTable } from './agents/log.js';
+import { ensureDatasetTable } from './agents/datasetStore.js';
 import { watchInbox } from './ingest/inboxWatcher.js';
 import { getContainer } from './container.js';
 
@@ -54,6 +55,7 @@ app.use((err, _req, res, _next) => {
 const port = Number(process.env.PORT || 4000);
 // Warm the model before taking traffic so the first request is not slow.
 await ensureDecisionTable();
+await ensureDatasetTable();
 const container = await getContainer();
 // Load the agents' six months of orders up front, so the first replay or live day does not wait for it.
 await world();

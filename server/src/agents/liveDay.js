@@ -40,8 +40,9 @@ export class LiveDay {
    * @param claude   createClaude() result; @param log decisionLog-like store
    * @param recorded { reasons: { key: text }, briefings: { 'HH:MM': text } } for mode 'recorded'
    * @param world    { model, capacity } from the history, when `orders` is a test dataset
+   * @param history  orders the agents have already seen before `orders` (the real history, for a test dataset)
    */
-  constructor({ day, orders, distances, rates, settings, claude, log, mode = 'live', recorded = null, world = null }) {
+  constructor({ day, orders, distances, rates, settings, claude, log, mode = 'live', recorded = null, world = null, history = [] }) {
     this.day = day;
     this.mode = mode;
     this.settings = settings;
@@ -54,7 +55,7 @@ export class LiveDay {
 
     // Stock moved on the nights before the demo stays in place; tonight's transfers are the new decisions.
     const stock = new StockAgent(settings);
-    for (const [d, xs] of groupDays(orders)) {
+    for (const [d, xs] of groupDays([...history, ...orders])) {
       if (d >= day) break;
       const plan = stock.planTransfers();
       stock.commit(new Set([...plan.pairs, ...plan.decisions.map((x) => x.pair)]));

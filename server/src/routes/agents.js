@@ -1,5 +1,5 @@
 // Operations agents API: settings, the six-month replay, and the approval queue.
-import { Router } from 'express';
+import express, { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { getContainer } from '../container.js';
@@ -8,7 +8,9 @@ import { carrierStats } from '../stats.js';
 import { mlRepository } from '../ml/repository.js';
 import { agentsRepository } from '../agents/repository.js';
 import { DEFAULT_SETTINGS, validateSettings } from '../agents/settings.js';
-import { runReplay } from '../agents/simulator.js';
+import { runReplay, buildWorld, dayOf } from '../agents/simulator.js';
+import { parseDataset, REQUIRED_COLUMNS, OPTIONAL_COLUMNS } from '../agents/datasets.js';
+import { datasetStore } from '../agents/datasetStore.js';
 import { decisionLog } from '../agents/log.js';
 import { LiveDay, pickDemoDay } from '../agents/liveDay.js';
 
@@ -36,20 +38,69 @@ export const world = () => (worldPromise ??= (async () => {
   };
 })().catch((e) => { worldPromise = undefined; throw e; }));
 
-const replays = new Map(); // settings JSON -> result; a replay takes under a second, so a few are kept
+const replays = new Map(); // settings + dataset -> result; a replay takes under a second, so a few are kept
+const datasetOrders = new Map(); // dataset id -> orders, read once
+
+/** Orders to run on: the history, or a test dataset judged by the history's yardstick. 404 when the dataset is unknown. */
+async function ordersFor(dataset, settings) {
+  const w = await world();
+  if (dataset == null || dataset === '') return { w, orders: w.orders, worldFor: null };
+  const id = Number(dataset);
+  if (!datasetOrders.has(id)) {
+    const orders = Number.isInteger(id) ? await datasetStore.orders(id) : null;
+    if (!orders) return { w, orders: null };
+    datasetOrders.set(id, orders);
+  }
+  return { w, orders: datasetOrders.get(id), history: w.orders, worldFor: (settings) => buildWorld(w.orders, settings) };
+}
 
 r.get('/agents/settings', (_req, res) => res.json({ defaults: DEFAULT_SETTINGS }));
 
 r.post('/agents/replay', async (req, res) => {
-  const v = validateSettings(req.body || {});
+  const { dataset, ...input } = req.body || {};
+  const v = validateSettings(input);
   if (!v.ok) return res.status(400).json({ error: v.message, field: v.field });
-  const key = JSON.stringify(v.settings);
+  const key = JSON.stringify([v.settings, dataset ?? null]);
   if (!replays.has(key)) {
-    const w = await world();
+    const { w, orders, history, worldFor } = await ordersFor(dataset, v.settings);
+    if (!orders) return res.status(404).json({ error: `No test dataset ${dataset}`, field: 'dataset' });
     if (replays.size >= 20) replays.delete(replays.keys().next().value);
-    replays.set(key, { settings: v.settings, ...runReplay(w.orders, { settings: v.settings, distances: w.distances, rates: w.rates, csComplaintHoursPerWeek: w.csComplaintHoursPerWeek, penaltyUsdPerLateSla: w.penaltyUsdPerLateSla }) });
+    replays.set(key, { settings: v.settings, dataset: dataset ?? null, ...runReplay(orders, {
+      settings: v.settings, distances: w.distances, rates: w.rates, csComplaintHoursPerWeek: w.csComplaintHoursPerWeek,
+      penaltyUsdPerLateSla: w.penaltyUsdPerLateSla, world: worldFor?.(v.settings) ?? null, history: history ?? [],
+    }) });
   }
   res.json(replays.get(key));
+});
+
+// ---------- Test datasets: upload a CSV of orders for the agents to run on ----------
+const clientMap = async () => new Map((await q('SELECT client_id, client_name, account_tier, sla_penalty_clause, account_status FROM clients')).map((c) => [c.client_id, c]));
+
+r.get('/agents/datasets', async (_req, res) => res.json({ datasets: await datasetStore.list(), required: REQUIRED_COLUMNS, optional: OPTIONAL_COLUMNS }));
+
+// Body: the CSV itself (Content-Type text/csv, name in ?name=), or JSON { name, csv }.
+r.post('/agents/datasets', express.text({ type: ['text/csv', 'text/plain'], limit: '25mb' }), async (req, res) => {
+  const csv = typeof req.body === 'string' ? req.body : req.body?.csv;
+  const name = String((typeof req.body === 'string' ? req.query.name : req.body?.name) || '').trim().slice(0, 80) || `Test data ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`;
+  if (!csv) return res.status(400).json({ error: 'Send a CSV file', field: 'csv' });
+  const parsed = parseDataset(csv, { clients: await clientMap() });
+  if (parsed.error) return res.status(400).json({ error: parsed.error, missing: parsed.missing, rejected: parsed.rejected.slice(0, 100), rejectedCount: parsed.rejected.length });
+  const saved = await datasetStore.save({ name, ...parsed });
+  res.status(201).json({ ...saved, accepted: parsed.orders.length, rejected: parsed.rejected.slice(0, 100), rejectedCount: parsed.rejected.length });
+});
+
+// A ready-made week of dummy orders: a real week of history moved six weeks ahead, new ids, outcomes left blank.
+r.get('/agents/datasets/sample.csv', async (_req, res) => {
+  const w = await world();
+  const from = '2026-09-21', to = '2026-09-27';
+  const shift = (ts) => { const d = new Date(`${ts.slice(0, 10)}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 42); return `${d.toISOString().slice(0, 10)}${ts.slice(10)}`; };
+  const cols = ['delivery_id', ...REQUIRED_COLUMNS, 'order_channel', 'fulfilment_warehouse_id', 'carrier_rate_usd', 'on_time'];
+  const lines = w.orders.filter((o) => dayOf(o) >= from && dayOf(o) <= to).map((o, i) => [
+    `T${String(i + 1).padStart(5, '0')}`, o.client_id, shift(o.received_ts), o.commitment_type, o.address_incomplete ? 'incomplete' : 'complete',
+    o.destination_region, o.nearest_warehouse_id, o.stock_miss ? 'N' : 'Y', o.distance_miles, o.carrier_id, o.order_channel,
+    o.fulfilment_warehouse_id, o.carrier_rate_usd ?? '', '',
+  ].join(','));
+  res.type('text/csv').attachment('halcyon-test-week.csv').send([cols.join(','), ...lines].join('\n'));
 });
 
 r.get('/agents/approvals', async (req, res) => {
@@ -109,12 +160,15 @@ r.post('/agents/live', async (req, res) => {
   if (!MODES.includes(mode)) return res.status(400).json({ error: 'mode must be "live" or "recorded"', field: 'mode' });
   const v = validateSettings(req.body?.settings || {});
   if (!v.ok) return res.status(400).json({ error: v.message, field: v.field });
-  const [w, { claude }] = await Promise.all([world(), getContainer()]);
-  const recorded = mode === 'recorded' ? readRecording() : null;
-  // A recording is for one day; without one, recorded mode still runs with rule-based reasons.
-  const day = recorded?.day || pickDemoDay(w.orders);
-  live = new LiveDay({ day, orders: w.orders, distances: w.distances, rates: w.rates, settings: v.settings, claude, log: decisionLog, mode, recorded });
-  res.json({ runId: live.runId, day, mode, hasRecording: Boolean(recorded) });
+  const dataset = req.body?.dataset ?? null;
+  const [{ w, orders, history, worldFor }, { claude }] = await Promise.all([ordersFor(dataset, v.settings), getContainer()]);
+  if (!orders) return res.status(404).json({ error: `No test dataset ${dataset}`, field: 'dataset' });
+  // A recording is for one day of the history; without one (or on test data), reasons come from the rules.
+  const recorded = mode === 'recorded' && dataset == null ? readRecording() : null;
+  const day = req.body?.day || recorded?.day || pickDemoDay(orders);
+  if (!orders.some((o) => dayOf(o) === day)) return res.status(400).json({ error: `No orders on ${day}`, field: 'day' });
+  live = new LiveDay({ day, orders, distances: w.distances, rates: w.rates, settings: v.settings, claude, log: decisionLog, mode, recorded, world: worldFor?.(v.settings) ?? null, history: history ?? [] });
+  res.json({ runId: live.runId, day, mode, dataset, hasRecording: Boolean(recorded) });
 });
 
 r.get('/agents/live/current', (_req, res) => (live ? res.json({ runId: live.runId }) : res.status(404).json({ error: 'No live run' })));

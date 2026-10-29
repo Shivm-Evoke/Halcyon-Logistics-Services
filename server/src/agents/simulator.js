@@ -131,8 +131,9 @@ export function groupDays(orders) {
  * @param penaltyUsdPerLateSla     penalties actually paid divided by late SLA deliveries (not every late SLA order is charged)
  * @param world                    { model, capacity } measured on the history; test datasets pass the history's, so test
  *                                 orders are judged by the same yardstick. Orders may lack outcomes (late: null).
+ * @param history                  orders the agents have already seen (the real history, for a test dataset)
  */
-export function runReplay(orders, { settings, distances, rates, csComplaintHoursPerWeek = 461, penaltyUsdPerLateSla = PENALTY_USD, world = null }) {
+export function runReplay(orders, { settings, distances, rates, csComplaintHoursPerWeek = 461, penaltyUsdPerLateSla = PENALTY_USD, world = null, history = [] }) {
   if (!orders.length) {
     return { overall: { actual: null, agents: null, baseline: null, hasOutcomes: false, orders: 0 }, weekly: [], waterfall: [], money: { extraCarrierUsd: 0, penaltiesSavedUsd: 0, redeliverySavedUsd: 0, csHoursSavedPerWeek: 0, netUsd: 0 }, accounts: [] };
   }
@@ -141,6 +142,12 @@ export function runReplay(orders, { settings, distances, rates, csComplaintHours
 
   const run = (agents) => {
     const stock = new StockAgent(settings);
+    // What the agents already know: stock placed on every night of the history stays in place.
+    for (const [, past] of groupDays(history)) {
+      const plan = stock.planTransfers();
+      stock.commit(new Set([...plan.pairs, ...plan.decisions.map((d) => d.pair)]));
+      stock.observe(past);
+    }
     const out = [];
     for (const [day, dayOrders] of days) {
       let pairs = new Set();

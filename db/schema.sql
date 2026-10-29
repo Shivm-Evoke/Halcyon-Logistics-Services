@@ -4,7 +4,7 @@ SET client_min_messages = warning;
 -- the tables under "Solution layer" hold the records the new app creates.
 
 DROP VIEW IF EXISTS v_deliveries CASCADE;
-DROP TABLE IF EXISTS agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
+DROP TABLE IF EXISTS agent_datasets, agent_decisions, api_idempotency, inbound_orders, inbound_messages, api_clients, ml_models, stock_transfers, notifications, intake_orders, complaints, sla_penalties, deliveries,
   cs_time_study, warehouse_region_distance, warehouses, carriers, clients CASCADE;
 
 CREATE TABLE clients (
@@ -225,3 +225,15 @@ CREATE TABLE agent_decisions (
   created_at    timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX agent_decisions_run ON agent_decisions (run_id, approval);
+
+-- Test datasets uploaded for the agents to run on; kept apart from the history.
+CREATE TABLE agent_datasets (
+  id           serial PRIMARY KEY,
+  name         text NOT NULL,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  rows         integer NOT NULL,
+  days         jsonb NOT NULL,
+  has_outcomes boolean NOT NULL,
+  rejected     jsonb NOT NULL DEFAULT '[]',
+  orders       jsonb NOT NULL
+);
