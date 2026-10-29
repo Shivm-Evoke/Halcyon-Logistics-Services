@@ -152,3 +152,81 @@ test('email: an account named once at the top applies to every order in the emai
     text: 'Account: C662\nPO: A-1\nSKU: HX-1 Qty: 2\nShip to: A\nAddress: 1 Main St\nCity: Boise\nState: ID\nZIP: 83702\n---\nPO: A-2\nSKU: HX-2 Qty: 3\nShip to: B\nAddress: 2 Main St\nCity: Boise\nState: ID\nZIP: 83702' });
   assert.deepEqual(recs.map((r) => r.client_hint), ['C662', 'C662']);
 });
+
+// ---- gateway: cutoff deferral, forced client and time ----
+import { IngestPipeline } from '../src/ingest/pipeline.js';
+import { IngestService } from '../src/ingest/IngestService.js';
+
+function makeGateway({ deferCutoff, clock } = {}) {
+  const saved = [];
+  const repo = {
+    createMessage: async () => ({ id: 1 }),
+    saveOrder: async (o) => { saved.push(o); return { id: saved.length }; },
+    finishMessage: async () => {},
+    findLiveOrder: async () => null,
+    otherClientsUsingRef: async () => [],
+    carrierUsage: async () => ({}),
+  };
+  const ai = {
+    distances: { W1: { NE: 100 } },
+    anomalies: { inspect: () => ({ findings: [] }) },
+    capacity: { forDay: () => ({ reserve() {} }) },
+    nextBestAction: { decide: () => ({ best: { carrier_id: 'K1' } }) },
+    scorer: { score: () => ({ risk: 0, drivers: [] }) },
+    avgDailyOrders: 10,
+    stockMiss: () => 0,
+  };
+  const clients = new Map([['C001', {}], ['C055', {}]]);
+  const service = new IngestService(new IngestPipeline({ repo, clients, ai, deferCutoff }), null, { clock });
+  return { service, saved };
+}
+
+const apiOrder = { client_order_ref: 'P1', sku: 'HX-1', quantity: 2, service: 'same_day', received_at: '2026-09-25 09:15',
+  ship_to: { name: 'A', street: '1 Main St', city: 'Hartford', state: 'CT', zip: '06103' } };
+
+test('gateway: deferCutoff keeps a late same-day order same-day and notes it for the Wave Planner', async () => {
+  const { service } = makeGateway({ deferCutoff: true });
+  const [o] = (await service.api('C001', [apiOrder])).orders;
+  assert.notEqual(o.status, 'corrected');
+  assert.equal(o.commitment_type, 'same_day');
+  const issue = o.issues.find((i) => i.code === 'same_day_after_cutoff');
+  assert.equal(issue.severity, 'info');
+  assert.match(issue.message, /Received 09:15, after the 08:00 pick-list cutoff: the Wave Planner decides/);
+  assert.equal(o.promised_date, '2026-09-25');
+});
+
+test('gateway: without deferCutoff a late same-day order is re-promised next-day', async () => {
+  const { service } = makeGateway({ deferCutoff: false });
+  const [o] = (await service.api('C001', [apiOrder])).orders;
+  assert.equal(o.status, 'corrected');
+  assert.equal(o.commitment_type, 'next_day');
+});
+
+test('gateway: clock supplies the time for API orders without their own', async () => {
+  const { service, saved } = makeGateway({ clock: () => '2026-09-25 07:00' });
+  await service.api('C001', [{ ...apiOrder, received_at: undefined }]);
+  assert.equal(saved[0].normalized.received_ts.slice(0, 16).replace('T', ' '), '2026-09-25 07:00');
+});
+
+test('gateway: forced client and time override an EDI sender', async () => {
+  const pad = (s, n) => s.padEnd(n);
+  const isa = `ISA*00*${pad('', 10)}*00*${pad('', 10)}*ZZ*${pad('C001', 15)}*ZZ*${pad('HALCYON', 15)}*260925*0715*U*00401*000000001*0*P*>`;
+  const edi = [isa, 'GS*PO*C001*HALCYON*20260925*0715*1*X*004010', 'ST*850*0001', 'BEG*00*SA*PO-9**20260925',
+    'TD5*****Same Day', 'N1*ST*Ann', 'N3*1 Main St', 'N4*Hartford*CT*06103', 'PO1*1*2*EA*1.00**VP*HX-1', 'SE*9*0001', 'GE*1*1', 'IEA*1*000000001', ''].join('~');
+  const { service, saved } = makeGateway();
+  await service.edi(edi, { filename: 'a.edi' }, { client_id: 'C055', received_ts: '2026-09-25 10:30' });
+  assert.ok(saved.length);
+  for (const o of saved) {
+    assert.equal(o.client_id, 'C055');
+    assert.equal(o.normalized.received_ts.slice(0, 16).replace('T', ' '), '2026-09-25 10:30');
+  }
+});
+
+test('gateway: forced client overrides an email sender', async () => {
+  const { service, saved } = makeGateway();
+  const raw = 'From: orders@client001.example\r\nSubject: Order\r\nDate: Fri, 25 Sep 2026 07:15:00 +0000\r\n\r\n'
+    + 'PO: AB-123\nSKU: HX-1 Qty: 2\nShip to: A B\nAddress: 1 Main St\nCity: Hartford\nState: CT\nZIP: 06103\n';
+  await service.email(raw, {}, { client_id: 'C055', received_ts: '2026-09-25 10:30' });
+  assert.ok(saved.length);
+  for (const o of saved) assert.equal(o.client_id, 'C055');
+});

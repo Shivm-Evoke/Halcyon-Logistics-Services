@@ -21,10 +21,11 @@ export class IngestPipeline {
   /**
    * @param repo     ingest repository
    * @param clients  Map of client_id -> client
+   * @param deferCutoff  true: a same-day order after 08:00 stays same-day and the Wave Planner decides
    * @param ai       { scorer, anomalies, nextBestAction, capacity, avgDailyOrders, distances, stockMiss(client, region) }
    */
-  constructor({ repo, clients, ai }) {
-    Object.assign(this, { repo, clients, ai });
+  constructor({ repo, clients, ai, deferCutoff = false }) {
+    Object.assign(this, { repo, clients, ai, deferCutoff });
     // Nearest warehouse per region, from the distance table.
     this.nearest = {};
     for (const [wh, regions] of Object.entries(ai.distances)) {
@@ -108,12 +109,18 @@ export class IngestPipeline {
     if (!order.commitment_type) order.commitment_type = 'standard';
 
     const promise = promiseDelivery({ receivedTs: order.received_ts, commitmentType: requested });
-    if (promise.offeredCommitment !== requested) {
+    // Deferred: keep same-day and let the Wave Planner decide; the promise stays on the received date.
+    const deferred = this.deferCutoff && promise.afterCutoff && requested === 'same_day';
+    if (deferred) {
+      issues.push({ code: 'same_day_after_cutoff', severity: 'info', field: 'commitment_type',
+        message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 pick-list cutoff: the Wave Planner decides` });
+      promise.promisedDate = order.received_ts.slice(0, 10);
+    } else if (promise.offeredCommitment !== requested) {
       corrections.push({ field: 'commitment_type', from: requested, to: promise.offeredCommitment, rule: 'same-day after 8am cutoff re-promised' });
       issues.push({ code: 'same_day_after_cutoff', severity: 'warning', field: 'commitment_type',
         message: `Received ${order.received_ts.slice(11, 16)}, after the 08:00 pick-list cutoff: promised next-day ${promise.promisedDate} instead of same-day` });
     }
-    order.commitment_type = promise.offeredCommitment;
+    order.commitment_type = deferred ? requested : promise.offeredCommitment;
     order.pick_list_date = promise.pickListDate;
 
     const hour = Number(order.received_ts.slice(11, 13));

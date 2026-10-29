@@ -51,6 +51,7 @@ async function build() {
   container.claude = createClaude();
   container.ingest = new IngestService(new IngestPipeline({
     repo: ingestRepository,
+    deferCutoff: process.env.DESK !== '0',
     clients: await ingestRepository.loadClients(),
     ai: {
       get scorer() { return registry.scorer(); },
