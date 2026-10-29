@@ -1,7 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
 // E2E rebuilds and runs against its own database and ports, so it never touches the dev servers or demo data.
-const env = { PGDATABASE: 'halcyon_test', INBOX_WATCH: '0' };
+// Empty Foundry settings keep the tests off the real Claude even when server/.env holds a key.
+const env = { PGDATABASE: 'halcyon_test', INBOX_WATCH: '0', ANTHROPIC_FOUNDRY_API_KEY: '', ANTHROPIC_FOUNDRY_RESOURCE: '' };
 
 export default defineConfig({
   testDir: 'e2e',

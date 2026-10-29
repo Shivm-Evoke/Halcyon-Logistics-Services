@@ -263,7 +263,7 @@ export class LiveDay {
     const totals = Object.fromEntries(AGENT_ORDER.map((a) => [a, all.filter((e) => e.agent === a).length]));
     return {
       runId: this.runId, day: this.day, mode: this.mode, label: this.label, dataset: this.dataset, simTime: hhmm(this.simMinutes), simMinutes: this.simMinutes,
-      aiAvailable: this.mode === 'recorded' || Boolean(this.claude?.available),
+      aiAvailable: this.mode === 'recorded' ? Object.keys(this.recorded.reasons).length > 0 : Boolean(this.claude?.available),
       counters: this.#counters(this.simMinutes), lanes, totals,
       approvals: this.#pending(), briefings: [...this.briefings].reverse(),
     };

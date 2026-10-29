@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test test/*.test.js",
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "start": "node --env-file-if-exists=.env src/index.js",
+    "dev": "node --env-file-if-exists=.env --watch src/index.js",
+    "check:claude": "node --env-file-if-exists=.env scripts/check-claude.mjs"
   },
   "keywords": [],
   "author": "",

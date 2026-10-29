@@ -171,3 +171,10 @@ test('test data: the live day\'s stock agent learns from the history before the 
   await live.advance(24 * 60);
   assert.ok((await live.state()).totals.stock > 0);
 });
+
+test('recorded mode without a recording says the AI is off, so nobody mistakes rules for Claude', async () => {
+  const empty = make({ mode: 'recorded', recorded: null });
+  assert.equal((await empty.state()).aiAvailable, false);
+  const full = make({ mode: 'recorded', recorded: { reasons: { 'wave:x': 'AI: y' }, briefings: {} } });
+  assert.equal((await full.state()).aiAvailable, true);
+});
